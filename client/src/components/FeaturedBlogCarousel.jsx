@@ -103,13 +103,13 @@ const FeaturedBlogCarousel = ({ blogs }) => {
                         {excerpt}
                     </p>
 
-                    <Link
-                        to={`/blog/${currentBlog._id}`}
-                        className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold rounded-lg shadow-lg transition-colors duration-200"
-                    >
-                        {t('blog_card.read_more')}
-                        <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
-                    </Link>
+                   <Link
+    to={`/blog/${currentBlog.slug || currentBlog._id}`}
+    className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold rounded-lg shadow-lg transition-colors duration-200"
+>
+    {t('blog_card.read_more')}
+    <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+</Link>
                 </div>
             </div>
 

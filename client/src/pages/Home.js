@@ -8,6 +8,7 @@ import SidebarLatest from '../components/SidebarLatest.jsx';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
+ 
 
 const INITIAL_PAGE_SIZE = 6;
 

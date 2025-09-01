@@ -63,20 +63,21 @@ const HeroCarousel = ({ blogs }) => {
 
                 <div className="relative z-10 h-full flex items-end pointer-events-none">
                     <div className="p-4 sm:p-6 md:p-8 w-full max-w-[720px] pointer-events-auto">
-                        <Link to={`/blog/${currentBlog?._id}`} className="block">
-                            <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight drop-shadow">
-                                {title}
-                            </h2>
-                        </Link>
+                       
+                        <Link to={`/blog/${currentBlog?.slug || currentBlog?._id}`} className="block">
+    <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight drop-shadow">
+        {title}
+    </h2>
+</Link>
                         <p className="mt-3 text-gray-200 text-sm sm:text-base line-clamp-3">
                             {excerpt}
                         </p>
                         <Link
-                            to={`/blog/${currentBlog?._id}`}
-                            className="inline-block mt-4 px-4 py-2 rounded-md bg-white/90 text-gray-900 text-sm font-semibold hover:bg-white"
-                        >
-                            {t('blog_card.read_more')}
-                        </Link>
+    to={`/blog/${currentBlog?.slug || currentBlog?._id}`}
+    className="inline-block mt-4 px-4 py-2 rounded-md bg-white/90 text-gray-900 text-sm font-semibold hover:bg-white"
+>
+    {t('blog_card.read_more')}
+</Link>
                     </div>
                 </div>
 
@@ -101,7 +102,7 @@ const HeroCarousel = ({ blogs }) => {
         </section>
     );
 };
-
+ 
 export default HeroCarousel;
 
 
