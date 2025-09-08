@@ -2,11 +2,11 @@ import React, { useRef, useEffect } from 'react';
 import BlogCard from './BlogCard';
 import { useTranslation } from 'react-i18next';
 
-const BlogList = ({ blogs, loadingMore, hasMore, onLoadMore, totalBlogsCount }) => {
+// --- FIX: Accept the onLikeUpdate prop from the parent (Home.js) ---
+const BlogList = ({ blogs, loadingMore, hasMore, onLoadMore, totalBlogsCount, onLikeUpdate }) => {
     const { t } = useTranslation();
     const observerRef = useRef(null);
 
-    // This hook is called unconditionally at the top level of the component
     useEffect(() => {
         if (!hasMore || loadingMore) return;
 
@@ -33,7 +33,6 @@ const BlogList = ({ blogs, loadingMore, hasMore, onLoadMore, totalBlogsCount }) 
         };
     }, [hasMore, loadingMore, onLoadMore]);
 
-    // Use a conditional rendering pattern here instead of a conditional return.
     return (
         <div className="max-w-4xl w-full mx-auto px-0">
             {blogs && blogs.length > 0 ? (
@@ -42,7 +41,8 @@ const BlogList = ({ blogs, loadingMore, hasMore, onLoadMore, totalBlogsCount }) 
                         const isLast = index === blogs.length - 1;
                         return (
                             <div key={blog._id} ref={isLast ? observerRef : null}>
-                                <BlogCard blog={blog} />
+                                {/* --- FIX: Pass the onLikeUpdate prop down to each BlogCard --- */}
+                                <BlogCard blog={blog} onLikeUpdate={onLikeUpdate} />
                             </div>
                         );
                     })}
@@ -63,3 +63,4 @@ const BlogList = ({ blogs, loadingMore, hasMore, onLoadMore, totalBlogsCount }) 
 };
 
 export default BlogList;
+

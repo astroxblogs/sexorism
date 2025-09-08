@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { marked } from 'marked';
@@ -7,7 +6,8 @@ import { MessageSquare, Eye } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getCategoryClasses } from '../utils/categoryColors';
 
-const BlogCard = ({ blog }) => {
+// --- FIX: Accept the onLikeUpdate prop from the parent (BlogList.js) ---
+const BlogCard = ({ blog, onLikeUpdate }) => {
     const { i18n, t } = useTranslation();
     const currentLang = i18n.language;
 
@@ -92,7 +92,8 @@ const BlogCard = ({ blog }) => {
                 </p>
 
                 <div className="mt-2 flex items-center gap-4 sm:gap-5 text-gray-500 dark:text-gray-400 text-[11px] sm:text-xs">
-                    <LikeButton blogId={blog._id} initialLikes={blog.likes} />
+                    {/* --- FIX: Pass the onLikeUpdate prop down to the LikeButton --- */}
+                    <LikeButton blogId={blog._id} initialLikes={blog.likes} onLikeSuccess={onLikeUpdate} />
                     <Link to={`/blog/${blog.slug || blog._id}#comments`} className="flex items-center gap-1.5 hover:text-gray-900 dark:hover:text-white">
                         <MessageSquare size={14} />
                         <span>{blog.comments?.length || 0}</span>
@@ -108,6 +109,4 @@ const BlogCard = ({ blog }) => {
 };
 
 export default BlogCard;
-
-
 
