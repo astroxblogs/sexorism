@@ -72,7 +72,7 @@ const BlogDetail = ({ blog: initialBlog }) => {
             // increment views for provided initial blog
             (async () => {
                 try {
-                    const v = await axios.post(`/api/blogs/${id}/views`);
+                    const v = await axios.patch(`/api/blogs/${id}/views`);
                     if (v?.data?.views !== undefined) {
                         setBlog(prev => ({ ...prev, views: v.data.views }));
                     }
@@ -255,12 +255,15 @@ const BlogDetail = ({ blog: initialBlog }) => {
 
     return (
         <article className="max-w-4xl mx-auto bg-white dark:bg-gray-900 rounded-lg shadow-xl p-4 sm:p-6 md:p-8 mt-4 md:mt-8 mb-8 relative">
-            <img
-                src={coverImage}
-                alt={cleanAltTitle}
-                className="w-full h-auto max-h-[300px] sm:max-h-[400px] object-cover rounded-lg mb-4 md:mb-6 bg-gray-200"
-                loading="lazy"
-            />
+         <div className="w-full h-55 flex items-center justify-center bg-gray-100">
+         <img
+  src={coverImage}
+  alt={cleanAltTitle}
+   className="w-full h-auto object-contain rounded-lg"
+  loading="lazy"
+/>
+</div>
+
 
             <div className="flex items-start justify-between gap-3 mb-3 md:mb-4">
                 <h1 className="text-2xl sm:text-3xl md:text-5xl font-semibold text-gray-900 dark:text-white leading-tight" style={{ fontFamily: 'Arial, sans-serif' }}>{displayTitle}</h1>

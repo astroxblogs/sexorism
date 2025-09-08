@@ -8,6 +8,8 @@ const SidebarLatest = ({ title = 'Latest Updates', items = [] }) => {
     const currentLang = i18n.language;
     const [categoryMap, setCategoryMap] = useState({});
 
+    console.log('DEBUG (SidebarLatest): Rendering SidebarLatest with items:', items);
+    
     useEffect(() => {
         let isMounted = true;
         fetch('/api/blogs/categories')
@@ -40,6 +42,7 @@ const SidebarLatest = ({ title = 'Latest Updates', items = [] }) => {
             </div>
             <ul>
                 {items.map((blog, idx) => (
+                    console.log('DEBUG (SidebarLatest): Rendering blog item:', blog),
                     
                     <li key={blog._id} className="mb-6 last:mb-0">
                      <Link to={`/blog/${blog.slug || blog._id}`} className="block">

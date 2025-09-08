@@ -1,33 +1,39 @@
-// client/src/components/LikeButton.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ThumbsUp } from 'lucide-react';
 
-// NEW: Import getSubscriberId and trackUserLike
-import { getSubscriberId } from '../utils/localStorage'; // <-- ADD THIS LINE
-import { trackUserLike } from '../services/api';     // <-- ADD THIS LINE
+import { getSubscriberId } from '../utils/localStorage';
+import { trackUserLike } from '../services/api';
 
 const LikeButton = ({ blogId, initialLikes = 0 }) => {
     const [likes, setLikes] = useState(initialLikes);
     const [liked, setLiked] = useState(false);
     const [error, setError] = useState(null);
 
-    // 1. Check localStorage when the component first loads
+    // 1. Check localStorage and reconcile state on component load
     useEffect(() => {
         // Get the list of liked blogs from storage
         const likedBlogsJSON = localStorage.getItem('likedBlogs');
         const likedBlogs = likedBlogsJSON ? JSON.parse(likedBlogsJSON) : [];
+        const isLikedInStorage = likedBlogs.includes(blogId);
 
-        // If this blog's ID is in the list, set the button to a "liked" state
-        if (likedBlogs.includes(blogId)) {
-            setLiked(true);
+        setLiked(isLikedInStorage);
+
+        // --- THE FIX ---
+        // This is the key logic to fix the state inconsistency on page refresh.
+        // The problem: `initialLikes` comes from the server and can be stale, while
+        // `isLikedInStorage` is the immediate truth from the user's browser. This
+        // can lead to a visual bug where the thumb icon is blue, but the count is "0".
+        //
+        // The solution: If localStorage confirms the post is liked, we ensure the
+        // displayed count is updated to reflect that, preventing the visual mismatch.
+        if (isLikedInStorage) {
+            // We set the count to be the greater of its current value or the server's
+            // value plus one. This corrects the count on a stale refresh without
+            // incorrectly decrementing it if the user clicks multiple times quickly.
+            setLikes(prevLikes => Math.max(prevLikes, initialLikes + 1));
         }
-    }, [blogId]); // This effect runs whenever the blogId changes
-
-    // Sync the like count if the initial prop changes
-    useEffect(() => {
-        setLikes(initialLikes);
-    }, [initialLikes]);
+    }, [blogId, initialLikes]);
 
     const handleLike = async () => {
         // Optimistically update UI
@@ -107,3 +113,4 @@ const LikeButton = ({ blogId, initialLikes = 0 }) => {
 };
 
 export default LikeButton;
+
