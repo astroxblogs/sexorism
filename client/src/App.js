@@ -4,13 +4,13 @@ import axios from 'axios';
 import './index.css';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import { useTranslation } from 'react-i18next';
-  
+
 import Footer1 from './components/Footer1';
 import TopNavigation from './components/TopNavigation';
 import Home from './pages/Home';
 import ScrollToTop from './components/ScrollToTop';
+import GtmTracker from './components/GtmTracker';
 
- 
 const BlogDetailPage = React.lazy(() => import('./pages/BlogDetailPage'));
 const CategoryPage = React.lazy(() => import('./pages/CategoryPage'));
 const TagPage = React.lazy(() => import('./pages/TagPage'));
@@ -123,12 +123,13 @@ function App() {
     return (
         <div className="min-h-screen bg-light-bg-primary dark:bg-dark-bg-primary transition-colors flex flex-col">
             <ScrollToTop />
+            <GtmTracker />
             <TopNavigation
                 activeCategory={activeCategory}
                 onCategoryChange={handleCategoryChange}
                 setSearchQuery={setSearchQuery}
                 onLogoClick={handleLogoClick}
-                categories={categories}  
+                categories={categories}
             />
             <main className="flex-1 overflow-y-auto">
                 <Suspense fallback={<div className="text-center py-20 dark:text-gray-200">{t('loading page')}</div>}>
