@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ThumbsUp } from 'lucide-react';
-
 import { getSubscriberId } from '../utils/localStorage';
+// --- FIX: Import the user tracking function directly into this component ---
 import { trackUserLike } from '../services/api';
 
 const LikeButton = ({ blogId, initialLikes = 0 }) => {
@@ -10,87 +10,77 @@ const LikeButton = ({ blogId, initialLikes = 0 }) => {
     const [liked, setLiked] = useState(false);
     const [error, setError] = useState(null);
 
-    // 1. Check localStorage and reconcile state on component load
     useEffect(() => {
-        // Get the list of liked blogs from storage
+        let isMounted = true;
+        const fetchCorrectLikeCount = async () => {
+            try {
+                const res = await axios.get(`/api/blogs/${blogId}`);
+                if (isMounted && res.data) {
+                    setLikes(res.data.likes);
+                }
+            } catch (err) {
+                console.error("Failed to fetch fresh like count:", err);
+            }
+        };
+
+        fetchCorrectLikeCount();
+
         const likedBlogsJSON = localStorage.getItem('likedBlogs');
         const likedBlogs = likedBlogsJSON ? JSON.parse(likedBlogsJSON) : [];
-        const isLikedInStorage = likedBlogs.includes(blogId);
-
-        setLiked(isLikedInStorage);
-
-        // --- THE FIX ---
-        // This is the key logic to fix the state inconsistency on page refresh.
-        // The problem: `initialLikes` comes from the server and can be stale, while
-        // `isLikedInStorage` is the immediate truth from the user's browser. This
-        // can lead to a visual bug where the thumb icon is blue, but the count is "0".
-        //
-        // The solution: If localStorage confirms the post is liked, we ensure the
-        // displayed count is updated to reflect that, preventing the visual mismatch.
-        if (isLikedInStorage) {
-            // We set the count to be the greater of its current value or the server's
-            // value plus one. This corrects the count on a stale refresh without
-            // incorrectly decrementing it if the user clicks multiple times quickly.
-            setLikes(prevLikes => Math.max(prevLikes, initialLikes + 1));
+        if (likedBlogs.includes(blogId)) {
+            setLiked(true);
         }
-    }, [blogId, initialLikes]);
+
+        return () => { isMounted = false; };
+    }, [blogId]);
 
     const handleLike = async () => {
-        // Optimistically update UI
         const newLikedState = !liked;
+        const newLikesCount = newLikedState ? likes + 1 : Math.max(0, likes - 1);
+
         setLiked(newLikedState);
-        setLikes(prevLikes => newLikedState ? prevLikes + 1 : Math.max(0, prevLikes - 1));
+        setLikes(newLikesCount);
         setError(null);
 
         try {
-            // Send like/unlike to the main blog backend to update the like count
+            // --- STEP 1: Update the public like count ---
             const endpoint = newLikedState ? 'like' : 'unlike';
             await axios.post(`/api/blogs/${blogId}/${endpoint}`);
 
-            // Update localStorage for local state persistence
             const likedBlogsJSON = localStorage.getItem('likedBlogs');
             let likedBlogs = likedBlogsJSON ? JSON.parse(likedBlogsJSON) : [];
-
             if (newLikedState) {
-                // Add the blog ID if not already present
-                if (!likedBlogs.includes(blogId)) {
-                    likedBlogs.push(blogId);
-                }
+                if (!likedBlogs.includes(blogId)) likedBlogs.push(blogId);
             } else {
-                // Remove the blog ID
                 likedBlogs = likedBlogs.filter(id => id !== blogId);
             }
-            
             localStorage.setItem('likedBlogs', JSON.stringify(likedBlogs));
 
-            // Track user behavior for inferred interests (only when liking)
+            // --- STEP 2 (FIX): Trigger the personalization tracking from here ---
+            // We only track when a user LIKES the post, not when they unlike.
             if (newLikedState) {
                 const subscriberId = getSubscriberId();
                 if (subscriberId) {
                     try {
+                        // This will now be the ONLY place this tracking request is made.
                         await trackUserLike(subscriberId, blogId);
-                        console.log(`Like behavior for blog ${blogId} tracked for subscriber:`, subscriberId);
                     } catch (trackingError) {
-                        console.error('Failed to track like for personalization:', trackingError);
+                        console.error('Failed to track user like (non-critical):', trackingError);
                     }
                 }
             }
-
         } catch (err) {
+            // Revert UI on error
             setError(newLikedState ? 'Failed to like post.' : 'Failed to unlike post.');
-            setLiked(!newLikedState); // Revert UI on error
-            setLikes(prevLikes => newLikedState ? Math.max(0, prevLikes - 1) : prevLikes + 1); // Revert likes count on error
-            console.error(`Failed to ${newLikedState ? 'like' : 'unlike'} the post:`, err);
+            setLiked(!newLikedState);
+            setLikes(newLikedState ? newLikesCount - 1 : newLikesCount + 1);
 
-            // Revert localStorage if the operation failed on the server
             const likedBlogsJSON = localStorage.getItem('likedBlogs');
             let likedBlogs = likedBlogsJSON ? JSON.parse(likedBlogsJSON) : [];
             if (newLikedState) {
-                likedBlogs = likedBlogs.filter(id => id !== blogId);
+                 likedBlogs = likedBlogs.filter(id => id !== blogId);
             } else {
-                if (!likedBlogs.includes(blogId)) {
-                    likedBlogs.push(blogId);
-                }
+                 if (!likedBlogs.includes(blogId)) likedBlogs.push(blogId);
             }
             localStorage.setItem('likedBlogs', JSON.stringify(likedBlogs));
         }

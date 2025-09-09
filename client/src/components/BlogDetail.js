@@ -7,8 +7,8 @@ import { marked } from 'marked';
 
 // Utility imports
 import { getSubscriberId, hasSubscriberId } from '../utils/localStorage';
-// --- FIX: Import tracking functions for likes and comments ---
-import { trackUserRead, trackUserLike, trackUserComment } from '../services/api';
+// --- FIX: We no longer need trackUserLike here, as the button handles it. ---
+import { trackUserRead, trackUserComment } from '../services/api';
 
 // Component imports
 import LikeButton from '../components/LikeButton.jsx';
@@ -51,15 +51,9 @@ const BlogDetail = ({ blog: initialBlog }) => {
     const timeSpentRef = useRef(0);
     const lastActivityTimeRef = useRef(Date.now());
 
-    // --- FIX: Create handler functions to trigger tracking ---
-    const handleTrackLike = useCallback(() => {
-        const subscriberId = getSubscriberId();
-        if (subscriberId && blog?._id) {
-            trackUserLike(subscriberId, blog._id)
-                .then(() => console.log(`Like tracked for blog ${blog._id}`))
-                .catch(err => console.error("Failed to track like:", err));
-        }
-    }, [blog]);
+    // --- FIX: The handleTrackLike function has been removed. ---
+    // The LikeButton component now handles its own tracking internally,
+    // which prevents the duplicate API call from happening.
 
     const handleTrackComment = useCallback(() => {
         const subscriberId = getSubscriberId();
@@ -259,11 +253,10 @@ const BlogDetail = ({ blog: initialBlog }) => {
                 <ShareButton
                     blogId={blog._id}
                     initialShareCount={blog.shareCount}
-                    blogSlug={blog.slug}   // <-- And this
+                    blogSlug={blog.slug}
                     title={blog.title}
                     url={`https://www.innvibs.com/blog/${blog.slug}`}
                 />
-
             </div>
             <div className="flex flex-wrap gap-x-3 gap-y-1 items-center text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-6 md:mb-8">
                 <span>Published on: {blog.date ? new Date(blog.date).toLocaleDateString() : 'Invalid Date'}</span>
@@ -344,13 +337,10 @@ const BlogDetail = ({ blog: initialBlog }) => {
             <div className="border-t dark:border-gray-700 pt-6">
                 <div className="mb-8">
                     {isSubscribed ? (
-                        // --- FIX: Pass the tracking handler to the LikeButton ---
+                        // --- FIX: The `onLikeSuccess` prop is removed ---
                         <LikeButton
                             blogId={blog._id}
                             initialLikes={blog.likes}
-                            onLikeSuccess={handleTrackLike}
-                            blogSlug={blog.slug}    // <-- Make sure you pass this
-                            blogTitle={blog.title}
                         />
                     ) : (
                         <p className="text-gray-600 dark:text-gray-400 text-sm">Subscribe to like this post!</p>
@@ -358,7 +348,6 @@ const BlogDetail = ({ blog: initialBlog }) => {
                 </div>
                 <Suspense fallback={<div className="text-center py-10 dark:text-gray-400">Loading comments...</div>}>
                     {isSubscribed ? (
-                        // --- FIX: Pass the tracking handler to the CommentSection ---
                         <CommentSection
                             blogId={blog._id}
                             initialComments={blog.comments}
