@@ -1,5 +1,3 @@
-// astroxblogs-innvibs-admin-client/src/services/api.js
-
 import axios from 'axios';
 import { setAuthToken, getAuthToken, removeAuthToken } from '../utils/localStorage';
 
@@ -27,14 +25,14 @@ const api = axios.create({
 export const setAccessToken = (token) => {
     console.log('setAccessToken called. Token is now:', token ? '[SET]' : null);
     if (token) {
-        setAuthToken(token);  
+        setAuthToken(token);
     } else {
-        removeAuthToken();  
+        removeAuthToken();
     }
 };
 
 export const getAccessToken = () => {
-    return getAuthToken();  
+    return getAuthToken();
 };
 
 api.interceptors.request.use(
@@ -54,7 +52,6 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
     (response) => {
-        // If this is a successful response from the login endpoint, store the access token.
         if (response.config.url.includes('/api/admin/login') && response.data.accessToken) {
             setAccessToken(response.data.accessToken);
             console.log('Response Interceptor: Access token received from login and set.');
@@ -64,18 +61,23 @@ api.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
-        // Check for 401 Unauthorized errors
         if (error.response?.status === 401) {
-            // Check if the request that failed was the refresh token request itself
+            // --- THIS IS THE FIX ---
+            // We add a check here to ensure we do NOT try to refresh the token
+            // if the error came from a failed login attempt. A failed login
+            // should never trigger a refresh. This breaks the infinite loop.
+            if (originalRequest.url.includes('/api/admin/login')) {
+                return Promise.reject(error);
+            }
+
             if (originalRequest.url.includes('/api/admin/refresh-token')) {
                 console.error('Response Interceptor: Refresh token request failed with 401. Logging out.');
                 setAccessToken(null);
                 processQueue(error);
-                window.location.href = '/login'; // Redirect to login
+                window.location.href = '/login';
                 return Promise.reject(error);
             }
 
-            // If a refresh is already in progress, queue the request
             if (isRefreshing) {
                 console.log('Response Interceptor: Refresh in progress, queuing original request.');
                 return new Promise(function (resolve, reject) {
@@ -88,7 +90,6 @@ api.interceptors.response.use(
                 });
             }
 
-            // If not refreshing, set flag and attempt refresh
             isRefreshing = true;
             console.log('Response Interceptor: Caught 401 error. Attempting token refresh...');
 
@@ -99,11 +100,9 @@ api.interceptors.response.use(
                 setAccessToken(newAccessToken);
                 console.log('Response Interceptor: Token refreshed successfully.');
 
-                // Process the queue with the new token
                 processQueue(null, newAccessToken);
                 isRefreshing = false;
 
-                // Retry the original request
                 originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
                 return api(originalRequest);
 
@@ -112,17 +111,16 @@ api.interceptors.response.use(
                 setAccessToken(null);
                 processQueue(refreshError);
                 isRefreshing = false;
-                window.location.href = '/login'; // Redirect to login
+                window.location.href = '/login';
                 return Promise.reject(refreshError);
             }
         }
 
-        // Handle 403 Forbidden errors
         if (error.response?.status === 403) {
             console.error('Response Interceptor: Caught 403 Forbidden. Redirecting to login.', error.response?.data);
             setAccessToken(null);
             processQueue(error);
-            window.location.href = '/login'; // Redirect to login
+            window.location.href = '/login';
             return Promise.reject(error);
         }
 
