@@ -256,7 +256,14 @@ const BlogDetail = ({ blog: initialBlog }) => {
 
             <div className="flex items-start justify-between gap-3 mb-3 md:mb-4">
                 <h1 className="text-2xl sm:text-3xl md:text-5xl font-semibold text-gray-900 dark:text-white leading-tight" style={{ fontFamily: 'Arial, sans-serif' }}>{displayTitle}</h1>
-                <ShareButton title={displayTitle} blogId={blog._id} initialShareCount={blog.shareCount || 0} />
+                <ShareButton
+                    blogId={blog._id}
+                    initialShareCount={blog.shareCount}
+                    blogSlug={blog.slug}   // <-- And this
+                    title={blog.title}
+                    url={`https://www.innvibs.com/blog/${blog.slug}`}
+                />
+
             </div>
             <div className="flex flex-wrap gap-x-3 gap-y-1 items-center text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-6 md:mb-8">
                 <span>Published on: {blog.date ? new Date(blog.date).toLocaleDateString() : 'Invalid Date'}</span>
@@ -338,10 +345,12 @@ const BlogDetail = ({ blog: initialBlog }) => {
                 <div className="mb-8">
                     {isSubscribed ? (
                         // --- FIX: Pass the tracking handler to the LikeButton ---
-                        <LikeButton 
-                            blogId={blog._id} 
-                            initialLikes={blog.likes} 
+                        <LikeButton
+                            blogId={blog._id}
+                            initialLikes={blog.likes}
                             onLikeSuccess={handleTrackLike}
+                            blogSlug={blog.slug}    // <-- Make sure you pass this
+                            blogTitle={blog.title}
                         />
                     ) : (
                         <p className="text-gray-600 dark:text-gray-400 text-sm">Subscribe to like this post!</p>
@@ -350,8 +359,8 @@ const BlogDetail = ({ blog: initialBlog }) => {
                 <Suspense fallback={<div className="text-center py-10 dark:text-gray-400">Loading comments...</div>}>
                     {isSubscribed ? (
                         // --- FIX: Pass the tracking handler to the CommentSection ---
-                        <CommentSection 
-                            blogId={blog._id} 
+                        <CommentSection
+                            blogId={blog._id}
                             initialComments={blog.comments}
                             onCommentSuccess={handleTrackComment}
                         />

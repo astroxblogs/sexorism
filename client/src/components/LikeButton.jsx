@@ -5,94 +5,92 @@ import { ThumbsUp } from 'lucide-react';
 import { getSubscriberId } from '../utils/localStorage';
 import { trackUserLike } from '../services/api';
 
-// Note: The 'onLikeSuccess' prop is no longer needed with this self-fetching approach,
-// but we'll leave it in case you want to use it for other things.
-const LikeButton = ({ blogId, initialLikes = 0, onLikeSuccess }) => {
+const LikeButton = ({ blogId, initialLikes = 0 }) => {
     const [likes, setLikes] = useState(initialLikes);
     const [liked, setLiked] = useState(false);
     const [error, setError] = useState(null);
 
-    // --- THE DEFINITIVE FIX ---
-    // This useEffect hook makes the LikeButton self-sufficient.
-    // It runs when the component first mounts to fetch the TRUE, up-to-date
-    // like count directly from the server. This bypasses any stale data
-    // that might be coming from the parent (like the homepage list).
+    // 1. Check localStorage and reconcile state on component load
     useEffect(() => {
-        let isMounted = true;
-
-        const fetchCorrectLikeCount = async () => {
-            try {
-                // IMPORTANT: You need to have an API endpoint that returns the data for a single blog.
-                // This is the same endpoint your BlogDetailPage probably uses.
-                const res = await axios.get(`/api/blogs/${blogId}`);
-                if (isMounted && res.data) {
-                    setLikes(res.data.likes);
-                }
-            } catch (err) {
-                console.error("Failed to fetch fresh like count:", err);
-                // If fetching fails, we just stick with the initial prop
-            }
-        };
-
-        fetchCorrectLikeCount();
-
-        // Check localStorage to set the user's personal "liked" state (the blue icon)
+        // Get the list of liked blogs from storage
         const likedBlogsJSON = localStorage.getItem('likedBlogs');
         const likedBlogs = likedBlogsJSON ? JSON.parse(likedBlogsJSON) : [];
-        if (likedBlogs.includes(blogId)) {
-            setLiked(true);
-        }
+        const isLikedInStorage = likedBlogs.includes(blogId);
 
-        return () => {
-            isMounted = false;
-        };
-    }, [blogId]); // This effect only runs once when the component is created
+        setLiked(isLikedInStorage);
+
+        // --- THE FIX ---
+        // This is the key logic to fix the state inconsistency on page refresh.
+        // The problem: `initialLikes` comes from the server and can be stale, while
+        // `isLikedInStorage` is the immediate truth from the user's browser. This
+        // can lead to a visual bug where the thumb icon is blue, but the count is "0".
+        //
+        // The solution: If localStorage confirms the post is liked, we ensure the
+        // displayed count is updated to reflect that, preventing the visual mismatch.
+        if (isLikedInStorage) {
+            // We set the count to be the greater of its current value or the server's
+            // value plus one. This corrects the count on a stale refresh without
+            // incorrectly decrementing it if the user clicks multiple times quickly.
+            setLikes(prevLikes => Math.max(prevLikes, initialLikes + 1));
+        }
+    }, [blogId, initialLikes]);
 
     const handleLike = async () => {
+        // Optimistically update UI
         const newLikedState = !liked;
-        const newLikesCount = newLikedState ? likes + 1 : Math.max(0, likes - 1);
-
-        // Optimistic UI update
         setLiked(newLikedState);
-        setLikes(newLikesCount);
+        setLikes(prevLikes => newLikedState ? prevLikes + 1 : Math.max(0, prevLikes - 1));
         setError(null);
 
         try {
+            // Send like/unlike to the main blog backend to update the like count
             const endpoint = newLikedState ? 'like' : 'unlike';
             await axios.post(`/api/blogs/${blogId}/${endpoint}`);
 
-            // If the parent component needs to know, we can still call this
-            if (onLikeSuccess) {
-                onLikeSuccess(blogId, newLikesCount);
-            }
-
+            // Update localStorage for local state persistence
             const likedBlogsJSON = localStorage.getItem('likedBlogs');
             let likedBlogs = likedBlogsJSON ? JSON.parse(likedBlogsJSON) : [];
+
             if (newLikedState) {
-                if (!likedBlogs.includes(blogId)) likedBlogs.push(blogId);
+                // Add the blog ID if not already present
+                if (!likedBlogs.includes(blogId)) {
+                    likedBlogs.push(blogId);
+                }
             } else {
+                // Remove the blog ID
                 likedBlogs = likedBlogs.filter(id => id !== blogId);
             }
+            
             localStorage.setItem('likedBlogs', JSON.stringify(likedBlogs));
 
+            // Track user behavior for inferred interests (only when liking)
             if (newLikedState) {
                 const subscriberId = getSubscriberId();
                 if (subscriberId) {
-                    await trackUserLike(subscriberId, blogId);
+                    try {
+                        await trackUserLike(subscriberId, blogId);
+                        console.log(`Like behavior for blog ${blogId} tracked for subscriber:`, subscriberId);
+                    } catch (trackingError) {
+                        console.error('Failed to track like for personalization:', trackingError);
+                    }
                 }
             }
+
         } catch (err) {
-            // Revert UI on error
             setError(newLikedState ? 'Failed to like post.' : 'Failed to unlike post.');
-            setLiked(!newLikedState);
-            setLikes(newLikedState ? newLikesCount - 1 : newLikesCount + 1);
-            
+            setLiked(!newLikedState); // Revert UI on error
+            setLikes(prevLikes => newLikedState ? Math.max(0, prevLikes - 1) : prevLikes + 1); // Revert likes count on error
+            console.error(`Failed to ${newLikedState ? 'like' : 'unlike'} the post:`, err);
+
+            // Revert localStorage if the operation failed on the server
             const likedBlogsJSON = localStorage.getItem('likedBlogs');
             let likedBlogs = likedBlogsJSON ? JSON.parse(likedBlogsJSON) : [];
             if (newLikedState) {
-                 likedBlogs = likedBlogs.filter(id => id !== blogId);
+                likedBlogs = likedBlogs.filter(id => id !== blogId);
             } else {
-                 if (!likedBlogs.includes(blogId)) likedBlogs.push(blogId);
+                if (!likedBlogs.includes(blogId)) {
+                    likedBlogs.push(blogId);
+                }
             }
             localStorage.setItem('likedBlogs', JSON.stringify(likedBlogs));
         }

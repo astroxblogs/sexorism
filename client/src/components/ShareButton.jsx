@@ -100,7 +100,8 @@ const CopyIcon = ({ size = 18, className = '' }) => (
     </svg>
 );
 
-const ShareButton = ({ title = 'Check this out!', url, blogId, initialShareCount = 0 }) => {
+// UPDATE: Added blogSlug to props for GTM
+const ShareButton = ({ title = 'Check this out!', url, blogId, blogSlug, initialShareCount = 0 }) => {
     const shareUrl = url || (typeof window !== 'undefined' ? window.location.href : '');
     const [open, setOpen] = useState(false);
     const [copied, setCopied] = useState(false);
@@ -116,6 +117,19 @@ const ShareButton = ({ title = 'Check this out!', url, blogId, initialShareCount
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
+    // --- GTM UPDATE: Centralized tracking function ---
+    const trackShareEvent = (platform) => {
+        if (window.dataLayer) {
+            window.dataLayer.push({
+                event: 'share_blog',
+                share_platform: platform.toLowerCase(), // Standardize platform name
+                blog_id: blogId,
+                blog_slug: blogSlug,
+                blog_title: title,
+            });
+        }
+    };
 
     const incrementShareCount = async () => {
         if (!blogId) return;
@@ -178,6 +192,7 @@ const ShareButton = ({ title = 'Check this out!', url, blogId, initialShareCount
             try {
                 await navigator.share({ title, url: shareUrl });
                 await incrementShareCount();
+                trackShareEvent('native_share'); // --- GTM UPDATE ---
             } catch (_) {}
             return;
         }
@@ -190,6 +205,7 @@ const ShareButton = ({ title = 'Check this out!', url, blogId, initialShareCount
             setCopied(true);
             setTimeout(() => setCopied(false), 1500);
             await incrementShareCount();
+            trackShareEvent('copy_link'); // --- GTM UPDATE ---
         } catch (_) {}
     };
 
@@ -220,6 +236,7 @@ const ShareButton = ({ title = 'Check this out!', url, blogId, initialShareCount
                                     onClick={async () => {
                                         setOpen(false);
                                         await incrementShareCount();
+                                        trackShareEvent(name); // --- GTM UPDATE ---
                                     }}
                                 >
                                     <Icon size={18} />
@@ -256,5 +273,3 @@ const ShareButton = ({ title = 'Check this out!', url, blogId, initialShareCount
 };
 
 export default ShareButton;
-
-

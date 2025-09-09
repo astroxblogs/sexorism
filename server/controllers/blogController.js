@@ -40,7 +40,8 @@ const getBlogs = async (req, res) => {
             .sort({ date: -1 })
             .skip(skip)
             .limit(parsedLimit)
-            .select('title title_en title_hi content content_en content_hi image date category tags slug views comments');
+            // --- FIX: Added 'likes' to the select statement ---
+            .select('title title_en title_hi content content_en content_hi image date category tags slug views comments likes');
 
         const totalBlogs = await Blog.countDocuments(filter);
         const totalPages = Math.ceil(totalBlogs / parsedLimit);
@@ -58,7 +59,8 @@ const getLatestBlogs = async (req, res) => {
         const blogs = await Blog.find()
         .sort({ date: -1 })
         .limit(5)
-        .select('title title_en title_hi content content_en content_hi image date category tags slug views comments');
+        // --- FIX: Added 'likes' to the select statement ---
+        .select('title title_en title_hi content content_en content_hi image date category tags slug views comments likes');
         res.json(blogs);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -95,7 +97,8 @@ const searchBlogs = async (req, res) => {
             .sort({ date: -1 })
             .skip(skip)
             .limit(parsedLimit)
-            .select('title title_en title_hi content content_en content_hi image date category tags slug views comments');
+            // --- FIX: Added 'likes' to the select statement ---
+            .select('title title_en title_hi content content_en content_hi image date category tags slug views comments likes');
             
 
         const totalBlogs = await Blog.countDocuments(searchFilter);

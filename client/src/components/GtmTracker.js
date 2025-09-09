@@ -9,7 +9,7 @@ const GtmTracker = () => {
     if (window.dataLayer) {
        
       window.dataLayer.push({
-        event: 'virtual_page_view',  
+        event: 'page_view',  
         page_path: location.pathname + location.search,
         page_title: document.title,  
       });

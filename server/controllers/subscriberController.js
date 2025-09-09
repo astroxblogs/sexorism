@@ -24,7 +24,10 @@ const updateInferredCategoriesForUser = async (subscriberId, blogId) => {
         relevantTerms = [...relevantTerms, ...blog.tags];
     }
 
-    // 2. Get the subscriber's current list of inferred categories.
+    // --- THIS IS THE FIX ---
+    // The previous code failed if `inferredCategories` was undefined.
+    // By adding `|| []`, we ensure that `currentCategories` is ALWAYS an array,
+    // preventing the server from crashing if the field doesn't exist yet for a subscriber.
     const currentCategories = subscriber.inferredCategories || [];
 
     // 3. Merge the new terms with the existing ones, ensuring there are no duplicates.

@@ -1,4 +1,3 @@
-// client/src/components/EmailSubscriptionPopup.jsx
 import React, { useState, useEffect } from 'react'; // Added useEffect for potential body class toggle
 import { setSubscriberId } from '../utils/localStorage';
 import { subscribeUser } from '../services/api';
@@ -15,18 +14,13 @@ const EmailSubscriptionPopup = ({ showPopup, onClose, onSubscribeSuccess }) => {
     useEffect(() => {
         if (showPopup) {
             document.body.style.overflow = 'hidden'; // Prevent scrolling when popup is open
-            // OPTIONAL: Add a class to the body for a global blur if needed (e.g., in App.js or index.css)
-            // document.body.classList.add('popup-active');
         } else {
             document.body.style.overflow = ''; // Restore scrolling
-            // OPTIONAL: Remove the class
-            // document.body.classList.remove('popup-active');
         }
 
         // Cleanup function
         return () => {
             document.body.style.overflow = ''; // Ensure overflow is reset if component unmounts while popup is active
-            // document.body.classList.remove('popup-active'); // Ensure class is removed
         };
     }, [showPopup]);
 
@@ -47,9 +41,18 @@ const EmailSubscriptionPopup = ({ showPopup, onClose, onSubscribeSuccess }) => {
             const data = await subscribeUser(email);
             console.log('DEBUG (Popup): Backend response data after subscription:', data);
 
+            // This block now handles a successful subscription
             if (data && data.subscriberId) {
                 setSubscriberId(data.subscriberId);
                 console.log('DEBUG (Popup): setSubscriberId called with:', data.subscriberId);
+
+                // --- GTM UPDATE: Push event to dataLayer on SUCCESS ---
+                if (window.dataLayer) {
+                    window.dataLayer.push({
+                        event: 'new_subscriber',
+                        subscription_source: 'popup' // So you know where they signed up
+                    });
+                }
             } else {
                 console.error('DEBUG (Popup): Backend response did NOT contain subscriberId:', data);
             }
