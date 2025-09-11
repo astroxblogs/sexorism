@@ -17,10 +17,11 @@ const isMobile = () => {
 };
 
 const Tooltip = ({ text }) => (
-  <span className="hidden md:inline-block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max whitespace-nowrap bg-gray-900 dark:bg-gray-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg shadow-lg opacity-0 md:group-hover:opacity-100 scale-95 group-hover:scale-100 transition-all duration-200 delay-100 pointer-events-none z-10">
+  <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max whitespace-nowrap bg-gray-900 dark:bg-gray-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100 transition-all duration-200 delay-100 pointer-events-none z-10">
     {text}
   </span>
 );
+
 const ShareButton = ({
   title = "Check this out!",
   url,
@@ -71,7 +72,7 @@ const ShareButton = ({
       { name: "Facebook", href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`, Icon: FacebookIcon },
       { name: "Twitter", href: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedText}`, Icon: TwitterIcon },
       { name: "Telegram", href: `https://t.me/share/url?url=${encodedUrl}&text=${encodedText}`, Icon: TelegramIcon },
-      { name: "Instagram", href: `https://www.instagram.com`, Icon: InstagramIcon },
+      { name: "Instagram", href: '[https://www.instagram.com](https://www.instagram.com)', Icon: InstagramIcon },
       { name: "LinkedIn", href: `https://www.linkedin.com/shareArticle?mini=true&url=${encodedUrl}&title=${encodedText}`, Icon: LinkedInIcon },
       { name: "Email", href: `mailto:?subject=${encodedText}&body=${encodedUrl}`, Icon: MailIcon },
     ],
@@ -126,8 +127,8 @@ const ShareButton = ({
           {variant === "icon" ? (
             <>
               <div className="flex items-center justify-center w-6 h-6">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-                  <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a3.3 3.3 0 0 0 0-1.39l7.05-4.11A2.99 2.99 0 1 0 14 5a2.99 2.99 0 0 0 .05.55l-7.05 4.12a2.99 2.99 0 1 0 0 4.66l7.05 4.11A2.99 2.99 0 1 0 18 16.08z" />
+                <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                    <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a3.3 3.3 0 0 0 0-1.39l7.05-4.11A2.99 2.99 0 1 0 14 5a2.99 2.99 0 0 0 .05.55l-7.05 4.12a2.99 2.99 0 1 0 0 4.66l7.05 4.11A2.99 2.99 0 1 0 18 16.08z" />
                 </svg>
               </div>
               {showCountOnIcon && (
@@ -138,7 +139,7 @@ const ShareButton = ({
             </>
           ) : (
             <>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 opacity-90">
+              <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 opacity-90">
                 <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a3.3 3.3 0 0 0 0-1.39l7.05-4.11A2.99 2.99 0 1 0 14 5a2.99 2.99 0 0 0 .05.55l-7.05 4.12a2.99 2.99 0 1 0 0 4.66l7.05 4.11A2.99 2.99 0 1 0 18 16.08z" />
               </svg>
               <span className="hidden sm:inline text-sm font-medium">Share</span>
@@ -191,7 +192,7 @@ const ShareButton = ({
             trackShareEvent(name);
           }}
         >
-          <Icon size={20} />
+          <Icon size={18} />
           <Tooltip text={name} />
         </a>
       ))}
