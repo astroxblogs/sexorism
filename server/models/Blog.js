@@ -35,7 +35,13 @@ const BlogSchema = new mongoose.Schema({
     views: { type: Number, default: 0 },
     shareCount: { type: Number, default: 0 },
     slug: { type: String, unique: true, sparse: true },
-    comments: [CommentSchema]
+    comments: [CommentSchema],
+    status: {
+        type: String,
+        enum: ['pending', 'published', 'rejected'],
+        default: 'published'
+    },
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin', required: false }
 }, { timestamps: true });
 
 function generateSlug(title) {

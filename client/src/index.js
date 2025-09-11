@@ -5,15 +5,18 @@ import './index.css';
 import App from './App';
 import './i18n';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
-import { ThemeProvider } from "./components/ThemeContext"; // <-- Add this import
+import { ThemeProvider } from "./components/ThemeContext"; 
+import { ShareProvider } from "./context/ShareContext"; // <-- Import ShareProvider
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <ThemeProvider> {/* <-- Wrap your app with ThemeProvider */}
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+    <ThemeProvider>
+      <ShareProvider> {/* <-- Wrap your app with ShareProvider */}
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </ShareProvider>
     </ThemeProvider>
   </React.StrictMode>
 );

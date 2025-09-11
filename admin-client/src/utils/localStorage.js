@@ -3,7 +3,16 @@
 // This utility file is specifically for handling the admin's authentication token.
 // It replaces the subscriber-related logic, which is only needed for the main blog.
 
-const AUTH_TOKEN_KEY = 'astrox_admin_auth_token';
+const AUTH_TOKEN_KEY_BASE = 'astrox_admin_auth_token';
+const ROLE_SESSION_KEY = 'astrox_admin_role_session';
+
+const getCurrentRole = () => {
+    try {
+        const roleFromSession = sessionStorage.getItem(ROLE_SESSION_KEY);
+        if (roleFromSession) return roleFromSession;
+    } catch (_) {}
+    return 'admin';
+};
 
 /**
  * Stores the admin's authentication token in localStorage.
@@ -11,9 +20,11 @@ const AUTH_TOKEN_KEY = 'astrox_admin_auth_token';
  */
 export const setAuthToken = (token) => {
     try {
+        const role = getCurrentRole();
+        const key = `${AUTH_TOKEN_KEY_BASE}_${role}`;
         if (token) {
-            localStorage.setItem(AUTH_TOKEN_KEY, token);
-            console.log('Admin auth token successfully set in localStorage.');
+            localStorage.setItem(key, token);
+            console.log(`Admin auth token set for role=${role}.`);
         } else {
             console.warn('Attempted to set a null or undefined auth token.');
         }
@@ -28,7 +39,9 @@ export const setAuthToken = (token) => {
  */
 export const getAuthToken = () => {
     try {
-        const token = localStorage.getItem(AUTH_TOKEN_KEY);
+        const role = getCurrentRole();
+        const key = `${AUTH_TOKEN_KEY_BASE}_${role}`;
+        const token = localStorage.getItem(key);
         return token;
     } catch (error) {
         console.error('Error retrieving admin auth token from localStorage:', error);
@@ -41,8 +54,10 @@ export const getAuthToken = () => {
  */
 export const removeAuthToken = () => {
     try {
-        localStorage.removeItem(AUTH_TOKEN_KEY);
-        console.log('Admin auth token successfully removed from localStorage.');
+        const role = getCurrentRole();
+        const key = `${AUTH_TOKEN_KEY_BASE}_${role}`;
+        localStorage.removeItem(key);
+        console.log(`Admin auth token for role=${role} removed.`);
     } catch (error) {
         console.error('Error removing admin auth token from localStorage:', error);
     }
@@ -55,3 +70,7 @@ export const removeAuthToken = () => {
 export const hasAuthToken = () => {
     return !!getAuthToken();
 };
+
+// Export helpers in case other modules need them
+export const getCurrentRoleForTab = getCurrentRole;
+export const ROLE_KEYS = { ROLE_SESSION_KEY };

@@ -10,6 +10,7 @@ import TopNavigation from './components/TopNavigation';
 import Home from './pages/Home';
 import ScrollToTop from './components/ScrollToTop';
 import GtmTracker from './components/GtmTracker';
+import LanguageNudge from './components/LanguageNudge.jsx';
 
 const BlogDetailPage = React.lazy(() => import('./pages/BlogDetailPage'));
 const CategoryPage = React.lazy(() => import('./pages/CategoryPage'));
@@ -142,6 +143,7 @@ function App() {
                         <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
                 </Suspense>
+                <LanguageNudge />
             </main>
             <Footer1 />
         </div>

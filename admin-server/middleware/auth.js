@@ -32,16 +32,19 @@ exports.adminAuth = (req, res, next) => {
                 return res.status(401).json({ message: 'Unauthorized: User no longer exists.' });
             }
 
-            if (admin.role !== 'admin') {
-                console.log('Auth middleware - User from token is not an admin:', decoded.id);
-                return res.status(403).json({ message: 'Forbidden: Admin access required.' });
-            }
-
-            req.user = decoded;
+            req.user = { id: admin._id.toString(), role: admin.role };
             next();
         } catch (dbErr) {
             console.error('Auth middleware - Database error during user check:', dbErr.message);
             return res.status(500).json({ message: 'Server error during authentication.' });
         }
     });
+};
+
+// Role guard helper: require specific role(s)
+exports.requireRole = (...roles) => (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+        return res.status(403).json({ message: 'Forbidden: Insufficient permissions.' });
+    }
+    next();
 };

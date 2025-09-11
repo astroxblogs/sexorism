@@ -1,6 +1,7 @@
 import React, { useState, useEffect, Suspense, useRef, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
+import { useShare } from '../context/ShareContext';
 import { useTranslation } from 'react-i18next';
 import DOMPurify from 'dompurify';
 import { marked } from 'marked';
@@ -46,14 +47,19 @@ const BlogDetail = ({ blog: initialBlog }) => {
 
     const [isSubscribed, setIsSubscribed] = useState(hasSubscriberId());
     const [showGatedPopup, setShowGatedPopup] = useState(false);
-
+    const { getShareCount, setInitialShareCount } = useShare();
     const startTimeRef = useRef(null);
     const timeSpentRef = useRef(0);
+    // const shareCount = getShareCount(blog._id);
     const lastActivityTimeRef = useRef(Date.now());
 
-    // --- FIX: The handleTrackLike function has been removed. ---
-    // The LikeButton component now handles its own tracking internally,
-    // which prevents the duplicate API call from happening.
+
+    useEffect(() => {
+        if (blog?._id && blog.shareCount !== undefined) {
+            setInitialShareCount(blog._id, blog.shareCount);
+        }
+    }, [blog, setInitialShareCount]);
+
 
     const handleTrackComment = useCallback(() => {
         const subscriberId = getSubscriberId();
@@ -248,15 +254,8 @@ const BlogDetail = ({ blog: initialBlog }) => {
                 />
             </div>
 
-            <div className="flex items-start justify-between gap-3 mb-3 md:mb-4">
+            <div className="mb-3 md:mb-4">
                 <h1 className="text-2xl sm:text-3xl md:text-5xl font-semibold text-gray-900 dark:text-white leading-tight" style={{ fontFamily: 'Arial, sans-serif' }}>{displayTitle}</h1>
-                <ShareButton
-                    blogId={blog._id}
-                    initialShareCount={blog.shareCount}
-                    blogSlug={blog.slug}
-                    title={blog.title}
-                    url={`https://www.innvibs.com/blog/${blog.slug}`}
-                />
             </div>
             <div className="flex flex-wrap gap-x-3 gap-y-1 items-center text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-6 md:mb-8">
                 <span>Published on: {blog.date ? new Date(blog.date).toLocaleDateString() : 'Invalid Date'}</span>
@@ -272,6 +271,13 @@ const BlogDetail = ({ blog: initialBlog }) => {
                     <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                     {blog.views || 0}
                 </span>
+                <ShareButton
+                    blogId={blog._id}
+                    blogSlug={blog.slug}
+                    title={blog.title}
+                    url={typeof window !== "undefined" ? `${window.location.origin}/blog/${blog.slug}` : ""}
+                    initialShareCount={getShareCount(blog._id)}   // ✅ always live from context
+                />
             </div>
 
             <div className="relative">

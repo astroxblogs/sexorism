@@ -55,6 +55,9 @@ api.interceptors.response.use(
         if (response.config.url.includes('/api/admin/login') && response.data.accessToken) {
             setAccessToken(response.data.accessToken);
             console.log('Response Interceptor: Access token received from login and set.');
+            if (response.data.role) {
+                try { sessionStorage.setItem('astrox_admin_role_session', response.data.role); } catch (_) {}
+            }
         }
         return response;
     },
@@ -94,11 +97,23 @@ api.interceptors.response.use(
             console.log('Response Interceptor: Caught 401 error. Attempting token refresh...');
 
             try {
-                const refreshResponse = await api.post('/api/admin/refresh-token');
+                // Try cookie-based refresh first, else fall back to header/body (helps when cookies are blocked)
+                let refreshResponse;
+                try {
+                    refreshResponse = await api.post('/api/admin/refresh-token');
+                } catch (cookieErr) {
+                    const lastLogin = window.sessionStorage.getItem('astrox_last_refresh_token');
+                    if (!lastLogin) throw cookieErr;
+                    refreshResponse = await api.post('/api/admin/refresh-token', { refreshToken: lastLogin }, { headers: { 'x-refresh-token': lastLogin } });
+                }
                 const newAccessToken = refreshResponse.data.accessToken;
 
                 setAccessToken(newAccessToken);
                 console.log('Response Interceptor: Token refreshed successfully.');
+
+                if (refreshResponse.data.role) {
+                    try { sessionStorage.setItem('astrox_admin_role_session', refreshResponse.data.role); } catch (_) {}
+                }
 
                 processQueue(null, newAccessToken);
                 isRefreshing = false;
@@ -117,10 +132,8 @@ api.interceptors.response.use(
         }
 
         if (error.response?.status === 403) {
-            console.error('Response Interceptor: Caught 403 Forbidden. Redirecting to login.', error.response?.data);
-            setAccessToken(null);
-            processQueue(error);
-            window.location.href = '/login';
+            console.error('Response Interceptor: 403 Forbidden.', error.response?.data);
+            // Do NOT clear token on 403; let caller decide (prevents logout cascades for role-restricted endpoints)
             return Promise.reject(error);
         }
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import AdminBlogForm from '../components/AdminBlogForm';
 import AdminBlogList from './AdminBlogList';
+import PendingApprovals from '../components/PendingApprovals';
 import api, { setAccessToken } from '../services/api';
 import { useTranslation } from 'react-i18next';
 import CategoryManager from './CategoryManager'; // Ensure this is imported
@@ -9,15 +10,21 @@ import CategoryManager from './CategoryManager'; // Ensure this is imported
 const AdminDashboard = () => {
     const { t } = useTranslation();
     const [editingBlog, setEditingBlog] = useState(null);
-    const [activeView, setActiveView] = useState('blogForm'); // 'blogForm', 'blogList', or 'categoryManager'
+    const [activeView, setActiveView] = useState('blogForm'); // 'blogForm', 'blogList', 'categoryManager', 'pendingApprovals'
+    const [role, setRole] = useState(() => {
+        try { return sessionStorage.getItem('astrox_admin_role_session') || 'admin'; } catch (_) { return 'admin'; }
+    });
+    const [pendingCount, setPendingCount] = useState(0);
     const navigate = useNavigate();
     const location = useLocation();
 
     useEffect(() => {
         if (location.state?.blogToEdit) {
             setEditingBlog(location.state.blogToEdit);
-            setActiveView('blogForm'); // Switch to the blog form view
+            setActiveView('blogForm');
         }
+        // keep role in sync with session on mount
+        try { const r = sessionStorage.getItem('astrox_admin_role_session'); if (r) setRole(r); } catch (_) {}
     }, [location.state]);
 
     const handleSave = (savedBlog) => {
@@ -38,6 +45,21 @@ const AdminDashboard = () => {
             navigate('/login');
         }
     };
+
+    const fetchPendingCount = useCallback(async () => {
+        try {
+            const res = await api.get('/api/admin/blogs/pending?limit=1');
+            setPendingCount(res.data?.totalBlogs || 0);
+        } catch (e) {
+            setPendingCount(0);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (role === 'admin') {
+            fetchPendingCount();
+        }
+    }, [role, fetchPendingCount]);
 
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-10">
@@ -60,12 +82,36 @@ const AdminDashboard = () => {
                         >
                             {t('Added Blogs List')}
                         </button>
-                        <button
-                            onClick={() => setActiveView('categoryManager')}
-                            className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
-                        >
-                            {t('Manage Categories')}
-                        </button>
+                        {role === 'admin' && (
+                            <button
+                                onClick={() => setActiveView('pendingApprovals')}
+                                className="relative bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
+                            >
+                                {t('Pending Approvals')}
+                                {pendingCount > 0 && (
+                                    <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">{pendingCount}</span>
+                                )}
+                            </button>
+                        )}
+                        {role === 'admin' && (
+                            <button
+                                onClick={() => setActiveView('categoryManager')}
+                                className="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
+                            >
+                                {t('Manage Categories')}
+                            </button>
+                        )}
+                        {/* {role === 'admin' && (
+                            <button
+                                onClick={() => setActiveView('pendingApprovals')}
+                                className="relative bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
+                            >
+                                {t('Pending Approvals')}
+                                {pendingCount > 0 && (
+                                    <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">{pendingCount}</span>
+                                )}
+                            </button>
+                        )} */}
                         <button
                             onClick={handleLogout}
                             className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
@@ -115,6 +161,10 @@ const AdminDashboard = () => {
                         </h2>
                         <CategoryManager />
                     </div>
+                )}
+
+                {activeView === 'pendingApprovals' && role === 'admin' && (
+                    <PendingApprovals onApprovedOrRejected={fetchPendingCount} />
                 )}
             </div>
         </div>

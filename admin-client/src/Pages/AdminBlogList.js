@@ -1,62 +1,92 @@
-// client/src/pages/AdminBlogList.js
-import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom'; // You can remove this import if it's not used anywhere else in the file.
+import React, { useEffect, useState, useMemo } from 'react';
 import AdminBlogTable from '../components/AdminBlogTable';
 import api from '../services/api';
 import { useTranslation } from 'react-i18next';
 
-const AdminBlogList = ({ onEdit }) => { // onEdit is now a prop
+const ITEMS_PER_PAGE = 10;
+
+const AdminBlogList = ({ onEdit }) => {
     const { t } = useTranslation();
-    const [blogs, setBlogs] = useState([]);
+    // State for the master list of all blogs, fetched only once.
+    const [allBlogs, setAllBlogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
-    const timerRef = useRef(null);
+    const [currentPage, setCurrentPage] = useState(1);
 
-    const fetchBlogs = async (query = '') => {
-        setLoading(true);
-        try {
-            let res;
-            if (query) {
-                res = await api.get(`/api/admin/blogs/search?q=${query}`);
-            } else {
-                res = await api.get('/api/admin/blogs?limit=100');
-            }
-
-            setBlogs(res.data.blogs || []);
-            setError('');
-        } catch (err) {
-            console.error('Error fetching blogs for admin dashboard:', err.response?.data || err.message);
-            setError(t('Error loading blogs'));
-        } finally {
-            setLoading(false);
-        }
-    };
-
+   
     useEffect(() => {
-        if (timerRef.current) {
-            clearTimeout(timerRef.current);
-        }
-        timerRef.current = setTimeout(() => {
-            fetchBlogs(searchQuery);
-        }, 500);
+        const controller = new AbortController();
+        setLoading(true);
 
-        return () => {
-            if (timerRef.current) {
-                clearTimeout(timerRef.current);
-            }
-        };
+        api.get('/api/admin/blogs?limit=500', { signal: controller.signal })
+            .then(res => {
+                setAllBlogs(res.data.blogs || []);
+                setError('');
+            })
+            .catch(err => {
+                if (err.name !== 'CanceledError') {
+                    console.error('Initial fetch failed:', err);
+                    setError('Failed to load blogs. Please refresh the page.');
+                }
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+
+        return () => controller.abort();
+    }, []); // Empty array ensures this runs only once.
+
+    // This performs a fast, client-side search whenever the query changes.
+    // It filters the master 'allBlogs' list. No network calls, no flickering.
+    const filteredBlogs = useMemo(() => {
+        if (!searchQuery) {
+            return allBlogs;
+        }
+        return allBlogs.filter(blog =>
+            blog.title_en.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+    }, [searchQuery, allBlogs]);
+
+    // When the search query changes, reset to the first page.
+    useEffect(() => {
+        setCurrentPage(1);
     }, [searchQuery]);
+
 
     const handleDelete = async (id) => {
         if (window.confirm(t('admin_panel.confirm_delete'))) {
+            const originalBlogs = [...allBlogs];
+            // Optimistic UI update: remove the blog from the master list instantly.
+            setAllBlogs(currentBlogs => currentBlogs.filter(b => b._id !== id));
+
             try {
                 await api.delete(`/api/admin/blogs/${id}`);
-                setBlogs(blogs.filter((b) => b._id !== id));
             } catch (err) {
                 console.error('Error deleting blog:', err.response?.data || err.message);
                 alert(`${t('admin_panel.delete_error_message')}: ${err.response?.data?.error || err.message}`);
+                // If the delete fails, restore the original list.
+                setAllBlogs(originalBlogs);
             }
+        }
+    };
+
+    // --- Pagination Logic ---
+    // The pagination now works on the 'filteredBlogs' list.
+    const totalPages = Math.ceil(filteredBlogs.length / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const currentBlogs = filteredBlogs.slice(startIndex, endIndex);
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1);
         }
     };
 
@@ -83,11 +113,34 @@ const AdminBlogList = ({ onEdit }) => { // onEdit is now a prop
                 </div>
 
                 <div>
-                    <AdminBlogTable blogs={blogs} onEdit={onEdit} onDelete={handleDelete} />
+                    <AdminBlogTable blogs={currentBlogs} onEdit={onEdit} onDelete={handleDelete} startIndex={startIndex} />
                 </div>
+
+                {totalPages > 1 && (
+                    <div className="flex justify-between items-center mt-6">
+                        <button
+                            onClick={handlePrevPage}
+                            disabled={currentPage === 1}
+                            className="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg shadow hover:bg-gray-300 dark:hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                            &lt; {t('Previous')}
+                        </button>
+                        <span className="text-gray-700 dark:text-gray-300 font-medium">
+                            {t('Page')} {currentPage} {t('of')} {totalPages}
+                        </span>
+                        <button
+                            onClick={handleNextPage}
+                            disabled={currentPage === totalPages}
+                            className="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg shadow hover:bg-gray-300 dark:hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                            {t('Next')} &gt;
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );
 };
 
 export default AdminBlogList;
+

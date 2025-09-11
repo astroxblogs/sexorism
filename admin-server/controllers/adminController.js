@@ -19,7 +19,7 @@ const generateTokens = (adminId, adminRole) => {
     );
 
     const refreshToken = jwt.sign(
-        { id: adminId },
+        { id: adminId, role: adminRole },
         process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
         { expiresIn: '2d' }
     );
@@ -28,7 +28,7 @@ const generateTokens = (adminId, adminRole) => {
 };
 
 exports.login = async (req, res) => {
-    const { username, password } = req.body;
+    const { username, password, role } = req.body;
     console.log('Login attempt for username:', username);
 
     try {
@@ -42,6 +42,10 @@ exports.login = async (req, res) => {
             return res.status(500).json({ message: 'Server configuration error: JWT secret missing.' });
         }
 
+        if (role && role !== admin.role) {
+            return res.status(403).json({ message: 'Forbidden: Role mismatch for this account.' });
+        }
+
         const { accessToken, refreshToken } = generateTokens(admin._id, admin.role);
 
         const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
@@ -51,7 +55,8 @@ exports.login = async (req, res) => {
         res.cookie('refreshToken', refreshToken, cookieOptions);
 
         console.log('Login successful for username:', username);
-        res.json({ accessToken });
+        // Return refreshToken in body for cases where cookie is blocked in dev
+        res.json({ accessToken, role: admin.role, refreshToken });
     } catch (err) {
         console.error('Login error:', err.message);
         res.status(500).json({ message: err.message });
@@ -60,11 +65,12 @@ exports.login = async (req, res) => {
 
 exports.refreshAdminToken = async (req, res) => {
     const cookies = req.cookies;
-    if (!cookies?.refreshToken) {
+    const headerToken = req.headers['x-refresh-token'];
+    const bodyToken = req.body?.refreshToken;
+    const refreshToken = (cookies && cookies.refreshToken) || headerToken || bodyToken;
+    if (!refreshToken) {
         return res.status(401).json({ message: 'Unauthorized: No refresh token' });
     }
-
-    const refreshToken = cookies.refreshToken;
 
     try {
         const decoded = jwt.verify(
@@ -90,7 +96,7 @@ exports.refreshAdminToken = async (req, res) => {
 
         res.cookie('refreshToken', newRefreshToken, cookieOptions);
 
-        res.json({ accessToken });
+        res.json({ accessToken, role: admin.role });
     } catch (err) {
         console.error('Refresh token error:', err.message);
         res.status(403).json({ message: 'Forbidden: Refresh token invalid or expired' });

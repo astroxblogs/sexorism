@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 const LanguageSelector = () => {
@@ -11,8 +11,23 @@ const LanguageSelector = () => {
         setOpen(false);
     };
 
+    // Open dropdown smoothly on hover; close when mouse leaves the wrapper
+    const hoverTimer = useRef(null);
+    const handleMouseEnter = () => {
+        clearTimeout(hoverTimer.current);
+        setOpen(true);
+    };
+    const handleMouseLeave = () => {
+        clearTimeout(hoverTimer.current);
+        hoverTimer.current = setTimeout(() => setOpen(false), 150);
+    };
+
     return (
-        <div className="relative language-selector">
+        <div
+            className="relative language-selector"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+        >
             <button
                 type="button"
                 onClick={() => setOpen(!open)}

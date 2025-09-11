@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-const AdminBlogTable = ({ blogs, onEdit, onDelete }) => {
+// UPDATE: Added startIndex prop to calculate serial numbers. Defaulted to 0 for safety.
+const AdminBlogTable = ({ blogs, onEdit, onDelete, startIndex = 0 }) => {
     const { t } = useTranslation();
     const [deleteId, setDeleteId] = useState(null);
 
@@ -20,6 +21,8 @@ const AdminBlogTable = ({ blogs, onEdit, onDelete }) => {
                 <table className="min-w-full bg-white dark:bg-gray-900">
                     <thead>
                         <tr className="border-b border-gray-200 dark:border-gray-700">
+                            {/* UPDATE: Added S.No. header */}
+                            <th className="p-4 text-left font-semibold text-gray-700 dark:text-gray-200 w-16">{t('S.No.')}</th>
                             <th className="p-4 text-left font-semibold text-gray-700 dark:text-gray-200">{t('Title')}</th>
                             <th className="p-4 text-left font-semibold text-gray-700 dark:text-gray-200">{t('Category')}</th>
                             <th className="p-4 text-left font-semibold text-gray-700 dark:text-gray-200">{t('Date')}</th>
@@ -27,8 +30,10 @@ const AdminBlogTable = ({ blogs, onEdit, onDelete }) => {
                         </tr>
                     </thead>
                     <tbody>
-                        {validBlogs.map((blog) => (
+                        {validBlogs.map((blog, index) => (
                             <tr key={blog._id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                {/* UPDATE: Added S.No. cell */}
+                                <td className="p-4 font-medium text-gray-900 dark:text-gray-100">{startIndex + index + 1}</td>
                                 <td className="p-4 font-medium text-gray-900 dark:text-gray-100">{blog.title_en || blog.title}</td>
                                 <td className="p-4 text-gray-600 dark:text-gray-300">{blog.category}</td>
                                 <td className="p-4 text-gray-500 dark:text-gray-400">{new Date(blog.date).toLocaleDateString()}</td>
@@ -44,9 +49,14 @@ const AdminBlogTable = ({ blogs, onEdit, onDelete }) => {
 
             {/* The card view for mobile screens */}
             <div className="md:hidden mt-4 space-y-4">
-                {validBlogs.map((blog) => (
-                    <div key={blog._id} className="bg-white dark:bg-gray-900 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-                        <h3 className="text-lg font-bold mb-1 text-gray-900 dark:text-gray-100">{blog.title_en || blog.title}</h3>
+                {validBlogs.map((blog, index) => (
+                    // UPDATE: Added relative positioning to the card for the S.No. badge
+                    <div key={blog._id} className="bg-white dark:bg-gray-900 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700 relative">
+                        {/* UPDATE: Added S.No. badge to the top-right corner */}
+                        <span className="absolute top-2 right-2 text-xs font-bold text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 rounded-full w-6 h-6 flex items-center justify-center">
+                            {startIndex + index + 1}
+                        </span>
+                        <h3 className="text-lg font-bold mb-1 text-gray-900 dark:text-gray-100 pr-8">{blog.title_en || blog.title}</h3>
                         <p className="text-sm text-gray-600 dark:text-gray-300">{t('Category')}: <span className="font-semibold">{blog.category}</span></p>
                         <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t('Date')}: <span className="font-semibold">{new Date(blog.date).toLocaleDateString()}</span></p>
                         <div className="flex gap-4">
@@ -57,7 +67,7 @@ const AdminBlogTable = ({ blogs, onEdit, onDelete }) => {
                 ))}
             </div>
 
-            {/* Delete Confirmation Modal */}
+            {/* Delete Confirmation Modal (No changes needed here) */}
             {deleteId && (
                 <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
                     <div className="bg-white dark:bg-gray-900 rounded-lg p-8 shadow-lg max-w-sm w-full">
@@ -75,3 +85,4 @@ const AdminBlogTable = ({ blogs, onEdit, onDelete }) => {
 };
 
 export default AdminBlogTable;
+

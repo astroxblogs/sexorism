@@ -39,6 +39,13 @@ const BlogSchema = new mongoose.Schema({
     shareCount: { type: Number, default: 0 },
     slug: { type: String, unique: true, sparse: true },
     comments: [CommentSchema]
+    ,
+    status: {
+        type: String,
+        enum: ['pending', 'published', 'rejected'],
+        default: 'published'
+    },
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin', required: false }
 }, { timestamps: true }); // Adding timestamps for createdAt and updatedAt
 
 module.exports = mongoose.model('Blog', BlogSchema);

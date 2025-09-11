@@ -175,6 +175,15 @@ exports.createBlog = async (req, res) => {
         
         const slug = await generateUniqueSlug(title);
         const blogData = { ...req.body, slug };
+
+        // Role-based default status and createdBy
+        if (req.user?.role === 'operator') {
+            blogData.status = 'pending';
+            blogData.createdBy = req.user.id;
+        } else if (req.user?.role === 'admin') {
+            blogData.status = req.body.status || 'published';
+            blogData.createdBy = req.user.id;
+        }
         
         const blog = new Blog(blogData);
         await blog.save();
@@ -192,7 +201,22 @@ exports.updateBlog = async (req, res) => {
             const slug = await generateUniqueSlug(title, req.params.id);
             req.body.slug = slug;
         }
-        
+        // Ownership and permission checks
+        const existing = await Blog.findById(req.params.id);
+        if (!existing) return res.status(404).json({ error: 'Blog not found' });
+
+        if (req.user?.role === 'operator') {
+            if (existing.createdBy?.toString() !== req.user.id) {
+                return res.status(403).json({ error: 'Forbidden: You can only edit your own blogs.' });
+            }
+            // Operators cannot publish directly
+            if (req.body.status && req.body.status !== 'pending') {
+                return res.status(403).json({ error: 'Forbidden: Operators cannot change status to non-pending.' });
+            }
+            // Force status to pending on update
+            req.body.status = 'pending';
+        }
+
         const blog = await Blog.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!blog) return res.status(404).json({ error: 'Blog not found' });
         res.json(blog);
@@ -204,9 +228,61 @@ exports.updateBlog = async (req, res) => {
 // Delete a blog
 exports.deleteBlog = async (req, res) => {
     try {
+        // Operators can delete only their own blogs
+        if (req.user?.role === 'operator') {
+            const existing = await Blog.findById(req.params.id);
+            if (!existing) return res.status(404).json({ error: 'Blog not found' });
+            if (existing.createdBy?.toString() !== req.user.id) {
+                return res.status(403).json({ error: 'Forbidden: You can only delete your own blogs.' });
+            }
+        }
+
         const blog = await Blog.findByIdAndDelete(req.params.id);
         if (!blog) return res.status(404).json({ error: 'Blog not found' });
         res.json({ message: 'Blog deleted' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+// Admin-only: list pending blogs
+exports.getPendingBlogs = async (req, res) => {
+    try {
+        const { page = 1, limit = 20 } = req.query;
+        const parsedLimit = parseInt(limit, 10);
+        const parsedPage = parseInt(page, 10);
+        const skip = (parsedPage - 1) * parsedLimit;
+        const filter = { status: 'pending' };
+        const blogs = await Blog.find(filter).sort({ createdAt: -1 }).skip(skip).limit(parsedLimit);
+        const totalBlogs = await Blog.countDocuments(filter);
+        const totalPages = Math.ceil(totalBlogs / parsedLimit);
+        res.json({ blogs, currentPage: parsedPage, totalPages, totalBlogs });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+// Admin-only: approve blog
+exports.approveBlog = async (req, res) => {
+    try {
+        const blog = await Blog.findById(req.params.id);
+        if (!blog) return res.status(404).json({ error: 'Blog not found' });
+        blog.status = 'published';
+        await blog.save();
+        res.json({ message: 'Blog approved', blog });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+// Admin-only: reject blog
+exports.rejectBlog = async (req, res) => {
+    try {
+        const blog = await Blog.findById(req.params.id);
+        if (!blog) return res.status(404).json({ error: 'Blog not found' });
+        blog.status = 'rejected';
+        await blog.save();
+        res.json({ message: 'Blog rejected', blog });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
