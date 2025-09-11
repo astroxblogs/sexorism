@@ -4,35 +4,58 @@ import 'react-quill/dist/quill.snow.css';
 import ImageResize from 'quill-image-resize-module-react';
 import api from '../services/api';
 
-// Register the module only once
+// Register the module only once to prevent errors
 if (typeof window !== 'undefined' && Quill && !Quill.imports['modules/imageResize']) {
     Quill.register('modules/imageResize', ImageResize);
 }
 
+// --- CSS FIX for Resizing Overflow ---
+// This CSS ensures that the image resize handles and overlay stay contained
+// within the editor's boundaries.
+const quillEditorStyles = `
+  .admin-quill-editor .ql-container {
+    overflow: hidden; /* This is the key fix to contain the resize module */
+    position: relative; 
+  }
+  .admin-quill-editor .ql-editor img {
+    max-width: 100%; /* Ensures images are always responsive inside the editor */
+    height: auto;
+    display: block;
+  }
+  /* Optional: Nicer styling for the resize handles */
+  .image-resize .handle {
+    background-color: #3b82f6; /* Tailwind blue-500 */
+    border: 1px solid #fff;
+    border-radius: 9999px;
+    opacity: 0.8;
+  }
+  .image-resize .overlay {
+    border-color: #3b82f6;
+  }
+`;
+
 export const QuillEditor = forwardRef(({ value, onChange, onLinkClick }, ref) => {
 
-    const quillImageUploadHandler = useCallback(() => {
+    const quillImageUploadHandler = useCallback(async () => {
         const input = document.createElement('input');
         input.setAttribute('type', 'file');
         input.setAttribute('accept', 'image/*');
         input.click();
 
         input.onchange = async () => {
+            if (!input.files || !input.files[0]) return;
             const file = input.files[0];
-            if (!file) return;
-
+            
             const editor = ref.current?.getEditor();
             if (!editor) {
                 console.error('Quill editor instance not found.');
                 return;
             }
 
-            // --- THIS IS THE FIX ---
-            // We get the precise cursor position BEFORE we do anything else.
             const range = editor.getSelection(true);
             const cursorIndex = range ? range.index : editor.getLength();
             
-            // Insert a visual placeholder so the user knows something is happening.
+            // Insert a placeholder to provide user feedback
             editor.insertText(cursorIndex, ' [Uploading image...] ', 'user');
             
             const formData = new FormData();
@@ -43,18 +66,16 @@ export const QuillEditor = forwardRef(({ value, onChange, onLinkClick }, ref) =>
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
                 const imageUrl = res.data.imageUrl;
-                
-                // CRITICAL FIX: Instead of letting React re-render, we directly manipulate
-                // the editor's content. This is the standard, safe way to work with Quill.
-                // We remove the placeholder text and insert the image at the exact same spot.
-                editor.deleteText(cursorIndex, 22, 'user'); // 22 is the length of " [Uploading image...] "
+
+                // Remove placeholder and insert the image
+                editor.deleteText(cursorIndex, 22, 'user'); // Length of " [Uploading image...] "
                 editor.insertEmbed(cursorIndex, 'image', imageUrl, 'user');
                 
-                // Move the cursor to be after the newly inserted image.
+                // Set the cursor after the new image
                 editor.setSelection(cursorIndex + 1, 0, 'user');
 
             } catch (error) {
-                console.error('Error uploading image to backend for Quill:', error);
+                console.error('Error uploading image to backend:', error);
                 alert('Error uploading image: ' + (error.response?.data?.error || error.message));
                 // Clean up the placeholder text if the upload fails.
                 editor.deleteText(cursorIndex, 22, 'user');
@@ -89,19 +110,24 @@ export const QuillEditor = forwardRef(({ value, onChange, onLinkClick }, ref) =>
         'header', 'font', 'size',
         'bold', 'italic', 'underline', 'strike',
         'align', 'list', 'bullet',
-        'link', 'image', 'width' 
+        'link', 'image',
+        // Important: Add these to allow resizing attributes to be saved
+        'width', 'height', 'style' 
     ]), []);
 
     return (
-        <ReactQuill
-            ref={ref}
-            theme="snow"
-            value={value}
-            onChange={onChange}
-            modules={modules}
-            formats={formats}
-            className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white admin-quill-editor"
-        />
+        <>
+            {/* Inject the CSS fixes into the document head */}
+            <style>{quillEditorStyles}</style>
+            <ReactQuill
+                ref={ref}
+                theme="snow"
+                value={value}
+                onChange={onChange}
+                modules={modules}
+                formats={formats}
+                className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white admin-quill-editor"
+            />
+        </>
     );
 });
-

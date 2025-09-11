@@ -43,7 +43,6 @@ const BlogCard = ({ blog, onLikeUpdate }) => {
 
   return (
     <div className="flex flex-col sm:flex-row items-stretch bg-white dark:bg-gray-900 rounded-xl shadow-sm hover:shadow transition overflow-visible w-full">
-
       {blog.image && (
         <Link
           to={`/blog/${blog.slug || blog._id}`}
@@ -57,53 +56,59 @@ const BlogCard = ({ blog, onLikeUpdate }) => {
           />
         </Link>
       )}
-      <div className="flex-1 p-3 sm:p-4">
-        <div className="flex items-center gap-2 flex-wrap text-[11px] text-gray-500 mb-1">
-          {blog.category && (
-            <span
-              className={`px-2 py-0.5 rounded-full ${getCategoryClasses(
-                blog.category
-              )}`}
-            >
-              {t(
-                `category.${String(blog.category)
-                  .toLowerCase()
-                  .replace(/ & /g, "_")
-                  .replace(/\s+/g, "_")}`,
-                { defaultValue: blog.category }
-              )}
+      
+      {/* FINAL FIX: 'min-w-0' is moved HERE, to the direct child of the sm:flex-row container. */}
+      <div className="flex-1 p-3 sm:p-4 flex flex-col min-w-0">
+        
+        {/* The 'min-w-0' is removed from this inner wrapper as it's not needed here. */}
+        <div className="flex-1 overflow-hidden">
+          <div className="flex items-center gap-2 flex-wrap text-[11px] text-gray-500 mb-1">
+            {blog.category && (
+              <span
+                className={`px-2 py-0.5 rounded-full ${getCategoryClasses(
+                  blog.category
+                )}`}
+              >
+                {t(
+                  `category.${String(blog.category)
+                    .toLowerCase()
+                    .replace(/ & /g, "_")
+                    .replace(/\s+/g, "_")}`,
+                  { defaultValue: blog.category }
+                )}
+              </span>
+            )}
+            <span className="text-gray-500 dark:text-gray-400">
+              {new Date(blog.date).toLocaleDateString()}
             </span>
+          </div>
+
+          <Link to={`/blog/${blog.slug || blog._id}`} className="block">
+            <h2 className="text-sm sm:text-lg md:text-xl font-semibold leading-snug text-gray-900 dark:text-gray-100 hover:underline line-clamp-2">
+              {displayTitle}
+            </h2>
+          </Link>
+
+          {blog.tags && blog.tags.length > 0 && (
+            <div className="mt-1 flex flex-wrap gap-1.5">
+              {blog.tags.slice(0, 3).map((tag) => (
+                <Link
+                  key={tag}
+                  to={`/tag/${encodeURIComponent(tag.toLowerCase())}`}
+                  className="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                >
+                  #{tag}
+                </Link>
+              ))}
+            </div>
           )}
-          <span className="text-gray-500 dark:text-gray-400">
-            {new Date(blog.date).toLocaleDateString()}
-          </span>
+          
+          <p className="mt-1.5 text-sm text-gray-600 dark:text-gray-400 line-clamp-2 break-words">
+            {excerpt}
+          </p>
         </div>
 
-        <Link to={`/blog/${blog.slug || blog._id}`} className="block">
-          <h2 className="text-sm sm:text-lg md:text-xl font-semibold leading-snug text-gray-900 dark:text-gray-100 hover:underline line-clamp-2">
-            {displayTitle}
-          </h2>
-        </Link>
-
-        {blog.tags && blog.tags.length > 0 && (
-          <div className="mt-1 flex flex-wrap gap-1.5">
-            {blog.tags.slice(0, 3).map((tag) => (
-              <Link
-                key={tag}
-                to={`/tag/${encodeURIComponent(tag.toLowerCase())}`}
-                className="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-              >
-                #{tag}
-              </Link>
-            ))}
-          </div>
-        )}
-
-        <p className="mt-1.5 text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-          {excerpt}
-        </p>
-
-        <div className="mt-2 flex items-center gap-4 sm:gap-5 text-gray-500 dark:text-gray-400 text-[11px] sm:text-xs">
+        <div className="mt-auto pt-2 flex items-center gap-4 sm:gap-5 text-gray-500 dark:text-gray-400 text-[11px] sm:text-xs">
           <LikeButton
             blogId={blog._id}
             initialLikes={blog.likes}
