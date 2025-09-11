@@ -17,11 +17,10 @@ const isMobile = () => {
 };
 
 const Tooltip = ({ text }) => (
-  <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max whitespace-nowrap bg-gray-900 dark:bg-gray-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100 transition-all duration-200 delay-100 pointer-events-none z-10">
+  <span className="hidden md:inline-block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max whitespace-nowrap bg-gray-900 dark:bg-gray-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg shadow-lg opacity-0 md:group-hover:opacity-100 scale-95 group-hover:scale-100 transition-all duration-200 delay-100 pointer-events-none z-10">
     {text}
   </span>
 );
-
 const ShareButton = ({
   title = "Check this out!",
   url,

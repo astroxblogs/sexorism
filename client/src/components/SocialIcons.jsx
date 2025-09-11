@@ -1,20 +1,25 @@
 import React from "react";
 
 export const WhatsAppIcon = ({ size = 18, className = "" }) => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      width={size}
-      height={size}
-      className={className}
-      aria-hidden="true"
-    >
-      <path
-        fill="currentColor"
-        d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.02.74-.25 1.02l-2.2 2.2z"
-      />
-    </svg>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 32 32"
+    width={size}
+    height={size}
+    className={className}
+    aria-hidden="true"
+  >
+    <path
+      fill="#25D366"
+      d="M16.001 3.2C9.373 3.2 4 8.573 4 15.2c0 2.61.773 5.037 2.118 7.056L4 28.8l6.726-2.09a11.965 11.965 0 0 0 5.275 1.194c6.627 0 12-5.373 12-12s-5.373-12-12-12Z"
+    />
+    <path
+      fill="#fff"
+      d="M12.637 9.734c-.33-.734-.677-.75-.992-.75h-.846c-.29 0-.76.109-1.157.546-.398.438-1.517 1.48-1.517 3.613 0 2.133 1.552 4.195 1.768 4.484.215.29 3.058 4.855 7.551 6.609 3.729 1.47 4.487 1.18 5.296 1.11.808-.07 2.603-1.062 2.97-2.088.367-1.025.367-1.906.258-2.088-.109-.183-.398-.29-.83-.508-.432-.219-2.603-1.287-3.004-1.431-.398-.146-.69-.218-.979.218-.29.438-1.124 1.432-1.379 1.721-.255.29-.508.328-.94.109-.432-.218-1.826-.672-3.48-2.144-1.287-1.147-2.156-2.563-2.411-3-.255-.437-.027-.672.191-.89.197-.197.437-.51.655-.764.218-.255.29-.437.437-.729.146-.292.073-.547-.037-.765-.109-.218-.96-2.389-1.348-3.271Z"
+    />
+  </svg>
 );
+
 
 export const FacebookIcon = ({ size = 18, className = "" }) => (
     <svg
@@ -32,21 +37,24 @@ export const FacebookIcon = ({ size = 18, className = "" }) => (
     </svg>
 );
 
-export const TwitterIcon = ({ size = 18, className = "" }) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        width={size}
-        height={size}
-        className={className}
-        aria-hidden="true"
-    >
-        <path 
-            fill="currentColor" 
-            d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"
-        />
-    </svg>
+export const TwitterIcon = ({ size = 15, className = "" }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    width={size}
+    height={size}
+    className={className}
+    aria-hidden="true"
+  >
+    <g transform="scale(0.85) translate(2,2)">
+      <path
+        fill="#1DA1F2"
+        d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"
+      />
+    </g>
+  </svg>
 );
+
 
 export const InstagramIcon = ({ size = 18, className = '' }) => (
     <svg
