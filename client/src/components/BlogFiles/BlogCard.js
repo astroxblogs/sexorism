@@ -1,12 +1,12 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { marked } from "marked";
-import LikeButton from "./LikeButton.jsx";
+import LikeButton from '../LikeButton.jsx';
 import { MessageSquare, Eye } from "lucide-react";
-import ShareButton from "./ShareButton.jsx";
+import ShareButton from "../ShareButton.jsx";
 import { useTranslation } from "react-i18next";
-import { getCategoryClasses } from "../utils/categoryColors";
-import { useShare } from "../context/ShareContext"; // ✅ context
+import { getCategoryClasses } from "../../utils/categoryColors.js";
+import { useShare } from "../../context/ShareContext.js"; // ✅ context
 
 const BlogCard = ({ blog, onLikeUpdate }) => {
   const { i18n, t } = useTranslation();

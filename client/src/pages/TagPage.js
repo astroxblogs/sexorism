@@ -5,7 +5,7 @@ import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 
 // Lazy load BlogList as it's a heavier component
-const BlogList = lazy(() => import('../components/BlogList'));
+const BlogList = lazy(() => import('../components/BlogFiles/BlogList'));
 
 
 const TagPage = () => {

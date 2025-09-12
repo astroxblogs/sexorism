@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
-import BlogList from '../components/BlogList';
+import BlogList from '../components/BlogFiles/BlogList';
 import HeroCarousel from '../components/HeroCarousel.jsx';
 import SidebarSection from '../components/SidebarSection.jsx';
 import SidebarLatest from '../components/SidebarLatest.jsx';
