@@ -1,4 +1,6 @@
 const Blog = require('../models/Blog');
+const BlogViewLog = require('../models/BlogViewLog');  // ✅ new name
+// ✅ only here
 
 // Helper function to generate slug from title
 const generateSlug = (title) => {
@@ -175,13 +177,35 @@ const getBlogBySlug = async (req, res) => {
 // ===============================
 // Increment views
 // ===============================
+ 
+
 const incrementViews = async (req, res) => {
   try {
     const { id } = req.params;
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+
+    // Check if this IP already viewed recently
+    const existingLog = await BlogViewLog.findOne({ blogId: id, ip });
+
+    if (existingLog) {
+      const hoursSinceLastView = (Date.now() - existingLog.lastViewed.getTime()) / (1000 * 60 * 60);
+
+      if (hoursSinceLastView < 12) {
+        return res.json({ message: 'View already counted recently', skip: true });
+      }
+
+      existingLog.lastViewed = new Date();
+      await existingLog.save();
+    } else {
+      await BlogViewLog.create({ blogId: id, ip });
+    }
+
     const updated = await Blog.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true });
     if (!updated) return res.status(404).json({ error: 'Blog not found' });
+
     res.json({ views: updated.views });
   } catch (err) {
+    console.error('Error in incrementViews:', err);
     res.status(500).json({ error: err.message });
   }
 };

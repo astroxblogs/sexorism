@@ -28,7 +28,7 @@ const generateTokens = (adminId, adminRole) => {
 };
 
 exports.login = async (req, res) => {
-    const { username, password, role } = req.body;
+    const { username, password } = req.body; // role removed
     console.log('Login attempt for username:', username);
 
     try {
@@ -42,10 +42,7 @@ exports.login = async (req, res) => {
             return res.status(500).json({ message: 'Server configuration error: JWT secret missing.' });
         }
 
-        if (role && role !== admin.role) {
-            return res.status(403).json({ message: 'Forbidden: Role mismatch for this account.' });
-        }
-
+        // No more role check against frontend input
         const { accessToken, refreshToken } = generateTokens(admin._id, admin.role);
 
         const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
@@ -54,14 +51,16 @@ exports.login = async (req, res) => {
 
         res.cookie('refreshToken', refreshToken, cookieOptions);
 
-        console.log('Login successful for username:', username);
-        // Return refreshToken in body for cases where cookie is blocked in dev
+        console.log(`Login successful for username: ${username}, role: ${admin.role}`);
+        
+        // Always send back DB role
         res.json({ accessToken, role: admin.role, refreshToken });
     } catch (err) {
         console.error('Login error:', err.message);
         res.status(500).json({ message: err.message });
     }
 };
+
 
 exports.refreshAdminToken = async (req, res) => {
     const cookies = req.cookies;
