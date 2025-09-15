@@ -7,6 +7,7 @@ import OperatorDashboard from './Pages/OperatorDashboard';
 import AdminBlogList from './Pages/AdminBlogList';
 import { getAuthToken, removeAuthToken } from './utils/localStorage';
 import api from './services/api';
+import { Toaster } from 'react-hot-toast';
 
 // --- REVISED PrivateRoute Component ---
 const PrivateRoute = ({ children, requireRole }) => {
@@ -68,6 +69,7 @@ const PrivateRoute = ({ children, requireRole }) => {
 function App() {
     return (
         <Router>
+            <Toaster position="top-right" reverseOrder={false} />
             <div className="App">
                 <Routes>
                     {/* Public routes */}

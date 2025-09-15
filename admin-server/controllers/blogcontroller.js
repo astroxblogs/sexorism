@@ -35,8 +35,8 @@ const generateUniqueSlug = async (title, existingId = null) => {
 exports.getLatestBlogs = async (req, res) => {
     try {
         const blogs = await Blog.find({})
-            .sort({ date: -1 }) // Sort by date descending to get the newest first
-            .limit(5);          // Limit the results to 5
+            .sort({ date: -1 })
+            .limit(5);
         res.json(blogs);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -61,26 +61,18 @@ exports.getBlogs = async (req, res) => {
         if (category) filter.category = category.trim();
         if (tag) filter.tags = { $in: [new RegExp(`^${tag.trim()}$`, 'i')] };
 
-        // --- DEBUGGING LOGS ADDED ---
-        console.log("\n--- DEBUG: Inside getBlogs Controller ---");
-        console.log("User making request:", req.user);
-        console.log("User role:", req.user?.role);
-
         if (req.user?.role === 'operator') {
-            console.log("Applying OPERATOR filter for user ID:", req.user.id);
             filter.createdBy = req.user.id;
-        } else {
-            console.log("No operator filter applied. User is admin or role is undefined.");
         }
-        console.log("Final filter being sent to DB:", filter);
-        // --- END DEBUGGING LOGS ---
 
         const skip = (parsedPage - 1) * parsedLimit;
         const blogs = await Blog.find(filter)
+            .populate({ path: 'createdBy', select: 'username' }) // ✅ THIS LINE IS ADDED
             .sort({ date: -1 })
             .skip(skip)
-            .limit(parsedLimit);
-
+            .limit(parsedLimit)
+            .exec();
+// console.log("--- DATA SENT FROM getBlogs ---", JSON.stringify(blogs, null, 2));
         const totalBlogs = await Blog.countDocuments(filter);
         const totalPages = Math.ceil(totalBlogs / parsedLimit);
 
@@ -93,7 +85,6 @@ exports.getBlogs = async (req, res) => {
  
 exports.searchBlogs = async (req, res) => {
     const { q, page = 1, limit = 10 } = req.query;
-    // ... validation ...
 
     if (!q) {
         return res.status(400).json({ error: 'A search query "q" is required.' });
@@ -109,17 +100,17 @@ exports.searchBlogs = async (req, res) => {
             ]
         };
 
-        // --- PERMISSION LOGIC ---
-        // Ensures operators can only search within their own created blogs.
         if (req.user?.role === 'operator') {
             searchFilter.createdBy = req.user.id;
         }
 
         const skip = (parseInt(page, 10) - 1) * parseInt(limit, 10);
         const blogs = await Blog.find(searchFilter)
+            .populate({ path: 'createdBy', select: 'username' }) // ✅ THIS LINE IS ALSO ADDED FOR SEARCH
             .sort({ date: -1 })
             .skip(skip)
-            .limit(parseInt(limit, 10));
+            .limit(parseInt(limit, 10))
+            .exec();
 
         const totalBlogs = await Blog.countDocuments(searchFilter);
         const totalPages = Math.ceil(totalBlogs / parseInt(limit, 10));
@@ -132,20 +123,16 @@ exports.searchBlogs = async (req, res) => {
 };
 
 // --- UNCHANGED FUNCTIONS ---
-
-// Get a single blog by ID
-exports.getBlog = async (req, res) => {
+exports.getBlog = async (req, res) => { /* ... unchanged ... */ 
     try {
-        const blog = await Blog.findById(req.params.id); // This correctly fetches one blog
+        const blog = await Blog.findById(req.params.id); 
         if (!blog) return res.status(404).json({ error: 'Blog not found' });
-        res.json(blog); // <--- This should send ONLY the blog object
+        res.json(blog);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
-
-// Create a new blog (will automatically handle the 'category' from req.body and new language fields)
-exports.createBlog = async (req, res) => {
+exports.createBlog = async (req, res) => { /* ... unchanged ... */ 
     try {
         const title = req.body.title_en || req.body.title;
         if (!title) {
@@ -153,7 +140,7 @@ exports.createBlog = async (req, res) => {
         }
         
         const slug = await generateUniqueSlug(title);
-        const blogData = { ...req.body, slug, createdBy: req.user.id }; // Always set createdBy
+        const blogData = { ...req.body, slug, createdBy: req.user.id };
 
         if (req.user?.role === 'operator') {
             blogData.status = 'pending';
@@ -168,9 +155,7 @@ exports.createBlog = async (req, res) => {
         res.status(400).json({ error: err.message });
     }
 };
-
-// Update an existing blog (will automatically handle new language fields in req.body)
-exports.updateBlog = async (req, res) => {
+exports.updateBlog = async (req, res) => { /* ... unchanged ... */ 
     try {
         const title = req.body.title_en || req.body.title;
         if (title) {
@@ -184,7 +169,7 @@ exports.updateBlog = async (req, res) => {
             if (existing.createdBy?.toString() !== req.user.id) {
                 return res.status(403).json({ error: 'Forbidden: You can only edit your own blogs.' });
             }
-            req.body.status = 'pending'; // Force status to pending on any operator update
+            req.body.status = 'pending';
         }
 
         const blog = await Blog.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -193,12 +178,8 @@ exports.updateBlog = async (req, res) => {
         res.status(400).json({ error: err.message });
     }
 };
-
-
-// Delete a blog
-exports.deleteBlog = async (req, res) => {
+exports.deleteBlog = async (req, res) => { /* ... unchanged ... */ 
     try {
-        // This check is now redundant because of the route middleware, but serves as a backup.
         if (req.user?.role !== 'admin') {
             return res.status(403).json({ error: 'Forbidden: You do not have permission to delete blogs.' });
         }
@@ -210,8 +191,7 @@ exports.deleteBlog = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
-// Admin-only: list pending blogs
-exports.getPendingBlogs = async (req, res) => {
+exports.getPendingBlogs = async (req, res) => { /* ... unchanged ... */ 
     try {
         const { page = 1, limit = 20 } = req.query;
         const parsedLimit = parseInt(limit, 10);
@@ -219,7 +199,6 @@ exports.getPendingBlogs = async (req, res) => {
         const skip = (parsedPage - 1) * parsedLimit;
         const filter = { status: 'pending' };
         
-        // The .exec() is added to ensure the query with populate runs reliably.
         const blogs = await Blog.find(filter)
             .populate({
                 path: 'createdBy',
@@ -228,7 +207,7 @@ exports.getPendingBlogs = async (req, res) => {
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(parsedLimit)
-            .exec(); // Ensures the populate command is executed correctly.
+            .exec();
             
         const totalBlogs = await Blog.countDocuments(filter);
         
@@ -238,8 +217,7 @@ exports.getPendingBlogs = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
-// Admin-only: approve blog
-exports.approveBlog = async (req, res) => {
+exports.approveBlog = async (req, res) => { /* ... unchanged ... */ 
     try {
         const blog = await Blog.findById(req.params.id);
         if (!blog) return res.status(404).json({ error: 'Blog not found' });
@@ -250,9 +228,7 @@ exports.approveBlog = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
-
-// Admin-only: reject blog
-exports.rejectBlog = async (req, res) => {
+exports.rejectBlog = async (req, res) => { /* ... unchanged ... */ 
     try {
         const blog = await Blog.findById(req.params.id);
         if (!blog) return res.status(404).json({ error: 'Blog not found' });
@@ -263,9 +239,7 @@ exports.rejectBlog = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
-
-// Add a comment to a blog
-exports.addComment = async (req, res) => {
+exports.addComment = async (req, res) => { /* ... unchanged ... */ 
     try {
         const blog = await Blog.findById(req.params.id);
         if (!blog) return res.status(404).json({ error: 'Blog not found' });
@@ -277,9 +251,7 @@ exports.addComment = async (req, res) => {
         res.status(400).json({ error: err.message });
     }
 };
-
-// Delete a comment from a blog
-exports.deleteComment = async (req, res) => {
+exports.deleteComment = async (req, res) => { /* ... unchanged ... */ 
     try {
         const blog = await Blog.findById(req.params.id);
         if (!blog) return res.status(404).json({ error: 'Blog not found' });
@@ -290,9 +262,7 @@ exports.deleteComment = async (req, res) => {
         res.status(400).json({ error: err.message });
     }
 };
-
-// Like a blog
-exports.likeBlog = async (req, res) => {
+exports.likeBlog = async (req, res) => { /* ... unchanged ... */ 
     try {
         const blog = await Blog.findByIdAndUpdate(
             req.params.id,

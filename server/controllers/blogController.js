@@ -13,6 +13,35 @@ const generateSlug = (title) => {
 };
 
 // ===============================
+// HELPER FUNCTION for Social Media Previews
+// ===============================
+const getBlogBySlugHelper = async (slug) => {
+  try {
+    console.log('🔍 Fetching blog by slug for social preview:', slug);
+    
+    const blog = await Blog.findOne({
+      slug: slug.toLowerCase(),
+      $or: [{ status: 'published' }, { status: { $exists: false } }]
+    })
+      .lean() // Use lean() for better performance since we don't need Mongoose document methods
+      .select(
+        'title title_en title_hi content content_en content_hi image date category tags slug views comments likes shareCount updatedAt'
+      );
+    
+    if (blog) {
+      console.log('✅ Blog found for social preview:', blog.title);
+      return blog;
+    } else {
+      console.log('❌ No blog found with slug:', slug);
+      return null;
+    }
+  } catch (error) {
+    console.error('❌ Error fetching blog by slug for social preview:', error);
+    throw error;
+  }
+};
+
+// ===============================
 // Get all blogs (homepage, with pagination + filters)
 // ===============================
 const getBlogs = async (req, res) => {
@@ -153,7 +182,7 @@ const getBlog = async (req, res) => {
 };
 
 // ===============================
-// Get single blog by slug
+// Get single blog by slug (API ENDPOINT)
 // ===============================
 const getBlogBySlug = async (req, res) => {
   try {
@@ -177,29 +206,36 @@ const getBlogBySlug = async (req, res) => {
 // ===============================
 // Increment views
 // ===============================
- 
-
 const incrementViews = async (req, res) => {
   try {
     const { id } = req.params;
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
-    // Check if this IP already viewed recently
-    const existingLog = await BlogViewLog.findOne({ blogId: id, ip });
+    // Optional: frontend can send a flag to skip DB check
+    const { skipLog } = req.body;
 
-    if (existingLog) {
-      const hoursSinceLastView = (Date.now() - existingLog.lastViewed.getTime()) / (1000 * 60 * 60);
+    if (!skipLog) {
+      // Check if this IP already viewed this blog recently
+      const existingLog = await BlogViewLog.findOne({ blogId: id, ip });
 
-      if (hoursSinceLastView < 12) {
-        return res.json({ message: 'View already counted recently', skip: true });
+      if (existingLog) {
+        const hoursSinceLastView = (Date.now() - existingLog.lastViewed.getTime()) / (1000 * 60 * 60);
+
+        if (hoursSinceLastView < 12) {
+          // Frontend should already have skipped, but safety net
+          return res.json({ message: 'View already counted recently', skip: true });
+        }
+
+        // Update last viewed timestamp
+        existingLog.lastViewed = new Date();
+        await existingLog.save();
+      } else {
+        // First time this IP viewed this blog
+        await BlogViewLog.create({ blogId: id, ip });
       }
-
-      existingLog.lastViewed = new Date();
-      await existingLog.save();
-    } else {
-      await BlogViewLog.create({ blogId: id, ip });
     }
 
+    // Increment actual blog views
     const updated = await Blog.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true });
     if (!updated) return res.status(404).json({ error: 'Blog not found' });
 
@@ -293,6 +329,7 @@ module.exports = {
   searchBlogs,
   getBlog,
   getBlogBySlug,
+  getBlogBySlugHelper, // NEW: Helper function for social media previews
   incrementViews,
   incrementShares,
   likePost,

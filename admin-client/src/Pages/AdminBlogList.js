@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for redirection
+import { useNavigate } from 'react-router-dom';
 import AdminBlogTable from '../components/AdminBlogTable';
 import api from '../services/api';
 import { useTranslation } from 'react-i18next';
@@ -14,7 +14,7 @@ const AdminBlogList = ({ onEdit }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [userRole, setUserRole] = useState('');
-    const navigate = useNavigate(); // Hook for navigation
+    const navigate = useNavigate();
 
     useEffect(() => {
         let role = '';
@@ -27,15 +27,11 @@ const AdminBlogList = ({ onEdit }) => {
             console.error('Could not retrieve user role from session storage:', e);
         }
 
-        // --- NEW: Security Check ---
-        // If the user is an operator, they should not be on this page.
-        // Redirect them to the main dashboard.
         if (role === 'operator') {
-            navigate('/admin-dashboard'); // Or the appropriate route for the operator's main view
-            return; // Stop execution of the rest of the effect
+            navigate('/admin-dashboard');
+            return;
         }
 
-        // Only admins will proceed from here
         const controller = new AbortController();
         setLoading(true);
 
@@ -55,14 +51,16 @@ const AdminBlogList = ({ onEdit }) => {
             });
 
         return () => controller.abort();
-    }, [navigate]); // Add navigate to dependency array
+    }, [navigate]);
 
     const filteredBlogs = useMemo(() => {
         if (!searchQuery) {
             return allBlogs;
         }
         return allBlogs.filter(blog =>
-            (blog.title_en || '').toLowerCase().includes(searchQuery.toLowerCase())
+            (blog.title_en || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+            // ✅ ADDED: You can now search by the author's username
+            (blog.createdBy?.username || '').toLowerCase().includes(searchQuery.toLowerCase())
         );
     }, [searchQuery, allBlogs]);
 
@@ -79,7 +77,6 @@ const AdminBlogList = ({ onEdit }) => {
         if (window.confirm(t('admin_panel.confirm_delete'))) {
             const originalBlogs = [...allBlogs];
             setAllBlogs(currentBlogs => currentBlogs.filter(b => b._id !== id));
-
             try {
                 await api.delete(`/api/admin/blogs/${id}`);
             } catch (err) {
@@ -90,7 +87,6 @@ const AdminBlogList = ({ onEdit }) => {
         }
     };
 
-    // --- Pagination Logic ---
     const totalPages = Math.ceil(filteredBlogs.length / ITEMS_PER_PAGE);
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
@@ -108,8 +104,6 @@ const AdminBlogList = ({ onEdit }) => {
         }
     };
 
-    // If the role is not admin, we will show a loading/redirecting message
-    // before the redirect effect kicks in.
     if (userRole && userRole !== 'admin') {
         return <div className="text-center p-10 dark:text-gray-200">Redirecting...</div>;
     }
@@ -129,7 +123,7 @@ const AdminBlogList = ({ onEdit }) => {
                 <div className="mb-6">
                     <input
                         type="text"
-                        placeholder={t('Search blogs...')}
+                        placeholder={t('Search by title or author...')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -147,21 +141,13 @@ const AdminBlogList = ({ onEdit }) => {
 
                 {totalPages > 1 && (
                     <div className="flex justify-between items-center mt-6">
-                        <button
-                            onClick={handlePrevPage}
-                            disabled={currentPage === 1}
-                            className="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg shadow hover:bg-gray-300 dark:hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
+                        <button onClick={handlePrevPage} disabled={currentPage === 1} className="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg shadow hover:bg-gray-300 dark:hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                             &lt; {t('Previous')}
                         </button>
                         <span className="text-gray-700 dark:text-gray-300 font-medium">
                             {t('Page')} {currentPage} {t('of')} {totalPages}
                         </span>
-                        <button
-                            onClick={handleNextPage}
-                            disabled={currentPage === totalPages}
-                            className="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg shadow hover:bg-gray-300 dark:hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
+                        <button onClick={handleNextPage} disabled={currentPage === totalPages} className="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-lg shadow hover:bg-gray-300 dark:hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                             {t('Next')} &gt;
                         </button>
                     </div>
@@ -172,4 +158,3 @@ const AdminBlogList = ({ onEdit }) => {
 };
 
 export default AdminBlogList;
-

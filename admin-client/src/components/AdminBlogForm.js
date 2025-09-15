@@ -12,7 +12,7 @@ const LANGUAGES = [
     { code: 'hi', name: 'Hindi' },
 ];
 
-const AdminBlogForm = ({ blog, onSave }) => {
+const AdminBlogForm = ({ blog, onSave,onCancel }) => {
     const { register, handleSubmit, reset, setValue, watch } = useForm();
     const [activeLang, setActiveLang] = useState('en');
     const [contents, setContents] = useState(() => {
@@ -247,9 +247,22 @@ const AdminBlogForm = ({ blog, onSave }) => {
                     )
                 ))}
 
-                <button className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-semibold transition-colors w-full md:w-auto self-end mt-4" type="submit">
-                    {blog ? 'Update' : 'Add'} Blog
+                 <div className="flex justify-end items-center space-x-4 pt-6 border-t mt-6">
+                <button
+                    type="button" // Important: type="button" prevents form submission
+                    onClick={onCancel}
+                    className="px-6 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                    Cancel
                 </button>
+                <button
+                    type="submit"
+                    className="px-6 py-3 border border-transparent rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
+                    // Add your existing disabled logic if you have one, e.g., disabled={isLoading}
+                >
+                    {blog ? 'Update Blog' : 'Submit Blog'}
+                </button>
+            </div>
             </form>
 
             <LinkDialog

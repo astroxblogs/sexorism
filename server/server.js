@@ -1,9 +1,9 @@
 require('dotenv').config();
+const socialPreviewRoutes = require('./routes/socialPreviews');
 
-
-console.log('CORS_ORIGIN_DEV:', process.env.CORS_ORIGIN_DEV);
-console.log('CORS_ORIGIN_PROD:', process.env.CORS_ORIGIN_PROD);
-console.log('CORS_ORIGIN_Main:', process.env.CORS_ORIGIN_Main);
+// console.log('CORS_ORIGIN_DEV:', process.env.CORS_ORIGIN_DEV);
+// console.log('CORS_ORIGIN_PROD:', process.env.CORS_ORIGIN_PROD);
+// console.log('CORS_ORIGIN_Main:', process.env.CORS_ORIGIN_Main);
 
 
 const express = require('express');
@@ -65,7 +65,7 @@ app.use(cors({
 }));
 
 
-app.set('trust proxy', 1);
+app.use('/', socialPreviewRoutes);
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 

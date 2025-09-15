@@ -40,7 +40,7 @@ exports.login = async (req, res) => {
         const user = await Admin.findOne({ username });
         if (!user) return res.status(401).json({ message: 'Invalid credentials' });
 
-        // 🔥 NEW: Check if user is active
+        // Check if user is active
         if (!user.isActive) {
             return res.status(401).json({ 
                 message: 'Account is deactivated. Please contact administrator.' 
@@ -86,7 +86,7 @@ exports.createOperator = async (req, res) => {
             username,
             password: hashedPassword,
             role: 'operator',
-            isActive: true // 🔥 NEW: Default to active
+            isActive: true
         });
 
         await operator.save();
@@ -97,7 +97,7 @@ exports.createOperator = async (req, res) => {
                 id: operator._id,
                 username: operator.username,
                 role: operator.role,
-                isActive: operator.isActive // 🔥 NEW: Include status in response
+                isActive: operator.isActive
             }
         });
     } catch (err) {
@@ -109,10 +109,9 @@ exports.createOperator = async (req, res) => {
 // ------------------- LIST OPERATORS -------------------
 exports.getOperators = async (req, res) => {
     try {
-        // 🔥 UPDATED: Include isActive in selection
         const operators = await Admin.find({ role: 'operator' })
             .select('-password -refreshToken')
-            .sort({ createdAt: -1 }); // Sort by newest first
+            .sort({ createdAt: -1 });
         
         res.status(200).json({ operators });
     } catch (err) {
@@ -121,7 +120,7 @@ exports.getOperators = async (req, res) => {
     }
 };
 
-// 🔥 NEW: TOGGLE OPERATOR STATUS (Replace delete functionality)
+// ------------------- TOGGLE OPERATOR STATUS -------------------
 exports.toggleOperatorStatus = async (req, res) => {
     const { id } = req.params;
 
@@ -131,10 +130,8 @@ exports.toggleOperatorStatus = async (req, res) => {
             return res.status(404).json({ message: 'Operator not found' });
         }
 
-        // Toggle the status
         operator.isActive = !operator.isActive;
         
-        // If deactivating, clear refresh token to force logout
         if (!operator.isActive) {
             operator.refreshToken = null;
         }
@@ -157,7 +154,7 @@ exports.toggleOperatorStatus = async (req, res) => {
     }
 };
 
-// ------------------- DELETE OPERATOR (Keep for permanent deletion if needed) -------------------
+// ------------------- DELETE OPERATOR -------------------
 exports.deleteOperator = async (req, res) => {
     const { id } = req.params;
 
@@ -192,7 +189,6 @@ exports.refreshAdminToken = async (req, res) => {
         const admin = await Admin.findById(decoded.id);
         if (!admin) return res.status(403).json({ message: 'Forbidden: Invalid admin' });
 
-        // 🔥 NEW: Check if admin is still active
         if (!admin.isActive) {
             return res.status(403).json({ message: 'Forbidden: Account deactivated' });
         }
@@ -242,7 +238,7 @@ exports.logout = async (req, res) => {
     res.sendStatus(204);
 };
 
-// ------------------- UPDATE ADMIN CREDENTIALS -------------------
+// ------------------- UPDATE ADMIN CREDENTIALS (EXISTING) -------------------
 exports.updateAdminCredentials = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
@@ -288,56 +284,94 @@ exports.updateAdminCredentials = async (req, res) => {
     }
 };
 
-// ------------------- UPDATE OPERATOR CREDENTIALS -------------------
-// For operators to update their own username/password
-exports.updateOperatorCredentials = async (req, res) => {
-    // 1️⃣ Validate input
+// ------------------- CHANGE PASSWORD ONLY (for modern UI) -------------------
+exports.changePassword = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-    const operatorId = req.user.id; // from JWT
-    const { currentPassword, newUsername, newPassword } = req.body;
+    const adminId = req.user.id;
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    // Validation
+    if (!currentPassword) {
+        return res.status(400).json({ message: 'Current password is required' });
+    }
+    if (!newPassword) {
+        return res.status(400).json({ message: 'New password is required' });
+    }
+    if (confirmPassword && newPassword !== confirmPassword) {
+        return res.status(400).json({ message: 'New passwords do not match' });
+    }
+    if (newPassword.length < 6) {
+        return res.status(400).json({ message: 'New password must be at least 6 characters long' });
+    }
 
     try {
-        // 2️⃣ Find operator
+        const admin = await Admin.findById(adminId);
+        if (!admin) return res.status(404).json({ message: 'Admin not found' });
+
+        // Check if current password is correct
+        const isMatch = await bcrypt.compare(currentPassword, admin.password);
+        if (!isMatch) return res.status(401).json({ message: 'Current password is incorrect' });
+
+        // Check if new password is different from current
+        const isSame = await bcrypt.compare(newPassword, admin.password);
+        if (isSame) {
+            return res.status(400).json({ message: 'New password must be different from current password' });
+        }
+
+        // Hash and save new password
+        admin.password = await bcrypt.hash(newPassword, 10);
+        await admin.save();
+
+        res.status(200).json({ message: 'Password changed successfully!' });
+    } catch (err) {
+        console.error('Change password error:', err.message);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// ------------------- UPDATE OPERATOR CREDENTIALS -------------------
+// This is the new function for the operator.
+// As you can see, the logic is identical to the admin's 'changePassword' function.
+exports.updateOperatorCredentials = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const operatorId = req.user.id;
+    // We now expect confirmPassword as well, but only need newPassword for the logic
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    // A final check on the server
+    if (newPassword !== confirmPassword) {
+        return res.status(400).json({ message: 'New passwords do not match' });
+    }
+
+    try {
         const operator = await Admin.findById(operatorId);
-        if (!operator) return res.status(404).json({ message: 'Operator not found' });
-
-        if (operator.role !== 'operator') {
-            return res.status(403).json({ message: 'Forbidden: only operators can update here' });
+        if (!operator) {
+            return res.status(404).json({ message: 'Operator not found' });
         }
 
-        // 3️⃣ Check current password
         const isMatch = await bcrypt.compare(currentPassword, operator.password);
-        if (!isMatch) return res.status(401).json({ message: 'Invalid current password' });
-
-        let changesMade = false;
-
-        // 4️⃣ Update username if provided
-        if (newUsername && newUsername !== operator.username) {
-            const existingUser = await Admin.findOne({ username: newUsername });
-            if (existingUser) return res.status(400).json({ message: 'Username already taken' });
-
-            operator.username = newUsername;
-            changesMade = true;
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Current password is incorrect' });
+        }
+        
+        const isSame = await bcrypt.compare(newPassword, operator.password);
+        if (isSame) {
+            return res.status(400).json({ message: 'New password must be different from the current password' });
         }
 
-        // 5️⃣ Update password if provided
-        if (newPassword) {
-            operator.password = await bcrypt.hash(newPassword, 10);
-            changesMade = true;
-        }
-
-        if (!changesMade) {
-            return res.status(400).json({ message: 'No new information provided to update' });
-        }
-
-        // 6️⃣ Save changes
+        operator.password = await bcrypt.hash(newPassword, 10);
         await operator.save();
 
-        res.status(200).json({ message: 'Operator credentials updated successfully' });
+        res.status(200).json({ message: 'Password changed successfully!' });
+
     } catch (err) {
-        console.error('Update operator error:', err.message);
+        console.error('Operator change password error:', err.message);
         res.status(500).json({ message: 'Server error' });
     }
 };

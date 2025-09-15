@@ -5,9 +5,6 @@ import HeroCarousel from '../components/HeroCarousel.jsx';
 import SidebarSection from '../components/SidebarSection.jsx';
 import SidebarLatest from '../components/SidebarLatest.jsx';
 import { useNavigate } from 'react-router-dom';
-// --- THIS IS THE FIX ---
-// The package name was misspelled as 'react-i-next'. 
-// I have corrected it to 'react-i18next'.
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 
@@ -28,7 +25,6 @@ const Home = ({ activeCategory, searchQuery }) => {
     const [totalPages, setTotalPages] = useState(1);
     const [totalBlogsCount, setTotalBlogsCount] = useState(0);
 
-    // --- State to track if sidebar data has finished loading ---
     const [sidebarLoading, setSidebarLoading] = useState(true);
 
     const textVariants = {
@@ -60,16 +56,13 @@ const Home = ({ activeCategory, searchQuery }) => {
                 const catRes = await axios.get('/api/blogs/categories');
                 const categories = Array.isArray(catRes.data) ? catRes.data : [];
                 
-                // --- THIS IS THE CHANGE ---
-                // I've updated this array to use the categories you requested.
-                // The code will now specifically look for these three categories to build the sidebar.
-                const preferred = ['Technology', 'Health & Wellness', 'Fashion'];
+                const preferred = ['Technology', 'Health & Wellness', 'Fashion', 'Astrology'];
 
                 const preferredPresent = preferred
                     .map(name => categories.find(c => c.name_en === name))
                     .filter(Boolean);
                 const others = categories.filter(c => !preferred.includes(c.name_en));
-                const chosen = (preferredPresent.length ? preferredPresent : others).slice(0, 3);
+                const chosen = (preferredPresent.length ? preferredPresent : others).slice(0, 4);
                 const sections = await Promise.all(
                     chosen.map(async (cat) => {
                         const url = `/api/blogs?category=${encodeURIComponent(cat.name_en)}&page=1&limit=3`;
@@ -86,14 +79,12 @@ const Home = ({ activeCategory, searchQuery }) => {
 
         const buildLatestSidebar = async () => {
             try {
-                let url = '/api/blogs/latest'; // Default URL
-                // If on a category page, exclude blogs from the current category
+                let url = '/api/blogs/latest'; 
                 if (activeCategory && activeCategory.toLowerCase() !== 'all') {
                     url = `/api/blogs?page=1&limit=5&excludeCategory=${encodeURIComponent(activeCategory)}`;
                 }
                 
                 const res = await axios.get(url);
-                // The API response structure might be { blogs: [...] } or just [...]
                 setSidebarLatest(res.data?.blogs || res.data || []);
             } catch (err) {
                 console.error('Error fetching latest for sidebar:', err);
@@ -102,24 +93,22 @@ const Home = ({ activeCategory, searchQuery }) => {
         };
 
         const loadSidebar = async () => {
-            setSidebarLoading(true); // Start loading
+            setSidebarLoading(true); 
             if (searchQuery) {
                 setSidebarSections([]);
                 setSidebarLatest([]);
-                setSidebarLoading(false); // Stop loading
+                setSidebarLoading(false); 
                 return;
             }
 
             if (activeCategory && activeCategory.toLowerCase() !== 'all') {
-                // Category page: show latest from other categories
                 setSidebarSections([]);
                 await buildLatestSidebar();
             } else {
-                // Home page: show curated category sections
                 await buildHomeSidebar();
                 setSidebarLatest([]);
             }
-            setSidebarLoading(false); // Stop loading after data is fetched
+            setSidebarLoading(false); 
         };
 
         loadSidebar();
@@ -247,12 +236,10 @@ const Home = ({ activeCategory, searchQuery }) => {
                     </div>
 
                     <div className="space-y-6">
-                        {/* --- REVISED SIDEBAR LOGIC --- */}
                         {sidebarLoading ? (
                             <div className="text-center text-gray-500 dark:text-gray-400">Loading sidebar...</div>
                         ) : (
                             <>
-                                {/* On Home, show sections */}
                                 {!isSearchView && !isCategoryView && sidebarSections.map((sec) => (
                                     <SidebarSection
                                         key={sec.title}
@@ -265,7 +252,6 @@ const Home = ({ activeCategory, searchQuery }) => {
                                     />
                                 ))}
 
-                                {/* On Category pages, show latest */}
                                 {!isSearchView && isCategoryView && (
                                     <SidebarLatest 
                                         title={t('homepage.featured_posts').replace('Featured Posts', 'Latest Articles')} 
@@ -282,4 +268,3 @@ const Home = ({ activeCategory, searchQuery }) => {
 };
 
 export default Home;
-
