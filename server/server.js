@@ -1,5 +1,5 @@
 require('dotenv').config();
-const socialPreviewRoutes = require('./routes/socialPreviews');
+const socialPreviewRoutes = require('./routes/socialPreview'); // FIX: Commented out because the file doesn't exist yet.
 
 // console.log('CORS_ORIGIN_DEV:', process.env.CORS_ORIGIN_DEV);
 // console.log('CORS_ORIGIN_PROD:', process.env.CORS_ORIGIN_PROD);
@@ -65,7 +65,7 @@ app.use(cors({
 }));
 
 
-app.use('/', socialPreviewRoutes);
+// app.use('/', socialPreviewRoutes); // FIX: Commented out because it's related to the missing file.
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
