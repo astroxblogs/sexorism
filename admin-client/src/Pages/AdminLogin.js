@@ -50,7 +50,7 @@ const AdminLogin = () => {
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white">
             <div className="w-full max-w-md p-8 space-y-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
-                <h2 className="text-3xl font-bold text-center">{t('AdminLogin')}</h2>
+                <h2 className="text-3xl font-bold text-center">{t('Login')}</h2>
                 <form onSubmit={handleLogin} className="space-y-4">
                     <div>
                         <label className="sr-only" htmlFor="username">Username</label>
