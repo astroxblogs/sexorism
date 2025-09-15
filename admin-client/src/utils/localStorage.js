@@ -24,7 +24,7 @@ export const setAuthToken = (token) => {
         const key = `${AUTH_TOKEN_KEY_BASE}_${role}`;
         if (token) {
             localStorage.setItem(key, token);
-            console.log(`Admin auth token set for role=${role}.`);
+           
         } else {
             console.warn('Attempted to set a null or undefined auth token.');
         }
@@ -57,7 +57,7 @@ export const removeAuthToken = () => {
         const role = getCurrentRole();
         const key = `${AUTH_TOKEN_KEY_BASE}_${role}`;
         localStorage.removeItem(key);
-        console.log(`Admin auth token for role=${role} removed.`);
+       
     } catch (error) {
         console.error('Error removing admin auth token from localStorage:', error);
     }

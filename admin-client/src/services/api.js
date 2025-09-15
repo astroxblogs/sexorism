@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { setAuthToken, getAuthToken, removeAuthToken } from '../utils/localStorage';
-
+console.log('API_BASE_URL from environment is:', process.env.REACT_APP_API_BASE_URL)
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 let isRefreshing = false;
@@ -54,7 +54,7 @@ api.interceptors.response.use(
     (response) => {
         if (response.config.url.includes('/api/admin/login') && response.data.accessToken) {
             setAccessToken(response.data.accessToken);
-            console.log('Response Interceptor: Access token received from login and set.');
+            // console.log('Response Interceptor: Access token received from login and set.');
             if (response.data.role) {
                 try { sessionStorage.setItem('astrox_admin_role_session', response.data.role); } catch (_) {}
             }
@@ -65,11 +65,11 @@ api.interceptors.response.use(
         const originalRequest = error.config;
 
         if (error.response?.status === 401) {
-            // --- THIS IS THE FIX ---
-            // We add a check here to ensure we do NOT try to refresh the token
-            // if the error came from a failed login attempt. A failed login
-            // should never trigger a refresh. This breaks the infinite loop.
             if (originalRequest.url.includes('/api/admin/login')) {
+                // 🔥 ENHANCED: Handle deactivated account message
+                if (error.response?.data?.message?.includes('deactivated')) {
+                    return Promise.reject(error);
+                }
                 return Promise.reject(error);
             }
 
@@ -97,7 +97,6 @@ api.interceptors.response.use(
             console.log('Response Interceptor: Caught 401 error. Attempting token refresh...');
 
             try {
-                // Try cookie-based refresh first, else fall back to header/body (helps when cookies are blocked)
                 let refreshResponse;
                 try {
                     refreshResponse = await api.post('/api/admin/refresh-token');
@@ -133,7 +132,11 @@ api.interceptors.response.use(
 
         if (error.response?.status === 403) {
             console.error('Response Interceptor: 403 Forbidden.', error.response?.data);
-            // Do NOT clear token on 403; let caller decide (prevents logout cascades for role-restricted endpoints)
+            // 🔥 ENHANCED: Handle account deactivated during session
+            if (error.response?.data?.message?.includes('deactivated')) {
+                setAccessToken(null);
+                window.location.href = '/login';
+            }
             return Promise.reject(error);
         }
 
@@ -141,5 +144,29 @@ api.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
+
+// --- API FUNCTIONS ---
+// Group API calls in an object for cleaner exporting and usage.
+export const apiService = {
+  // Authentication
+  login: (credentials) => api.post('/api/admin/login', credentials),
+  logout: () => api.post('/api/admin/logout'),
+
+  // Operator Management
+  getOperators: () => api.get('/api/admin/operators'),
+  createOperator: (operatorData) => api.post('/api/admin/operators', operatorData),
+  deleteOperator: (id) => api.delete(`/api/admin/operators/${id}`),
+  // 🔥 NEW: Toggle operator active/inactive status
+  toggleOperatorStatus: (id) => api.put(`/api/admin/operators/${id}/toggle`),
+
+  // Credentials Management
+  updateAdminCredentials: (credentials) => api.put('/api/admin/credentials', credentials),
+  updateOperatorCredentials: (credentials) => api.put('/api/admin/operator/credentials', credentials),
+
+  // Blog Management
+  getPendingBlogs: (config = {}) => api.get('/api/admin/blogs/pending', config),
+};
+
 
 export default api;

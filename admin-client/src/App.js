@@ -1,15 +1,14 @@
-// astroxblogs-innvibs-admin-client/src/App.js
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 
 import AdminLogin from './Pages/AdminLogin';
 import AdminDashboard from './Pages/AdminDashboard';
 import OperatorDashboard from './Pages/OperatorDashboard';
-import AdminBlogList from './Pages/AdminBlogList'; // <-- NEW IMPORT
+import AdminBlogList from './Pages/AdminBlogList';
 import { getAuthToken, removeAuthToken } from './utils/localStorage';
 import api from './services/api';
 
+// --- REVISED PrivateRoute Component ---
 const PrivateRoute = ({ children, requireRole }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -26,10 +25,22 @@ const PrivateRoute = ({ children, requireRole }) => {
         try {
             const response = await api.get('/api/admin/verify-token');
             if (response.status === 200) {
-                if (requireRole && response.data?.role !== requireRole) {
-                    return navigate('/login');
+                const userRole = response.data?.role;
+
+                // --- DEBUGGING LOGS ADDED ---
+                // These messages will show us exactly what the component is checking.
+                console.log("--- Verifying Access ---");
+                console.log("Route requires role:", requireRole || "Any authenticated user");
+                console.log("User's actual role from API:", userRole);
+
+                if (!requireRole || userRole === 'admin' || userRole === requireRole) {
+                    console.log("Permission Check: Access GRANTED.");
+                    setIsAuthenticated(true);
+                } else {
+                    console.log("Permission Check: Access DENIED. Redirecting to login.");
+                    removeAuthToken();
+                    navigate('/login');
                 }
-                setIsAuthenticated(true);
             } else {
                 removeAuthToken();
                 navigate('/login');
@@ -41,14 +52,14 @@ const PrivateRoute = ({ children, requireRole }) => {
         } finally {
             setLoading(false);
         }
-    }, [navigate]);
+    }, [navigate, requireRole]);
 
     useEffect(() => {
         verifyAdminToken();
     }, [verifyAdminToken]);
 
     if (loading) {
-        return <div>Loading...</div>;
+        return <div className="flex justify-center items-center h-screen">Loading...</div>;
     }
 
     return isAuthenticated ? children : null;
@@ -59,25 +70,31 @@ function App() {
         <Router>
             <div className="App">
                 <Routes>
+                    {/* Public routes */}
                     <Route path="/login" element={<AdminLogin />} />
                     <Route path="/" element={<AdminLogin />} />
+
+                    {/* Admin-only route */}
                     <Route
-                        path="/dashboard"  
+                        path="/admin-dashboard"  
                         element={
                             <PrivateRoute requireRole="admin">
                                 <AdminDashboard />
                             </PrivateRoute>
                         }
                     />
+
+                    {/* Operator-only route */}
                     <Route
-                        path="/operator"
+                        path="/operator-dashboard"
                         element={
                             <PrivateRoute requireRole="operator">
                                 <OperatorDashboard />
                             </PrivateRoute>
                         }
                     />
-                    {/* --- NEW ROUTE FOR BLOG LIST --- */}
+
+                    {/* A route accessible by both admins and operators */}
                     <Route
                         path="/admin/blogs"
                         element={
@@ -93,3 +110,4 @@ function App() {
 }
 
 export default App;
+

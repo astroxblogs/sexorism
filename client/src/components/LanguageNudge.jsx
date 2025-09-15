@@ -10,7 +10,7 @@ const LanguageNudge = () => {
         if (i18n.language !== 'en') return;
         const lastDismiss = localStorage.getItem('lang_nudge_dismissed_at');
         const now = Date.now();
-        if (lastDismiss && now - Number(lastDismiss) < 24 * 60 * 60 * 1000) return;
+        if (lastDismiss && now - Number(lastDismiss) < 2 * 60 * 60 * 1000) return;
         const t = setTimeout(() => setVisible(true), 2500);
         return () => clearTimeout(t);
     }, [i18n.language]);

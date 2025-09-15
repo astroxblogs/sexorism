@@ -4,12 +4,12 @@ import { Helmet } from 'react-helmet';
 import DOMPurify from 'dompurify';
 import { marked } from 'marked';
 
-
 import LikeButton from '../LikeButton.jsx';
 import ShareButton from '../ShareButton.jsx';
-import EmailSubscriptionPopup from '../EmailSubscriptionPopup.jsx';
 
-// Helper functions (can be in a separate utils file or here if only used here)
+import TimedSubscriptionPopup from '../TimedSubscriptionPopup.jsx'; // NEW: Import timed popup
+
+// Helper functions
 const createSafeAltText = (text) => {
     if (!text) return '';
     return text.replace(/\b(image|photo|picture)\b/gi, '').replace(/\s\s+/g, ' ').trim();
@@ -22,19 +22,18 @@ const getLocalizedContent = (field, blogData, currentLang) => {
     return blogData[field] || '';
 };
 
-// Lazy loaded components passed as props
+// Lazy loaded components
 const CommentSection = React.lazy(() => import('../../components/CommentSection'));
-
-  // Adjust path if needed
-
-const EXCERPT_LENGTH_CHARS = 500;
 
 const BlogArticle = ({
     blog,
     isSubscribed,
-      setIsSubscribed,
+    setIsSubscribed,
     showGatedPopup,
     setShowGatedPopup,
+    showTimedPopup, // NEW: Timed popup state
+    setShowTimedPopup, // NEW: Timed popup setter
+    onTimedPopupSuccess, // NEW: Timed popup success handler
     handleTrackComment,
     getShareCount,
     currentLang
@@ -45,22 +44,9 @@ const BlogArticle = ({
     const displayContent = getLocalizedContent('content', blog, currentLang);
     const rawContentHtml = marked.parse(displayContent);
     const cleanContentHtml = DOMPurify.sanitize(rawContentHtml);
-    let contentToDisplay = cleanContentHtml;
-    let showContentOverlay = false;
-
-    if (!isSubscribed && displayContent) {
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = rawContentHtml;
-        const textContent = tempDiv.textContent || tempDiv.innerText || '';
-
-        if (textContent.length > EXCERPT_LENGTH_CHARS) {
-            const excerptText = textContent.substring(0, EXCERPT_LENGTH_CHARS);
-            contentToDisplay = DOMPurify.sanitize(marked.parse(excerptText + '...'));
-            showContentOverlay = true;
-        } else if (textContent.trim().length > 0) {
-            showContentOverlay = true;
-        }
-    }
+    
+    // REMOVED: Content gating logic - now always show full content
+    const contentToDisplay = cleanContentHtml;
 
     const coverImage = blog.image && blog.image.trim() !== '' ? blog.image.trim() : 'https://placehold.co/800x400/666/fff?text=No+Image';
     const cleanAltTitle = createSafeAltText(displayTitle);
@@ -73,18 +59,88 @@ const BlogArticle = ({
     return (
         <>
             <Helmet>
-                <title>{`${displayTitle} - InnoVibs`}</title>
-                <meta name="description" content={metaDescription} />
-                <meta property="og:type" content="article" />
-                <meta property="og:title" content={displayTitle} />
-                <meta property="og:description" content={metaDescription} />
-                <meta property="og:image" content={coverImage} />
-                <meta property="og:url" content={`https://www.innvibs.com/blog/${blog.slug}`} />
-                <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content={displayTitle} />
-                <meta name="twitter:description" content={metaDescription} />
-                <meta name="twitter:image" content={coverImage} />
-            </Helmet>
+    {/* Basic Meta Tags */}
+    <title>{`${displayTitle} - Innvibs | Innovation & Ideas Hub`}</title>
+    <meta name="description" content={metaDescription} />
+    <meta name="keywords" content={`${blog.tags?.join(', ') || ''}, innvibs, innovation, technology, ideas`} />
+    <meta name="author" content="Innvibs" />
+    
+    {/* Open Graph / Facebook */}
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Innvibs" />
+    <meta property="og:title" content={`${displayTitle} | Innvibs`} />
+    <meta property="og:description" content={metaDescription} />
+    <meta property="og:image" content={coverImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={cleanAltTitle} />
+    <meta property="og:url" content={`https://www.innvibs.com/blog/${blog.slug}`} />
+    <meta property="og:locale" content="en_US" />
+    
+    {/* Article specific Open Graph */}
+    <meta property="article:published_time" content={blog.date} />
+    <meta property="article:author" content="Innvibs Team" />
+    <meta property="article:section" content={blog.category || 'Technology'} />
+    {blog.tags?.map(tag => (
+        <meta key={tag} property="article:tag" content={tag} />
+    ))}
+    
+    {/* Twitter Card */}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@innvibs" /> {/* Add your Twitter handle if you have one */}
+    <meta name="twitter:creator" content="@innvibs" />
+    <meta name="twitter:title" content={`${displayTitle} | Innvibs`} />
+    <meta name="twitter:description" content={metaDescription} />
+    <meta name="twitter:image" content={coverImage} />
+    <meta name="twitter:image:alt" content={cleanAltTitle} />
+    
+    {/* LinkedIn specific */}
+    <meta property="og:image:type" content="image/jpeg" />
+    
+    {/* WhatsApp specific */}
+    <meta property="og:image:secure_url" content={coverImage} />
+    
+    {/* Additional SEO */}
+    <link rel="canonical" href={`https://www.innvibs.com/blog/${blog.slug}`} />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    
+    {/* Schema.org structured data */}
+    <script type="application/ld+json">
+        {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BlogPosting",
+            "headline": displayTitle,
+            "description": metaDescription,
+            "image": {
+                "@type": "ImageObject",
+                "url": coverImage,
+                "width": 1200,
+                "height": 630
+            },
+            "author": {
+                "@type": "Organization",
+                "name": "Innvibs"
+            },
+            "publisher": {
+                "@type": "Organization",
+                "name": "Innvibs",
+                "logo": {
+                    "@type": "ImageObject",
+                    "url": "https://www.innvibs.com/logo.png" // Add your logo URL
+                }
+            },
+            "datePublished": blog.date,
+            "dateModified": blog.updatedAt || blog.date,
+            "mainEntityOfPage": {
+                "@type": "WebPage",
+                "@id": `https://www.innvibs.com/blog/${blog.slug}`
+            },
+            "keywords": blog.tags?.join(', ') || '',
+            "articleSection": blog.category || 'Technology',
+            "url": `https://www.innvibs.com/blog/${blog.slug}`
+        })}
+    </script>
+</Helmet>
 
             <article className="max-w-4xl mx-auto bg-white dark:bg-gray-900 rounded-lg shadow-xl p-4 sm:p-6 md:p-8 mt-4 md:mt-8 mb-8 relative">
                 <div className="w-full h-55 flex items-center justify-center bg-gray-100">
@@ -100,31 +156,67 @@ const BlogArticle = ({
                     <span className="flex items-center gap-1"><svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>{blog.views || 0}</span>
                     <ShareButton blogId={blog._id} blogSlug={blog.slug} title={blog.title} url={typeof window !== "undefined" ? `${window.location.origin}/blog/${blog.slug}` : ""} initialShareCount={getShareCount(blog._id)}/>
                 </div>
+                
+                {/* UPDATED: Always show full content, no more gating */}
                 <div className="relative">
                     <div className="prose prose-base sm:prose-lg lg:prose-xl dark:prose-invert max-w-none mb-6 md:mb-8 prose-img:rounded-xl prose-img:max-h-[400px] prose-img:mx-auto">
-                        <div dangerouslySetInnerHTML={{ __html: isSubscribed ? cleanContentHtml : contentToDisplay }} className={`${showContentOverlay ? 'line-clamp-4' : ''}`}/>
-                        {!isSubscribed && showContentOverlay && (
-                            <div className="relative">
-                                <div className="absolute inset-0 top-20 backdrop-blur-sm" style={{ height: "70%" }}></div>
-                                <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-white dark:from-gray-900 to-transparent"></div>
-                            </div>
+                        <div dangerouslySetInnerHTML={{ __html: contentToDisplay }} />
+                    </div>
+                </div>
+
+                {/* REMOVED: Content overlay and gated subscription button */}
+                
+                {/* Keep the existing gated popup for manual triggers (if needed) */}
+                {showGatedPopup && (
+                    <TimedSubscriptionPopup 
+                        showPopup={showGatedPopup} 
+                        onClose={() => setShowGatedPopup(false)} 
+                        onSubscribeSuccess={() => { 
+                            setIsSubscribed(true); 
+                            setShowGatedPopup(false); 
+                        }}
+                    />
+                )}
+
+                {/* NEW: Timed subscription popup */}
+                {showTimedPopup && !isSubscribed && (
+                    <TimedSubscriptionPopup 
+                        showPopup={showTimedPopup} 
+                        onClose={() => setShowTimedPopup(false)} 
+                        onSubscribeSuccess={onTimedPopupSuccess}
+                    />
+                )}
+
+                <div className="flex flex-wrap gap-2 mb-6 md:mb-8">
+                    {blog.tags?.map((tag) => (
+                        <Link 
+                            key={tag} 
+                            to={`/tag/${encodeURIComponent(tag.toLowerCase())}`} 
+                            className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 text-sm font-medium rounded-full hover:bg-blue-200 dark:hover:bg-blue-600 hover:text-blue-700 dark:hover:text-blue-100 transition-colors cursor-pointer"
+                        >
+                            #{tag}
+                        </Link>
+                    ))}
+                </div>
+                
+                <div className="border-t dark:border-gray-700 pt-6">
+                    <div className="mb-8">
+                        {isSubscribed ? (
+                            <LikeButton blogId={blog._id} initialLikes={blog.likes}/>
+                        ) : (
+                            <p className="text-gray-600 dark:text-gray-400 text-sm">Subscribe to like this post!</p>
                         )}
                     </div>
-                </div>
-                {showContentOverlay && (
-                    <div className="flex flex-col items-center justify-center p-4 text-center -mt-16 relative z-10">
-                        <p className="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-4">Subscribe to Read Full Article!</p>
-                        <button onClick={() => setShowGatedPopup(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-colors duration-200">Subscribe Now</button>
-                    </div>
-                )}
-                {showGatedPopup && (<EmailSubscriptionPopup showPopup={showGatedPopup} onClose={() => setShowGatedPopup(false)} onSubscribeSuccess={() => { setIsSubscribed(true); setShowGatedPopup(false); }}/>)}
-                <div className="flex flex-wrap gap-2 mb-6 md:mb-8">
-                    {blog.tags?.map((tag) => (<Link key={tag} to={`/tag/${encodeURIComponent(tag.toLowerCase())}`} className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 text-sm font-medium rounded-full hover:bg-blue-200 dark:hover:bg-blue-600 hover:text-blue-700 dark:hover:text-blue-100 transition-colors cursor-pointer">#{tag}</Link>))}
-                </div>
-                <div className="border-t dark:border-gray-700 pt-6">
-                    <div className="mb-8">{isSubscribed ? (<LikeButton blogId={blog._id} initialLikes={blog.likes}/>) : (<p className="text-gray-600 dark:text-gray-400 text-sm">Subscribe to like this post!</p>)}</div>
                     <Suspense fallback={<div className="text-center py-10 dark:text-gray-400">Loading comments...</div>}>
-                        {isSubscribed ? (<CommentSection blogId={blog._id} initialComments={blog.comments} onCommentSuccess={handleTrackComment}/>) : (<p className="text-gray-600 dark:text-gray-400 text-sm">Subscribe to view and post comments!</p>)}
+                        {isSubscribed ? (
+                            <CommentSection 
+                                blogId={blog._id} 
+                                initialComments={blog.comments} 
+                                onCommentSuccess={handleTrackComment}
+                            />
+                        ) : (
+                            <p className="text-gray-600 dark:text-gray-400 text-sm">Subscribe to view and post comments!</p>
+                        )}
                     </Suspense>
                 </div>
             </article>

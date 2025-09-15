@@ -14,9 +14,10 @@ import useBlogData from '../../hooks/useBlogData';
 import BlogArticle from './BlogArticle';
 
 const MIN_READ_DURATION_SECONDS = 30;
+const POPUP_DELAY_SECONDS = 10; // 15 seconds delay for popup
 
 const BlogDetail = ({ blog: initialBlog }) => {
-    const { slug } = useParams(); // Changed from id to slug
+    const { slug } = useParams();
     const { i18n } = useTranslation();
     
     // Get data and state from our custom hook, passing the slug
@@ -25,12 +26,14 @@ const BlogDetail = ({ blog: initialBlog }) => {
     // Manage UI-specific state
     const [isSubscribed, setIsSubscribed] = useState(hasSubscriberId());
     const [showGatedPopup, setShowGatedPopup] = useState(false);
+    const [showTimedPopup, setShowTimedPopup] = useState(false); // NEW: For 15-second timer popup
     
     // Manage other business logic & side effects
     const { getShareCount, setInitialShareCount } = useShare();
     const startTimeRef = useRef(null);
     const timeSpentRef = useRef(0);
     const lastActivityTimeRef = useRef(Date.now());
+    const timerRef = useRef(null); // NEW: For the 15-second timer
 
     const sendReadTrackingData = useCallback(async (currentBlogId, currentSubscriberId, duration) => {
         if (!currentSubscriberId || !currentBlogId || duration < MIN_READ_DURATION_SECONDS) {
@@ -51,6 +54,34 @@ const BlogDetail = ({ blog: initialBlog }) => {
                 .catch(err => console.error("Failed to track comment:", err));
         }
     }, [blog]);
+
+    // NEW: 15-second timer logic
+    useEffect(() => {
+        // Only start timer if user is not subscribed and blog is loaded
+        if (!isSubscribed && blog && !showTimedPopup) {
+            timerRef.current = setTimeout(() => {
+                setShowTimedPopup(true);
+            }, POPUP_DELAY_SECONDS * 1000);
+        }
+
+        // Cleanup timer
+        return () => {
+            if (timerRef.current) {
+                clearTimeout(timerRef.current);
+                timerRef.current = null;
+            }
+        };
+    }, [blog, isSubscribed, showTimedPopup]);
+
+    // NEW: Handle successful subscription from timed popup
+    const handleTimedPopupSuccess = useCallback(() => {
+        setIsSubscribed(true);
+        setShowTimedPopup(false);
+        if (timerRef.current) {
+            clearTimeout(timerRef.current);
+            timerRef.current = null;
+        }
+    }, []);
 
     useEffect(() => {
         if (blog?._id && blog.shareCount !== undefined) {
@@ -86,14 +117,23 @@ const BlogDetail = ({ blog: initialBlog }) => {
 
     useEffect(() => {
         const updateSubscriptionStatus = () => {
-            setIsSubscribed(hasSubscriberId());
-            if (hasSubscriberId() && showGatedPopup) {
+            const wasSubscribed = isSubscribed;
+            const nowSubscribed = hasSubscriberId();
+            setIsSubscribed(nowSubscribed);
+            
+            // If user just subscribed, close any open popups and clear timer
+            if (!wasSubscribed && nowSubscribed) {
                 setShowGatedPopup(false);
+                setShowTimedPopup(false);
+                if (timerRef.current) {
+                    clearTimeout(timerRef.current);
+                    timerRef.current = null;
+                }
             }
         };
         window.addEventListener('storage', updateSubscriptionStatus);
         return () => window.removeEventListener('storage', updateSubscriptionStatus);
-    }, [showGatedPopup]);
+    }, [isSubscribed]);
 
     // Render loading/error states or the final component
     if (loading) return <div className="text-center mt-20 p-4 dark:text-gray-300">Loading post...</div>;
@@ -107,6 +147,9 @@ const BlogDetail = ({ blog: initialBlog }) => {
             setIsSubscribed={setIsSubscribed}
             showGatedPopup={showGatedPopup}
             setShowGatedPopup={setShowGatedPopup}
+            showTimedPopup={showTimedPopup} // NEW: Pass timed popup state
+            setShowTimedPopup={setShowTimedPopup} // NEW: Pass timed popup setter
+            onTimedPopupSuccess={handleTimedPopupSuccess} // NEW: Pass success handler
             handleTrackComment={handleTrackComment}
             getShareCount={getShareCount}
             currentLang={i18n.language}

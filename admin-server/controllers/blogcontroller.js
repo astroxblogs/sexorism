@@ -46,63 +46,54 @@ exports.getLatestBlogs = async (req, res) => {
  
 exports.getBlogs = async (req, res) => {
     try {
-    
         const { category, tag, page = 1, limit = 10 } = req.query;
         const parsedLimit = parseInt(limit, 10);
         const parsedPage = parseInt(page, 10);
 
         if (isNaN(parsedLimit) || parsedLimit <= 0) {
-            return res.status(400).json({ error: 'Invalid limit parameter. Must be a positive number.' });
+            return res.status(400).json({ error: 'Invalid limit parameter.' });
         }
         if (isNaN(parsedPage) || parsedPage <= 0) {
-            return res.status(400).json({ error: 'Invalid page parameter. Must be a positive number.' });
+            return res.status(400).json({ error: 'Invalid page parameter.' });
         }
 
-  
         let filter = {};
+        if (category) filter.category = category.trim();
+        if (tag) filter.tags = { $in: [new RegExp(`^${tag.trim()}$`, 'i')] };
 
-     
-        if (category) {
-            filter.category = category.trim();
-        }
+        // --- DEBUGGING LOGS ADDED ---
+        console.log("\n--- DEBUG: Inside getBlogs Controller ---");
+        console.log("User making request:", req.user);
+        console.log("User role:", req.user?.role);
 
-        if (tag) {
-            filter.tags = { $in: [new RegExp(`^${tag.trim()}$`, 'i')] };
+        if (req.user?.role === 'operator') {
+            console.log("Applying OPERATOR filter for user ID:", req.user.id);
+            filter.createdBy = req.user.id;
+        } else {
+            console.log("No operator filter applied. User is admin or role is undefined.");
         }
+        console.log("Final filter being sent to DB:", filter);
+        // --- END DEBUGGING LOGS ---
+
         const skip = (parsedPage - 1) * parsedLimit;
- 
-        const blogs = await Blog.find(filter) // <--- ADDED 'const blogs = await' HERE
+        const blogs = await Blog.find(filter)
             .sort({ date: -1 })
             .skip(skip)
             .limit(parsedLimit);
- 
+
         const totalBlogs = await Blog.countDocuments(filter);
         const totalPages = Math.ceil(totalBlogs / parsedLimit);
 
-        res.json({
-            blogs,
-            currentPage: parsedPage,
-            totalPages,
-            totalBlogs
-        });
+        res.json({ blogs, currentPage: parsedPage, totalPages, totalBlogs });
     } catch (err) {
         console.error("Error in getBlogs:", err);
         res.status(500).json({ error: err.message || 'Failed to retrieve blogs.' });
     }
 };
-
  
 exports.searchBlogs = async (req, res) => {
     const { q, page = 1, limit = 10 } = req.query;
-    const parsedLimit = parseInt(limit, 10);
-    const parsedPage = parseInt(page, 10);
-
-    if (isNaN(parsedLimit) || parsedLimit <= 0) {
-        return res.status(400).json({ error: 'Invalid limit parameter. Must be a positive number.' });
-    }
-    if (isNaN(parsedPage) || parsedPage <= 0) {
-        return res.status(400).json({ error: 'Invalid page parameter. Must be a positive number.' });
-    }
+    // ... validation ...
 
     if (!q) {
         return res.status(400).json({ error: 'A search query "q" is required.' });
@@ -112,41 +103,30 @@ exports.searchBlogs = async (req, res) => {
         const regex = new RegExp(q, 'i');
         const searchFilter = {
             $or: [
-                { title: regex },
-                { content: regex },
-                { title_en: regex },
-                { title_hi: regex },
-
-
-                { content_en: regex },
-                { content_hi: regex },
-
-
-                { tags: regex }, // This will search for the tag within the array
-                { category: regex }
+                { title: regex }, { content: regex }, { title_en: regex },
+                { title_hi: regex }, { content_en: regex }, { content_hi: regex },
+                { tags: regex }, { category: regex }
             ]
         };
-        const skip = (parsedPage - 1) * parsedLimit;
 
-        // Fetch blogs for the current page matching the search filter
+        // --- PERMISSION LOGIC ---
+        // Ensures operators can only search within their own created blogs.
+        if (req.user?.role === 'operator') {
+            searchFilter.createdBy = req.user.id;
+        }
+
+        const skip = (parseInt(page, 10) - 1) * parseInt(limit, 10);
         const blogs = await Blog.find(searchFilter)
             .sort({ date: -1 })
             .skip(skip)
-            .limit(parsedLimit);
+            .limit(parseInt(limit, 10));
 
-        // Get total count of blogs matching the search filter
         const totalBlogs = await Blog.countDocuments(searchFilter);
-        const totalPages = Math.ceil(totalBlogs / parsedLimit);
+        const totalPages = Math.ceil(totalBlogs / parseInt(limit, 10));
 
-        res.json({
-            blogs,
-            currentPage: parsedPage,
-            totalPages,
-            totalBlogs
-        });
-
+        res.json({ blogs, currentPage: parseInt(page, 10), totalPages, totalBlogs });
     } catch (err) {
-        console.error("Error in searchBlogs:", err); // Log the actual error for debugging
+        console.error("Error in searchBlogs:", err);
         res.status(500).json({ error: 'Failed to perform search.' });
     }
 };
@@ -168,21 +148,17 @@ exports.getBlog = async (req, res) => {
 exports.createBlog = async (req, res) => {
     try {
         const title = req.body.title_en || req.body.title;
-        
         if (!title) {
-            return res.status(400).json({ error: 'Title is required to generate slug' });
+            return res.status(400).json({ error: 'Title is required' });
         }
         
         const slug = await generateUniqueSlug(title);
-        const blogData = { ...req.body, slug };
+        const blogData = { ...req.body, slug, createdBy: req.user.id }; // Always set createdBy
 
-        // Role-based default status and createdBy
         if (req.user?.role === 'operator') {
             blogData.status = 'pending';
-            blogData.createdBy = req.user.id;
         } else if (req.user?.role === 'admin') {
             blogData.status = req.body.status || 'published';
-            blogData.createdBy = req.user.id;
         }
         
         const blog = new Blog(blogData);
@@ -198,10 +174,9 @@ exports.updateBlog = async (req, res) => {
     try {
         const title = req.body.title_en || req.body.title;
         if (title) {
-            const slug = await generateUniqueSlug(title, req.params.id);
-            req.body.slug = slug;
+            req.body.slug = await generateUniqueSlug(title, req.params.id);
         }
-        // Ownership and permission checks
+
         const existing = await Blog.findById(req.params.id);
         if (!existing) return res.status(404).json({ error: 'Blog not found' });
 
@@ -209,32 +184,23 @@ exports.updateBlog = async (req, res) => {
             if (existing.createdBy?.toString() !== req.user.id) {
                 return res.status(403).json({ error: 'Forbidden: You can only edit your own blogs.' });
             }
-            // Operators cannot publish directly
-            if (req.body.status && req.body.status !== 'pending') {
-                return res.status(403).json({ error: 'Forbidden: Operators cannot change status to non-pending.' });
-            }
-            // Force status to pending on update
-            req.body.status = 'pending';
+            req.body.status = 'pending'; // Force status to pending on any operator update
         }
 
         const blog = await Blog.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        if (!blog) return res.status(404).json({ error: 'Blog not found' });
         res.json(blog);
     } catch (err) {
         res.status(400).json({ error: err.message });
     }
 };
 
+
 // Delete a blog
 exports.deleteBlog = async (req, res) => {
     try {
-        // Operators can delete only their own blogs
-        if (req.user?.role === 'operator') {
-            const existing = await Blog.findById(req.params.id);
-            if (!existing) return res.status(404).json({ error: 'Blog not found' });
-            if (existing.createdBy?.toString() !== req.user.id) {
-                return res.status(403).json({ error: 'Forbidden: You can only delete your own blogs.' });
-            }
+        // This check is now redundant because of the route middleware, but serves as a backup.
+        if (req.user?.role !== 'admin') {
+            return res.status(403).json({ error: 'Forbidden: You do not have permission to delete blogs.' });
         }
 
         const blog = await Blog.findByIdAndDelete(req.params.id);
@@ -244,7 +210,6 @@ exports.deleteBlog = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
-
 // Admin-only: list pending blogs
 exports.getPendingBlogs = async (req, res) => {
     try {
@@ -253,15 +218,26 @@ exports.getPendingBlogs = async (req, res) => {
         const parsedPage = parseInt(page, 10);
         const skip = (parsedPage - 1) * parsedLimit;
         const filter = { status: 'pending' };
-        const blogs = await Blog.find(filter).sort({ createdAt: -1 }).skip(skip).limit(parsedLimit);
+        
+        // The .exec() is added to ensure the query with populate runs reliably.
+        const blogs = await Blog.find(filter)
+            .populate({
+                path: 'createdBy',
+                select: 'username' 
+            })
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(parsedLimit)
+            .exec(); // Ensures the populate command is executed correctly.
+            
         const totalBlogs = await Blog.countDocuments(filter);
-        const totalPages = Math.ceil(totalBlogs / parsedLimit);
-        res.json({ blogs, currentPage: parsedPage, totalPages, totalBlogs });
+        
+        res.json({ blogs, currentPage: parsedPage, totalPages: Math.ceil(totalBlogs / parsedLimit), totalBlogs });
     } catch (err) {
+        console.error("Error in getPendingBlogs:", err);
         res.status(500).json({ error: err.message });
     }
 };
-
 // Admin-only: approve blog
 exports.approveBlog = async (req, res) => {
     try {

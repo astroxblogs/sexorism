@@ -4,7 +4,7 @@ const Blog = require('../models/Blog');
 const Admin = require('../models/Admin');
 const bcrypt = require('bcryptjs');
 
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err)); // Added error logging for connection
 
@@ -49,9 +49,10 @@ const seedAdmin = async () => {
 
 async function seed() {
   try {
-
+   
     await Blog.insertMany(seedBlogs);
     console.log('Blogs seeded successfully!');
+
 
     await Admin.create(await seedAdmin());  
     console.log('Admin user seeded successfully!');

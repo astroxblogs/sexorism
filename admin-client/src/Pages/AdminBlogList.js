@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate for redirection
 import AdminBlogTable from '../components/AdminBlogTable';
 import api from '../services/api';
 import { useTranslation } from 'react-i18next';
@@ -7,15 +8,34 @@ const ITEMS_PER_PAGE = 10;
 
 const AdminBlogList = ({ onEdit }) => {
     const { t } = useTranslation();
-    // State for the master list of all blogs, fetched only once.
     const [allBlogs, setAllBlogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    const [userRole, setUserRole] = useState('');
+    const navigate = useNavigate(); // Hook for navigation
 
-   
     useEffect(() => {
+        let role = '';
+        try {
+            role = sessionStorage.getItem('astrox_admin_role_session');
+            if (role) {
+                setUserRole(role);
+            }
+        } catch (e) {
+            console.error('Could not retrieve user role from session storage:', e);
+        }
+
+        // --- NEW: Security Check ---
+        // If the user is an operator, they should not be on this page.
+        // Redirect them to the main dashboard.
+        if (role === 'operator') {
+            navigate('/admin-dashboard'); // Or the appropriate route for the operator's main view
+            return; // Stop execution of the rest of the effect
+        }
+
+        // Only admins will proceed from here
         const controller = new AbortController();
         setLoading(true);
 
@@ -35,29 +55,29 @@ const AdminBlogList = ({ onEdit }) => {
             });
 
         return () => controller.abort();
-    }, []); // Empty array ensures this runs only once.
+    }, [navigate]); // Add navigate to dependency array
 
-    // This performs a fast, client-side search whenever the query changes.
-    // It filters the master 'allBlogs' list. No network calls, no flickering.
     const filteredBlogs = useMemo(() => {
         if (!searchQuery) {
             return allBlogs;
         }
         return allBlogs.filter(blog =>
-            blog.title_en.toLowerCase().includes(searchQuery.toLowerCase())
+            (blog.title_en || '').toLowerCase().includes(searchQuery.toLowerCase())
         );
     }, [searchQuery, allBlogs]);
 
-    // When the search query changes, reset to the first page.
     useEffect(() => {
         setCurrentPage(1);
     }, [searchQuery]);
 
-
     const handleDelete = async (id) => {
+        if (userRole !== 'admin') {
+            alert('You do not have permission to delete blogs.');
+            return;
+        }
+
         if (window.confirm(t('admin_panel.confirm_delete'))) {
             const originalBlogs = [...allBlogs];
-            // Optimistic UI update: remove the blog from the master list instantly.
             setAllBlogs(currentBlogs => currentBlogs.filter(b => b._id !== id));
 
             try {
@@ -65,14 +85,12 @@ const AdminBlogList = ({ onEdit }) => {
             } catch (err) {
                 console.error('Error deleting blog:', err.response?.data || err.message);
                 alert(`${t('admin_panel.delete_error_message')}: ${err.response?.data?.error || err.message}`);
-                // If the delete fails, restore the original list.
                 setAllBlogs(originalBlogs);
             }
         }
     };
 
     // --- Pagination Logic ---
-    // The pagination now works on the 'filteredBlogs' list.
     const totalPages = Math.ceil(filteredBlogs.length / ITEMS_PER_PAGE);
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
@@ -89,6 +107,12 @@ const AdminBlogList = ({ onEdit }) => {
             setCurrentPage(currentPage - 1);
         }
     };
+
+    // If the role is not admin, we will show a loading/redirecting message
+    // before the redirect effect kicks in.
+    if (userRole && userRole !== 'admin') {
+        return <div className="text-center p-10 dark:text-gray-200">Redirecting...</div>;
+    }
 
     if (loading) return <div className="text-center p-10 dark:text-gray-200">{t('loading blogs')}</div>;
     if (error) return <div className="text-center p-10 text-red-500">{t('error')}: {error}</div>;
@@ -113,7 +137,12 @@ const AdminBlogList = ({ onEdit }) => {
                 </div>
 
                 <div>
-                    <AdminBlogTable blogs={currentBlogs} onEdit={onEdit} onDelete={handleDelete} startIndex={startIndex} />
+                    <AdminBlogTable
+                        blogs={currentBlogs}
+                        onEdit={onEdit}
+                        onDelete={userRole === 'admin' ? handleDelete : null}
+                        startIndex={startIndex}
+                    />
                 </div>
 
                 {totalPages > 1 && (
