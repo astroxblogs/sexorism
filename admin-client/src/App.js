@@ -8,6 +8,7 @@ import AdminBlogList from './Pages/AdminBlogList';
 import { getAuthToken, removeAuthToken } from './utils/localStorage';
 import api from './services/api';
 import { Toaster } from 'react-hot-toast';
+import 'react-loading-skeleton/dist/skeleton.css'; 
 
 // --- REVISED PrivateRoute Component ---
 const PrivateRoute = ({ children, requireRole }) => {

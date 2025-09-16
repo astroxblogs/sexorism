@@ -3,7 +3,6 @@ import { useForm } from 'react-hook-form';
 import api from '../services/api';
 import 'react-quill/dist/quill.snow.css';
 
-// --- FIX: Ensure you are using NAMED imports with curly braces {} ---
 import { QuillEditor } from './QuillEditor';
 import { LinkDialog } from './LinkDialog';
 
@@ -12,7 +11,7 @@ const LANGUAGES = [
     { code: 'hi', name: 'Hindi' },
 ];
 
-const AdminBlogForm = ({ blog, onSave,onCancel }) => {
+const AdminBlogForm = ({ blog, onSave, onCancel }) => {
     const { register, handleSubmit, reset, setValue, watch } = useForm();
     const [activeLang, setActiveLang] = useState('en');
     const [contents, setContents] = useState(() => {
@@ -29,8 +28,6 @@ const AdminBlogForm = ({ blog, onSave,onCancel }) => {
     const [categories, setCategories] = useState([]);
     const [loadingCategories, setLoadingCategories] = useState(true);
     const [categoriesError, setCategoriesError] = useState(null);
-
-    // State for the Link Dialog
     const [linkDialogOpen, setLinkDialogOpen] = useState(false);
     const [linkDialogRange, setLinkDialogRange] = useState(null);
     const [linkInitialText, setLinkInitialText] = useState('');
@@ -53,7 +50,7 @@ const AdminBlogForm = ({ blog, onSave,onCancel }) => {
 
     useEffect(() => {
         if (blog) {
-            reset(blog);
+            reset(blog); // Populates fields like category
             const newContents = {};
             LANGUAGES.forEach(lang => {
                 setValue(`title_${lang.code}`, blog[`title_${lang.code}`] || '');
@@ -63,6 +60,14 @@ const AdminBlogForm = ({ blog, onSave,onCancel }) => {
             newContents['en'] = newContents['en'] || blog.content || '';
             setContents(newContents);
             setValue('image', blog.image || '');
+            
+            // ✅ FIX: Convert the blog.tags array to a string and set the form value
+            if (blog.tags && Array.isArray(blog.tags)) {
+                setValue('tags', blog.tags.join(', '));
+            } else {
+                setValue('tags', '');
+            }
+
             setSelectedFile(null);
             if (fileInputRef.current) fileInputRef.current.value = '';
         } else {
@@ -146,7 +151,8 @@ const AdminBlogForm = ({ blog, onSave,onCancel }) => {
 
 
     const onSubmit = async (data) => {
-        const tags = typeof data.tags === 'string' ? data.tags.split(',').map(tag => tag.trim()) : [];
+        // This part of your logic is already correct! No changes needed here.
+        const tags = typeof data.tags === 'string' ? data.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [];
         let finalImageUrl = data.image;
         if (!finalImageUrl && !selectedFile) {
             finalImageUrl = extractFirstImageUrl(contents.en);
@@ -175,7 +181,6 @@ const AdminBlogForm = ({ blog, onSave,onCancel }) => {
             const clearedContents = {};
             LANGUAGES.forEach(lang => clearedContents[lang.code] = '');
             setContents(clearedContents);
-            alert(blog ? "Blog updated successfully!" : "Blog added successfully!");
         } catch (error) {
             alert('Error saving blog: ' + (error.response?.data?.error || error.message));
         }
@@ -249,7 +254,7 @@ const AdminBlogForm = ({ blog, onSave,onCancel }) => {
 
                  <div className="flex justify-end items-center space-x-4 pt-6 border-t mt-6">
                 <button
-                    type="button" // Important: type="button" prevents form submission
+                    type="button"
                     onClick={onCancel}
                     className="px-6 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                 >
@@ -258,7 +263,6 @@ const AdminBlogForm = ({ blog, onSave,onCancel }) => {
                 <button
                     type="submit"
                     className="px-6 py-3 border border-transparent rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
-                    // Add your existing disabled logic if you have one, e.g., disabled={isLoading}
                 >
                     {blog ? 'Update Blog' : 'Submit Blog'}
                 </button>
@@ -276,4 +280,3 @@ const AdminBlogForm = ({ blog, onSave,onCancel }) => {
 };
 
 export default AdminBlogForm;
-

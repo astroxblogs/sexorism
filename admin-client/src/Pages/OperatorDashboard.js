@@ -5,6 +5,7 @@ import AdminBlogForm from '../components/AdminBlogForm';
 import api, { setAccessToken } from '../services/api';
 import OperatorSettingsForm from '../components/OperatorSettingsForm';
 import { toast } from 'react-hot-toast';
+import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 
 // --- ICONS (Using high-quality SVGs for a professional look) ---
 const ICONS = {
@@ -47,14 +48,66 @@ const Header = ({ operatorInfo, setActiveView }) => { /* ... No changes here ...
         </div>
     );
 };
-const OperatorBlogTable = ({ blogs, onEdit, startIndex }) => { /* ... No changes here ... */
+// admin-client/src/Pages/OperatorDashboard.js
+
+// Find this component inside your file and replace it.
+
+const OperatorBlogTable = ({ blogs, onEdit, startIndex }) => {
     const { t } = useTranslation();
     return (
         <div className="overflow-x-auto bg-white rounded-xl shadow-sm border">
-            <table className="min-w-full"><thead className="bg-gray-50"><tr><th className="py-4 px-6 text-left text-sm font-semibold text-gray-600">#</th><th className="py-4 px-6 text-left text-sm font-semibold text-gray-600">Title</th><th className="py-4 px-6 text-left text-sm font-semibold text-gray-600">Category</th><th className="py-4 px-6 text-left text-sm font-semibold text-gray-600">Date</th><th className="py-4 px-6 text-left text-sm font-semibold text-gray-600">Status</th><th className="py-4 px-6 text-left text-sm font-semibold text-gray-600">Actions</th></tr></thead><tbody className="divide-y divide-gray-100">{blogs.length > 0 ? blogs.map((blog, index) => (<tr key={blog._id} className="hover:bg-gray-50 transition-colors"><td className="py-4 px-6 text-sm text-gray-500">{startIndex + index + 1}</td><td className="py-4 px-6 font-medium text-gray-900 truncate max-w-xs">{blog.title_en || blog.title}</td><td className="py-4 px-6"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{blog.category}</span></td><td className="py-4 px-6 text-sm text-gray-500">{new Date(blog.date).toLocaleDateString()}</td><td className="py-4 px-6"><span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${blog.status === 'published' ? 'bg-green-100 text-green-800' : blog.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>{blog.status}</span></td><td className="py-4 px-6"><button onClick={() => onEdit(blog)} className="text-indigo-600 hover:text-indigo-800 text-sm font-medium hover:underline">{t('Edit')}</button></td></tr>)) : (<tr><td colSpan="6" className="py-12 text-center"><div className="text-gray-400"><div className="text-6xl mb-4">📝</div><p className="text-lg font-medium text-gray-600 mb-2">No blogs yet</p><p className="text-sm text-gray-500">Start creating your first blog post!</p></div></td></tr>)}</tbody></table>
+            <table className="min-w-full">
+                {/* Table Head (no changes here) */}
+                <thead className="bg-gray-50">
+                    <tr>
+                        <th className="py-4 px-6 text-left text-sm font-semibold text-gray-600">#</th>
+                        <th className="py-4 px-6 text-left text-sm font-semibold text-gray-600">Title</th>
+                        <th className="py-4 px-6 text-left text-sm font-semibold text-gray-600">Category</th>
+                        <th className="py-4 px-6 text-left text-sm font-semibold text-gray-600">Date</th>
+                        <th className="py-4 px-6 text-left text-sm font-semibold text-gray-600">Status</th>
+                        <th className="py-4 px-6 text-left text-sm font-semibold text-gray-600">Actions</th>
+                    </tr>
+                </thead>
+                {/* Table Body */}
+                <tbody className="divide-y divide-gray-100">
+                    {blogs.length > 0 ? blogs.map((blog, index) => (
+                        <tr key={blog._id} className="hover:bg-gray-50 transition-colors">
+                            <td className="py-4 px-6 text-sm text-gray-500">{startIndex + index + 1}</td>
+                            <td className="py-4 px-6 font-medium text-gray-900 truncate max-w-xs">{blog.title_en || blog.title}</td>
+                            <td className="py-4 px-6"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{blog.category}</span></td>
+                            <td className="py-4 px-6 text-sm text-gray-500">{new Date(blog.date).toLocaleDateString()}</td>
+                            <td className="py-4 px-6">
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${blog.status === 'published' ? 'bg-green-100 text-green-800' : blog.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>{blog.status}</span>
+                            </td>
+
+                            {/* ✅ MODIFIED SECTION with the new logic */}
+                            <td className="py-4 px-6">
+                                {blog.status !== 'published' ? (
+                                    // If status is 'pending' OR 'rejected', show the Edit button
+                                    <button 
+                                        onClick={() => onEdit(blog)} 
+                                        className="text-indigo-600 hover:text-indigo-800 text-sm font-medium hover:underline"
+                                    >
+                                        {t('Edit')}
+                                    </button>
+                                ) : (
+                                    // Otherwise (only for 'published'), show a locked indicator
+                                    <span className="text-gray-400 text-sm italic">Locked</span>
+                                )}
+                            </td>
+                        </tr>
+                    )) : (
+                        <tr>
+                            <td colSpan="6" className="py-12 text-center">
+                                <div className="text-gray-400"><div className="text-6xl mb-4">📝</div><p className="text-lg font-medium text-gray-600 mb-2">No blogs yet</p><p className="text-sm text-gray-500">Start creating your first blog post!</p></div>
+                            </td>
+                        </tr>
+                    )}
+                </tbody>
+            </table>
         </div>
     );
-};
+};;
 
 // --- MAIN DASHBOARD COMPONENT ---
 const OperatorDashboard = () => {
@@ -174,6 +227,11 @@ const OverviewView = ({ stats, blogs, setActiveView }) => { /* ... No changes he
     )
 };
 
+
+
+
+
+
 // ✅ FIX: Accept formKey and handleCancel as props
 const BlogFormView = ({ editingBlog, setEditingBlog, handleSave, setActiveView, formKey, handleCancel }) => (
     <div className="bg-white rounded-xl shadow-sm border">
@@ -192,10 +250,72 @@ const BlogFormView = ({ editingBlog, setEditingBlog, handleSave, setActiveView, 
     </div>
 );
 
-const BlogListView = ({ blogs, loading, handleEditClick, currentPage, setCurrentPage, totalPages, searchQuery, setSearchQuery }) => { /* ... No changes here ... */
+
+const SkeletonBlogTable = () => (
+    <SkeletonTheme baseColor="#e0e0e0" highlightColor="#f5f5f5">
+        <div className="overflow-x-auto bg-white rounded-xl shadow-sm border">
+            <table className="min-w-full">
+                <thead className="bg-gray-50">
+                    <tr>
+                        <th className="py-4 px-6 text-left w-12"><Skeleton width={20} /></th>
+                        <th className="py-4 px-6 text-left"><Skeleton width={200} /></th>
+                        <th className="py-4 px-6 text-left"><Skeleton width={100} /></th>
+                        <th className="py-4 px-6 text-left"><Skeleton width={80} /></th>
+                        <th className="py-4 px-6 text-left"><Skeleton width={80} /></th>
+                        <th className="py-4 px-6 text-left"><Skeleton width={50} /></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {/* Create an array of 5 items to map over for 5 skeleton rows */}
+                    {Array(5).fill(0).map((_, index) => (
+                        <tr key={index} className="border-t">
+                            <td className="py-4 px-6"><Skeleton width={20} /></td>
+                            <td className="py-4 px-6"><Skeleton /></td>
+                            <td className="py-4 px-6"><Skeleton /></td>
+                            <td className="py-4 px-6"><Skeleton /></td>
+                            <td className="py-4 px-6"><Skeleton /></td>
+                            <td className="py-4 px-6"><Skeleton width={50} /></td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    </SkeletonTheme>
+);
+
+
+
+const BlogListView = ({ blogs, loading, handleEditClick, currentPage, setCurrentPage, totalPages, searchQuery, setSearchQuery }) => {
     return (
-        <div className="space-y-6"> <div className="bg-white rounded-xl shadow-sm border p-6"> <div className="flex items-center justify-between mb-6"> <h2 className="text-2xl font-semibold text-gray-800">My Blog Posts</h2> <div className="relative"><input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10 pr-4 py-2 border rounded-lg" /><div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">🔍</div></div> </div> {loading ? <p>Loading...</p> : <OperatorBlogTable blogs={blogs} onEdit={handleEditClick} startIndex={(currentPage - 1) * 10} />} {totalPages > 1 && (<div className="flex justify-between items-center mt-6 pt-6 border-t"> <button onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1} className="px-4 py-2 bg-white border rounded-lg disabled:opacity-50">Previous</button> <span className="text-sm font-medium">Page {currentPage} of {totalPages}</span> <button onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage === totalPages} className="px-4 py-2 bg-white border rounded-lg disabled:opacity-50">Next</button> </div>)} </div> </div>
-    )
+        <div className="space-y-6">
+            <div className="bg-white rounded-xl shadow-sm border p-6">
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-semibold text-gray-800">My Blog Posts</h2>
+                    <div className="relative">
+                        <input
+                            type="text"
+                            placeholder="Search..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-10 pr-4 py-2 border rounded-lg"
+                        />
+                        <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">🔍</div>
+                    </div>
+                </div>
+
+                {/* ✅ THIS IS THE ONLY LINE THAT CHANGES */}
+                {loading ? <SkeletonBlogTable /> : <OperatorBlogTable blogs={blogs} onEdit={handleEditClick} startIndex={(currentPage - 1) * 10} />}
+
+                {totalPages > 1 && (
+                    <div className="flex justify-between items-center mt-6 pt-6 border-t">
+                        <button onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1} className="px-4 py-2 bg-white border rounded-lg disabled:opacity-50">Previous</button>
+                        <span className="text-sm font-medium">Page {currentPage} of {totalPages}</span>
+                        <button onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage === totalPages} className="px-4 py-2 bg-white border rounded-lg disabled:opacity-50">Next</button>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
 };
 
 const SettingsView = ({ handleLogout }) => { /* ... No changes here ... */
