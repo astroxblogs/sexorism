@@ -1,2 +1,0 @@
-"use strict";(self.webpackChunkclient=self.webpackChunkclient||[]).push([[380],{9380:(e,s,t)=>{t.r(s),t.d(s,{default:()=>i});t(5043);var n=t(3216),a=t(576),c=t(579);const i=()=>{const{categoryName:e}=(0,n.g)(),s=(e=>{const s=e.split("-").map(e=>e.charAt(0).toUpperCase()+e.slice(1)).join(" ");return/^health-?wellness$/i.test(e)?"Health & Wellness":/^business-?finance$/i.test(e)?"Business & Finance":/^food-?cooking$/i.test(e)?"Food & Cooking":s})(e);return(0,c.jsx)(a.A,{activeCategory:s,searchQuery:""})}}}]);
-//# sourceMappingURL=380.a4c231d2.chunk.js.map
