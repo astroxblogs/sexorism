@@ -65,17 +65,16 @@ app.use('/api/subscribers', subscriberRoutes);
 app.use(socialPreviewMiddleware);
 
 // 3. Serve the React Application's static files (CSS, JS, images)
-app.use(express.static(path.join(__dirname, '../client/build')));
+app.use(express.static(path.join(__dirname, 'client/build')));
 
 // 4. FINAL WORKAROUND: Instead of app.get('/*'), we use a final middleware.
 // This function will only run if no other route above it was matched.
 // It sends the main index.html file for any other path, allowing React Router to take over.
 app.use((req, res, next) => {
-    // Check if the request is for an API route to avoid conflicts
     if (req.path.startsWith('/api/')) {
         return next();
     }
-    res.sendFile(path.join(__dirname, '../client/build/index.html'));
+    res.sendFile(path.join(__dirname, 'client/build/index.html'));
 });
 
 
