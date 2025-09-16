@@ -1,41 +1,39 @@
-// server/routes/socialPreviews.js
-const express = require('express');
+// server/routes/socialPreview.js
+
 const path = require('path');
 const fs = require('fs');
-const router = express.Router();
 const { getBlogBySlugHelper } = require('../controllers/blogController');
 
-// Function to generate meta tags HTML
+// This function is excellent, no changes needed here.
 function generateMetaTags(blog) {
-    // Clean description from markdown and ensure minimum 100 characters for LinkedIn
     let description = '';
     if (blog.content) {
         description = blog.content
             .replace(/[#*`\[\]]/g, '') // Remove markdown
             .replace(/\n/g, ' ') // Replace newlines
+            .replace(/"/g, '&quot;') // Escape quotes for HTML
             .substring(0, 200)
             .trim();
     }
     
-    // Ensure minimum 100 characters for LinkedIn
     if (description.length < 100) {
         description = `${description} Discover innovative ideas, cutting-edge technology insights, and breakthrough concepts at Innvibs. Join thousands of innovators exploring the future of technology and innovation.`.substring(0, 250);
     }
     description += '...';
 
-    const title = `${blog.title} - Innvibs | Innovation & Ideas Hub`;
+    const title = `${blog.title.replace(/"/g, '&quot;')} - Innvibs | Innovation & Ideas Hub`;
     const image = blog.image && blog.image.trim() !== '' ? 
         blog.image.trim() : 
         'https://www.innvibs.com/assets/default-blog-og.jpg';
     const url = `https://www.innvibs.com/blog/${blog.slug}`;
 
+    // All your meta tags generation logic remains the same...
     return `
         <title>${title}</title>
         <meta name="description" content="${description}" />
         <meta name="keywords" content="${blog.tags ? blog.tags.join(', ') + ', innvibs, innovation, technology' : 'innvibs, innovation, technology, ideas'}" />
         <meta name="author" content="Innvibs Team" />
         
-        <!-- Open Graph / Facebook & LinkedIn -->
         <meta property="og:type" content="article" />
         <meta property="og:site_name" content="Innvibs" />
         <meta property="og:title" content="${title}" />
@@ -48,35 +46,28 @@ function generateMetaTags(blog) {
         <meta property="og:url" content="${url}" />
         <meta property="og:locale" content="en_US" />
         
-        <!-- Article specific Open Graph -->
         <meta property="article:published_time" content="${blog.date}" />
         <meta property="article:author" content="Innvibs Team" />
         <meta property="article:section" content="${blog.category || 'Technology'}" />
         ${blog.tags ? blog.tags.map(tag => `<meta property="article:tag" content="${tag}" />`).join('\n        ') : ''}
         
-        <!-- Twitter Card -->
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@innvibs" />
         <meta name="twitter:creator" content="@innvibs" />
         <meta name="twitter:title" content="${title}" />
         <meta name="twitter:description" content="${description}" />
         <meta name="twitter:image" content="${image}" />
-        <meta name="twitter:image:alt" content="${blog.title}" />
+        <meta name="twitter:image:alt" content="${blog.title.replace(/"/g, '&quot;')}" />
         
-        <!-- Additional for WhatsApp -->
-        <meta property="og:image:alt" content="${blog.title}" />
-        
-        <!-- Canonical URL -->
         <link rel="canonical" href="${url}" />
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
         
-        <!-- Schema.org structured data for rich snippets -->
         <script type="application/ld+json">
         {
             "@context": "https://schema.org",
             "@type": "BlogPosting",
-            "headline": "${blog.title}",
-            "description": "${description}",
+            "headline": "${blog.title.replace(/"/g, '\\"')}",
+            "description": "${description.replace(/"/g, '\\"')}",
             "image": {
                 "@type": "ImageObject",
                 "url": "${image}",
@@ -113,64 +104,48 @@ function generateMetaTags(blog) {
     `;
 }
 
-// Blog preview route for social media crawlers
-router.get('/blog/:slug', async (req, res) => {
-    try {
-        const userAgent = req.headers['user-agent'] || '';
-        const isCrawler = /facebookexternalhit|twitterbot|linkedinbot|whatsapp|telegrambot|slackbot|discordbot|googlebot|bingbot|applebot/i.test(userAgent);
-        
-        console.log('🔍 Blog Route Hit:', req.params.slug);
-        console.log('🤖 User-Agent:', userAgent);
-        console.log('🔍 Is Crawler:', isCrawler);
-        
-        if (isCrawler) {
-            // Fetch blog data for social media crawlers
-           const blog = await getBlogBySlugHelper(req.params.slug);
+// This is now our main middleware function
+const socialPreviewMiddleware = async (req, res, next) => {
+    const userAgent = req.headers['user-agent'] || '';
+    const isCrawler = /facebookexternalhit|twitterbot|linkedinbot|whatsapp|telegrambot|slackbot|discordbot|googlebot|bingbot|applebot/i.test(userAgent);
+    const isBlogRoute = req.path.startsWith('/blog/');
+    
+    // Only proceed if it's a crawler AND it's a blog route
+    if (isCrawler && isBlogRoute) {
+        try {
+            const slug = req.path.substring('/blog/'.length);
+            if (!slug) return next(); // Not a valid blog slug URL
+
+            console.log('🤖 Crawler detected for blog slug:', slug);
             
+            const blog = await getBlogBySlugHelper(slug);
             if (!blog) {
-                console.log('❌ Blog not found:', req.params.slug);
-                return res.status(404).send('Blog not found');
+                console.log('❌ Blog not found for crawler:', slug);
+                return next(); // Let the React app handle the 404
             }
+
+            console.log('✅ Serving crawler-optimized HTML for:', blog.title);
             
-            console.log('✅ Blog found for crawler:', blog.title);
-            
-            // Read the built React HTML file
             const htmlPath = path.join(__dirname, '../../client/build/index.html');
-            
-            if (!fs.existsSync(htmlPath)) {
-                console.log('❌ Build file not found:', htmlPath);
-                return res.status(500).send('Build file not found. Make sure to run npm run build in client folder.');
-            }
-            
-            let html = fs.readFileSync(htmlPath, 'utf8');
-            
-            // Generate dynamic meta tags
+            const html = fs.readFileSync(htmlPath, 'utf8');
             const metaTags = generateMetaTags(blog);
             
-            // Replace the entire head section with our optimized meta tags
-            html = html.replace(
-                /<head>[\s\S]*?<\/head>/i,
-                `<head>
-                    <meta charset="utf-8" />
-                    <link rel="icon" href="/favicon.ico" />
-                    <meta name="viewport" content="width=device-width, initial-scale=1" />
-                    <meta name="theme-color" content="#6366f1" />
-                    ${metaTags}
-                </head>`
-            );
+            // FIX: Inject meta tags BEFORE the closing </head> tag.
+            // This preserves existing <link> and <script> tags in the head.
+            const modifiedHtml = html.replace('</head>', `${metaTags}</head>`);
             
-            console.log('✅ Serving crawler-optimized HTML for:', blog.title);
             res.set('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
-            res.send(html);
-        } else {
-            // For regular users, let the main server handle it
-            console.log('👤 Regular user - passing to main server');
-            return res.status(404).send('Route handled by main server');
-        }
-    } catch (error) {
-        console.error('❌ Error in social preview route:', error);
-        res.status(500).send('Internal server error');
-    }
-});
+            return res.send(modifiedHtml);
 
-module.exports = router;
+        } catch (error) {
+            console.error('❌ Error in social preview middleware:', error);
+            // In case of error, just pass through to the default handler
+            return next();
+        }
+    }
+
+    // If not a crawler or not a blog route, just let the request continue to the next middleware
+    return next();
+};
+
+module.exports = socialPreviewMiddleware;

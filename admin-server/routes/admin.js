@@ -20,7 +20,7 @@ const {
 
 const blogController = require('../controllers/blogcontroller');
 const categoryController = require('../controllers/categoryController');
-
+const subscriberController = require('../controllers/subscriberController');
 // ----------------- MIDDLEWARE -----------------
 const { adminAuth, requireRole } = require('../middleware/auth');
 
@@ -154,5 +154,9 @@ router.get('/profile', adminAuth, async (req, res) => {
 router.post('/categories', adminAuth, categoryController.createCategory);
 router.get('/categories', adminAuth, categoryController.getCategories);
 router.delete('/categories/:id', adminAuth, categoryController.deleteCategory);
+
+
+// ----------------- SUBSCRIBER MANAGEMENT (Admin Only) -----------------
+router.get('/subscribers', adminAuth, requireRole('admin'), subscriberController.getSubscribers);
 
 module.exports = router;

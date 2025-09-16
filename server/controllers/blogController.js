@@ -211,8 +211,9 @@ const incrementViews = async (req, res) => {
     const { id } = req.params;
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
-    // Optional: frontend can send a flag to skip DB check
-    const { skipLog } = req.body;
+    // **** THIS IS THE FIXED LINE ****
+    // It now safely handles cases where req.body is empty or undefined.
+    const { skipLog = false } = req.body || {};
 
     if (!skipLog) {
       // Check if this IP already viewed this blog recently

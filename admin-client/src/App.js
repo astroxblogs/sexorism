@@ -5,6 +5,7 @@ import AdminLogin from './Pages/AdminLogin';
 import AdminDashboard from './Pages/AdminDashboard';
 import OperatorDashboard from './Pages/OperatorDashboard';
 import AdminBlogList from './Pages/AdminBlogList';
+import SubscriberManagement from './Pages/SubscriberManagement';
 import { getAuthToken, removeAuthToken } from './utils/localStorage';
 import api from './services/api';
 import { Toaster } from 'react-hot-toast';
@@ -83,6 +84,16 @@ function App() {
                         element={
                             <PrivateRoute requireRole="admin">
                                 <AdminDashboard />
+                            </PrivateRoute>
+                        }
+                    />
+
+                    {/* Subscriber Management - Admin only */}
+                    <Route
+                        path="/admin/subscribers"
+                        element={
+                            <PrivateRoute requireRole="admin">
+                                <SubscriberManagement />
                             </PrivateRoute>
                         }
                     />

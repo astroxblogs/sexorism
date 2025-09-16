@@ -56,7 +56,7 @@ const Home = ({ activeCategory, searchQuery }) => {
                 const catRes = await axios.get('/api/blogs/categories');
                 const categories = Array.isArray(catRes.data) ? catRes.data : [];
                 
-                const preferred = ['Technology', 'Health & Wellness', 'Fashion', 'Astrology'];
+                const preferred = ['Technology', 'Health & Wellness', 'Fashion', 'Vastu Shastra'];
 
                 const preferredPresent = preferred
                     .map(name => categories.find(c => c.name_en === name))

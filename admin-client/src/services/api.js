@@ -163,6 +163,9 @@ export const apiService = {
     
     // Blog Management
     getPendingBlogs: (config = {}) => api.get('/api/admin/blogs/pending', config),
+    // Subscriber Management
+    getSubscribers: () => api.get('/api/admin/subscribers'),
+    getSubscriberStats: () => api.get('/api/admin/subscribers/stats'), // Optional, if you want stats later
 };
 
 export default api;

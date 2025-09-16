@@ -88,12 +88,59 @@ const AdminDashboard = () => {
     }, [role, fetchPendingCount]);
 
     const handleViewChange = (view) => {
+    if (view === 'subscriberManagement') {
+        navigate('/admin/subscribers');
+    } else {
         setActiveView(view);
-    };
+    }
+};
 
     // Navigation items configuration (no changes here)
     const navigationItems = [ { id: 'dashboard', label: t('Dashboard'), icon: '🏠', color: 'text-blue-600', bgColor: 'bg-blue-50 hover:bg-blue-100', activeColor: 'bg-blue-600 text-white' }, { id: 'blogForm', label: t('Add New Blog'), icon: '✍️', color: 'text-green-600', bgColor: 'bg-green-50 hover:bg-green-100', activeColor: 'bg-green-600 text-white' }, { id: 'blogList', label: t('Manage Blogs'), icon: '📝', color: 'text-purple-600', bgColor: 'bg-purple-50 hover:bg-purple-100', activeColor: 'bg-purple-600 text-white' } ];
-    const adminOnlyItems = role === 'admin' ? [ { id: 'pendingApprovals', label: t('Pending Approvals'), icon: '⏳', color: 'text-yellow-600', bgColor: 'bg-yellow-50 hover:bg-yellow-100', activeColor: 'bg-yellow-600 text-white', badge: pendingCount }, { id: 'categoryManager', label: t('Categories'), icon: '🏷️', color: 'text-indigo-600', bgColor: 'bg-indigo-50 hover:bg-indigo-100', activeColor: 'bg-indigo-600 text-white' }, { id: 'operatorManagement', label: t('Operators'), icon: '👥', color: 'text-cyan-600', bgColor: 'bg-cyan-50 hover:bg-cyan-100', activeColor: 'bg-cyan-600 text-white' }, { id: 'adminSettings', label: t('Settings'), icon: '⚙️', color: 'text-gray-600', bgColor: 'bg-gray-50 hover:bg-gray-100', activeColor: 'bg-gray-600 text-white' } ] : [];
+const adminOnlyItems = role === 'admin' ? [
+    {
+        id: 'pendingApprovals',
+        label: t('Pending Approvals'),
+        icon: '⏳',
+        color: 'text-yellow-600',
+        bgColor: 'bg-yellow-50 hover:bg-yellow-100',
+        activeColor: 'bg-yellow-600 text-white',
+        badge: pendingCount
+    },
+    {
+        id: 'categoryManager',
+        label: t('Categories'),
+        icon: '🏷️',
+        color: 'text-indigo-600',
+        bgColor: 'bg-indigo-50 hover:bg-indigo-100',
+        activeColor: 'bg-indigo-600 text-white'
+    },
+    {
+        id: 'operatorManagement',
+        label: t('Operators'),
+        icon: '👥',
+        color: 'text-cyan-600',
+        bgColor: 'bg-cyan-50 hover:bg-cyan-100',
+        activeColor: 'bg-cyan-600 text-white'
+    },
+    {
+        id: 'subscriberManagement',
+        label: t('Subscribers'),
+        icon: '📧',
+        color: 'text-teal-600',
+        bgColor: 'bg-teal-50 hover:bg-teal-100',
+        activeColor: 'bg-teal-600 text-white'
+    },
+    {
+        id: 'adminSettings',
+        label: t('Settings'),
+        icon: '⚙️',
+        color: 'text-gray-600',
+        bgColor: 'bg-gray-50 hover:bg-gray-100',
+        activeColor: 'bg-gray-600 text-white'
+    }
+] : [];    
+    
     const allNavigationItems = [...navigationItems, ...adminOnlyItems];
 
     const renderActiveView = () => {
