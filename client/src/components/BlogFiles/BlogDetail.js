@@ -146,7 +146,7 @@ const BlogDetail = ({ blog: initialBlog }) => {
                 <meta property="og:title" content={blog.title} />
                 <meta property="og:description" content={blog.content?.slice(0, 150)} />
                 <meta property="og:image" content={blog.image} />
-                <meta property="og:url" content={`https://yourdomain.com/blog/${blog.slug}`} />
+                <meta property="og:url" content={`https://www.innvibs.com/blog/${blog.slug}`} />
                 <meta property="og:type" content="article" />
                 <meta name="twitter:card" content="summary_large_image" />
                 <meta name="twitter:title" content={blog.title} />
