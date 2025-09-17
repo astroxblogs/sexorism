@@ -8,8 +8,8 @@ const SidebarLatest = ({ title = 'Latest Updates', items = [] }) => {
     const currentLang = i18n.language;
     const [categoryMap, setCategoryMap] = useState({});
 
-    console.log('DEBUG (SidebarLatest): Rendering SidebarLatest with items:', items);
-    
+    // console.log('DEBUG (SidebarLatest): Rendering SidebarLatest with items:', items);
+
     useEffect(() => {
         let isMounted = true;
         fetch('/api/blogs/categories')
@@ -43,24 +43,24 @@ const SidebarLatest = ({ title = 'Latest Updates', items = [] }) => {
             <ul>
                 {items.map((blog, idx) => (
                     console.log('DEBUG (SidebarLatest): Rendering blog item:', blog),
-                    
+
                     <li key={blog._id} className="mb-6 last:mb-0">
-                     <Link to={`/blog/${blog.slug || blog._id}`} className="block">
-    {blog.image && (
-        <img
-            src={blog.image}
-            alt={getLocalized(blog, 'title')}
-            className="w-full h-44 sm:h-48 object-cover rounded"
-            loading="lazy"
-        />
-    )}
-</Link>
-<Link
-    to={`/blog/${blog.slug || blog._id}`}
-    className="mt-3 block font-sans text-[15px] sm:text-base md:text-[17px] leading-relaxed font-medium text-gray-900 dark:text-gray-100 hover:underline line-clamp-3"
->
-    {getLocalized(blog, 'title')}
-</Link>
+                        <Link to={`/blog/${blog.slug || blog._id}`} className="block">
+                            {blog.image && (
+                                <img
+                                    src={blog.image}
+                                    alt={getLocalized(blog, 'title')}
+                                    className="w-full h-44 sm:h-48 object-cover rounded"
+                                    loading="lazy"
+                                />
+                            )}
+                        </Link>
+                        <Link
+                            to={`/blog/${blog.slug || blog._id}`}
+                            className="mt-3 block font-sans text-[15px] sm:text-base md:text-[17px] leading-relaxed font-medium text-gray-900 dark:text-gray-100 hover:underline line-clamp-3"
+                        >
+                            {getLocalized(blog, 'title')}
+                        </Link>
                         <div className="mt-2 flex items-center gap-2 text-[11px]">
                             {blog.category && (
                                 <span className={`px-2 py-0.5 rounded-full ${getCategoryClasses(blog.category)}`}>

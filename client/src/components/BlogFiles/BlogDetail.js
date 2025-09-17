@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { useShare } from '../../context/ShareContext';
 import { useTranslation } from 'react-i18next';
+import { Helmet } from 'react-helmet-async';
 
 // Utility & API imports
 import { getSubscriberId, hasSubscriberId } from '../../utils/localStorage';
@@ -26,14 +27,14 @@ const BlogDetail = ({ blog: initialBlog }) => {
     // Manage UI-specific state
     const [isSubscribed, setIsSubscribed] = useState(hasSubscriberId());
     const [showGatedPopup, setShowGatedPopup] = useState(false);
-    const [showTimedPopup, setShowTimedPopup] = useState(false); // NEW: For 15-second timer popup
+    const [showTimedPopup, setShowTimedPopup] = useState(false); 
     
     // Manage other business logic & side effects
     const { getShareCount, setInitialShareCount } = useShare();
     const startTimeRef = useRef(null);
     const timeSpentRef = useRef(0);
     const lastActivityTimeRef = useRef(Date.now());
-    const timerRef = useRef(null); // NEW: For the 15-second timer
+    const timerRef = useRef(null); 
 
     const sendReadTrackingData = useCallback(async (currentBlogId, currentSubscriberId, duration) => {
         if (!currentSubscriberId || !currentBlogId || duration < MIN_READ_DURATION_SECONDS) {
@@ -55,16 +56,14 @@ const BlogDetail = ({ blog: initialBlog }) => {
         }
     }, [blog]);
 
-    // NEW: 15-second timer logic
+    // 15-second timer logic
     useEffect(() => {
-        // Only start timer if user is not subscribed and blog is loaded
         if (!isSubscribed && blog && !showTimedPopup) {
             timerRef.current = setTimeout(() => {
                 setShowTimedPopup(true);
             }, POPUP_DELAY_SECONDS * 1000);
         }
 
-        // Cleanup timer
         return () => {
             if (timerRef.current) {
                 clearTimeout(timerRef.current);
@@ -73,7 +72,6 @@ const BlogDetail = ({ blog: initialBlog }) => {
         };
     }, [blog, isSubscribed, showTimedPopup]);
 
-    // NEW: Handle successful subscription from timed popup
     const handleTimedPopupSuccess = useCallback(() => {
         setIsSubscribed(true);
         setShowTimedPopup(false);
@@ -121,7 +119,6 @@ const BlogDetail = ({ blog: initialBlog }) => {
             const nowSubscribed = hasSubscriberId();
             setIsSubscribed(nowSubscribed);
             
-            // If user just subscribed, close any open popups and clear timer
             if (!wasSubscribed && nowSubscribed) {
                 setShowGatedPopup(false);
                 setShowTimedPopup(false);
@@ -135,25 +132,42 @@ const BlogDetail = ({ blog: initialBlog }) => {
         return () => window.removeEventListener('storage', updateSubscriptionStatus);
     }, [isSubscribed]);
 
-    // Render loading/error states or the final component
+    // Render loading/error states
     if (loading) return <div className="text-center mt-20 p-4 dark:text-gray-300">Loading post...</div>;
     if (error) return <div className="text-center mt-20 p-4 text-red-500">{error}</div>;
     if (!blog) return <div className="text-center mt-20 p-4 dark:text-gray-300">Blog post not found.</div>;
 
     return (
-        <BlogArticle
-            blog={blog}
-            isSubscribed={isSubscribed}
-            setIsSubscribed={setIsSubscribed}
-            showGatedPopup={showGatedPopup}
-            setShowGatedPopup={setShowGatedPopup}
-            showTimedPopup={showTimedPopup} // NEW: Pass timed popup state
-            setShowTimedPopup={setShowTimedPopup} // NEW: Pass timed popup setter
-            onTimedPopupSuccess={handleTimedPopupSuccess} // NEW: Pass success handler
-            handleTrackComment={handleTrackComment}
-            getShareCount={getShareCount}
-            currentLang={i18n.language}
-        />
+        <>
+            {/* ✅ Helmet SEO tags */}
+            <Helmet>
+                <title>{blog.title} - Innvibs</title>
+                <meta name="description" content={blog.content?.slice(0, 150)} />
+                <meta property="og:title" content={blog.title} />
+                <meta property="og:description" content={blog.content?.slice(0, 150)} />
+                <meta property="og:image" content={blog.image} />
+                <meta property="og:url" content={`https://yourdomain.com/blog/${blog.slug}`} />
+                <meta property="og:type" content="article" />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={blog.title} />
+                <meta name="twitter:description" content={blog.content?.slice(0, 150)} />
+                <meta name="twitter:image" content={blog.image} />
+            </Helmet>
+
+            <BlogArticle
+                blog={blog}
+                isSubscribed={isSubscribed}
+                setIsSubscribed={setIsSubscribed}
+                showGatedPopup={showGatedPopup}
+                setShowGatedPopup={setShowGatedPopup}
+                showTimedPopup={showTimedPopup}
+                setShowTimedPopup={setShowTimedPopup}
+                onTimedPopupSuccess={handleTimedPopupSuccess}
+                handleTrackComment={handleTrackComment}
+                getShareCount={getShareCount}
+                currentLang={i18n.language}
+            />
+        </>
     );
 };
 

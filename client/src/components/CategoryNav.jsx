@@ -3,20 +3,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from 'react-i18next';
 
-// const categories = [
-//   { label: "All", value: "all" },
-//   { label: "Technology", value: "Technology" },
-//   { label: "Fashion", value: "Fashion" },
-//   { label: "Health & Wellness", value: "Health & Wellness" },
-//   { label: "Travel", value: "Travel" },
-//   { label: "Food & Cooking", value: "Food & Cooking" },
-//   { label: "Sports", value: "Sports" },
-//   { label: "Business & Finance", value: "Business & Finance" },
-//   { label: "Lifestyle", value: "Lifestyle" },
-//   { label: "Trends", value: "Trends" }, // <-- ADDED
-//   { label: "Relationship", value: "Relationship" }, // <-- ADDED
-// ];
-
+ 
 
 export default function CategoryNav({ activeCategory, onCategoryChange }) {
   const { t } = useTranslation();
