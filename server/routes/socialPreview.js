@@ -1,10 +1,7 @@
-// server/routes/socialPreview.js - FINAL VERSION
-
 const path = require('path');
 const fs = require('fs');
 const { getBlogBySlugHelper } = require('../controllers/blogController');
 
-// This function is perfect, no changes needed
 function generateMetaTags(blog) {
     let description = '';
     if (blog.content) {
@@ -15,15 +12,15 @@ function generateMetaTags(blog) {
             .substring(0, 200)
             .trim();
     }
-    
+
     if (description.length < 100) {
         description = `${description} Discover innovative ideas, cutting-edge technology insights, and breakthrough concepts at Innvibs. Join thousands of innovators exploring the future of technology and innovation.`.substring(0, 250);
     }
     description += '...';
 
     const title = `${blog.title.replace(/"/g, '&quot;')} - Innvibs | Innovation & Ideas Hub`;
-    const image = blog.image && blog.image.trim() !== '' ? 
-        blog.image.trim() : 
+    const image = blog.image && blog.image.trim() !== '' ?
+        blog.image.trim() :
         'https://www.innvibs.com/assets/default-blog-og.jpg';
     const url = `https://www.innvibs.com/blog/${blog.slug}`;
 
@@ -62,33 +59,44 @@ function generateMetaTags(blog) {
 
 const socialPreviewMiddleware = async (req, res, next) => {
     const isBlogRoute = req.path.startsWith('/blog/');
-    
-    // **** THIS IS THE ONLY CHANGE ****
-    // We removed the "isCrawler" check to make it work for everyone.
+
     if (isBlogRoute) {
+        console.log(`[PREVIEW] Intercepted blog route: ${req.path}`);
         try {
-            const slug = req.path.substring('/blog/'.length);
-            if (!slug) return next();
-            
-            const blog = await getBlogBySlugHelper(slug);
-            if (!blog) {
+            let slug = req.path.substring('/blog/'.length).split('?')[0];
+
+            if (!slug) {
+                console.log('[PREVIEW] No slug found, passing to next middleware.');
                 return next();
             }
-            
-            const htmlPath = path.join(__dirname, '../client/build/index.html');
+
+            // ✅ Normalize slug (remove trailing slash + lowercase)
+            slug = slug.replace(/\/+$/, '').toLowerCase();
+            console.log(`[PREVIEW] Normalized slug: "${slug}". Fetching from database...`);
+
+            const blog = await getBlogBySlugHelper(slug);
+
+            if (!blog) {
+                console.log(`[PREVIEW] Blog with slug "${slug}" not found in database. Passing to next middleware.`);
+                return next();
+            }
+
+            console.log(`[PREVIEW] Successfully fetched blog: "${blog.title}". Generating meta tags.`);
+
+            const htmlPath = path.join(__dirname, '..', 'client/build/index.html');
             const html = fs.readFileSync(htmlPath, 'utf8');
             const metaTags = generateMetaTags(blog);
             const modifiedHtml = html.replace('</head>', `${metaTags}</head>`);
-            
+
+            console.log('[PREVIEW] Sending modified HTML to crawler.');
             return res.send(modifiedHtml);
 
         } catch (error) {
-            console.error('Error in social preview middleware:', error);
+            console.error('[PREVIEW] CRITICAL ERROR in social preview middleware:', error);
             return next();
         }
     }
 
-    // If it's not a blog route, just continue to the next middleware
     return next();
 };
 

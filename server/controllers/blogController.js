@@ -17,29 +17,35 @@ const generateSlug = (title) => {
 // ===============================
 const getBlogBySlugHelper = async (slug) => {
   try {
-    console.log('🔍 Fetching blog by slug for social preview:', slug);
-    
+    if (!slug) return null;
+
+    // 🔹 Normalize slug: remove trailing slash + lowercase
+    const normalizedSlug = slug.replace(/\/+$/, '').toLowerCase();
+
+    console.log('🔍 Fetching blog by slug for social preview:', normalizedSlug);
+
     const blog = await Blog.findOne({
-      slug: slug.toLowerCase(),
-      $or: [{ status: 'published' }, { status: { $exists: false } }]
+      slug: normalizedSlug,
+      status: 'published'   // ✅ Only published blogs show in previews
     })
-      .lean() // Use lean() for better performance since we don't need Mongoose document methods
+      .lean()
       .select(
         'title title_en title_hi content content_en content_hi image date category tags slug views comments likes shareCount updatedAt'
       );
-    
+
     if (blog) {
       console.log('✅ Blog found for social preview:', blog.title);
       return blog;
     } else {
-      console.log('❌ No blog found with slug:', slug);
+      console.log('❌ No blog found with slug:', normalizedSlug);
       return null;
     }
   } catch (error) {
     console.error('❌ Error fetching blog by slug for social preview:', error);
-    throw error;
+    return null; // 🔹 safer than throwing → won’t crash middleware
   }
 };
+
 
 // ===============================
 // Get all blogs (homepage, with pagination + filters)
