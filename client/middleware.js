@@ -37,25 +37,21 @@ export default function middleware(request) {
   if (isBot) {
     const url = request.nextUrl;
     const host = request.headers.get('host');
-    
-    // Construct the full URL of the page to prerender dynamically.
-    // This handles both 'innvibs.com' and 'www.innvibs.com' correctly.
     const targetUrl = `https://${host}${url.pathname}${url.search}`;
-    
-    // Construct the Prerender.io service URL.
     const prerenderUrl = `https://service.prerender.io/${targetUrl}`;
 
     console.log(`Bot detected: ${userAgent}. Proxying to: ${prerenderUrl}`);
 
     // Fetch the prerendered HTML and return it to the bot.
+    // ✅ **THE FIX:** We are now forwarding the original User-Agent header.
     return fetch(prerenderUrl, {
       headers: {
         'X-Prerender-Token': process.env.PRERENDER_TOKEN,
+        'User-Agent': userAgent, // This makes the request look legitimate to Vercel
       },
     });
   }
 
-  // If it's a regular user, do nothing and let Vercel serve the normal React app.
-  // Returning 'undefined' passes the request through.
+  // If it's a regular user, do nothing.
 }
 
