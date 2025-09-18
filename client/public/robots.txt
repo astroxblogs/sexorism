@@ -1,3 +1,8 @@
-# https://www.robotstxt.org/robotstxt.html
+Allow all web crawlers to access all content.
+Using an empty "Disallow" is the most compatible way to say "allow all".
 User-agent: *
+Disallow:
+
+Specifically and explicitly allow the Facebook crawler to ensure it is not blocked.
+User-agent: facebookexternalhit
 Disallow:
