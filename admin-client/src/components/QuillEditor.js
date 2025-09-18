@@ -9,14 +9,18 @@ if (typeof window !== 'undefined' && Quill && !Quill.imports['modules/imageResiz
     Quill.register('modules/imageResize', ImageResize);
 }
 
-// --- CSS FIX for Resizing Overflow ---
-// This CSS ensures that the image resize handles and overlay stay contained
-// within the editor's boundaries.
+// --- CSS FIX for Resizing Overflow and Editor Height ---
 const quillEditorStyles = `
   .admin-quill-editor .ql-container {
     overflow: hidden; /* This is the key fix to contain the resize module */
     position: relative; 
   }
+
+  /* ✅ THIS IS THE NEW RULE TO INCREASE THE EDITOR'S HEIGHT */
+  .admin-quill-editor .ql-editor {
+    min-height: 1800px; /* Set a minimum height for the editor */
+  }
+
   .admin-quill-editor .ql-editor img {
     max-width: 100%; /* Ensures images are always responsive inside the editor */
     height: auto;
@@ -55,7 +59,6 @@ export const QuillEditor = forwardRef(({ value, onChange, onLinkClick }, ref) =>
             const range = editor.getSelection(true);
             const cursorIndex = range ? range.index : editor.getLength();
             
-            // Insert a placeholder to provide user feedback
             editor.insertText(cursorIndex, ' [Uploading image...] ', 'user');
             
             const formData = new FormData();
@@ -67,17 +70,14 @@ export const QuillEditor = forwardRef(({ value, onChange, onLinkClick }, ref) =>
                 });
                 const imageUrl = res.data.imageUrl;
 
-                // Remove placeholder and insert the image
-                editor.deleteText(cursorIndex, 22, 'user'); // Length of " [Uploading image...] "
+                editor.deleteText(cursorIndex, 22, 'user');
                 editor.insertEmbed(cursorIndex, 'image', imageUrl, 'user');
                 
-                // Set the cursor after the new image
                 editor.setSelection(cursorIndex + 1, 0, 'user');
 
             } catch (error) {
                 console.error('Error uploading image to backend:', error);
                 alert('Error uploading image: ' + (error.response?.data?.error || error.message));
-                // Clean up the placeholder text if the upload fails.
                 editor.deleteText(cursorIndex, 22, 'user');
             }
         };
@@ -111,13 +111,11 @@ export const QuillEditor = forwardRef(({ value, onChange, onLinkClick }, ref) =>
         'bold', 'italic', 'underline', 'strike',
         'align', 'list', 'bullet',
         'link', 'image',
-        // Important: Add these to allow resizing attributes to be saved
         'width', 'height', 'style' 
     ]), []);
 
     return (
         <>
-            {/* Inject the CSS fixes into the document head */}
             <style>{quillEditorStyles}</style>
             <ReactQuill
                 ref={ref}
