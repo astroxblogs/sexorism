@@ -4,8 +4,9 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const path = require('path');
 const prerender = require('prerender-node');
+const path = require('path');
+ 
 
 const blogRoutes = require('./routes/blogs');
 const subscriberRoutes = require('./routes/subscribers');
@@ -14,11 +15,14 @@ const app = express();
 
 // --- PRERENDER.IO MIDDLEWARE ---
 if (process.env.PRERENDER_TOKEN) {
-    app.use(
-        prerender
-            .set('prerenderToken', process.env.PRERENDER_TOKEN)
-            .whitelisted(['/blog/', '/category/', '/tag/']) 
-    );
+   // Prerender.io configuration
+app.use(
+    prerender
+        .set('prerenderToken', process.env.PRERENDER_TOKEN)
+        .set('forwardHeaders', true)
+        .set('protocol', 'https')
+        .whitelisted('^www.innvibs.com')
+);
 }
 
 // --- CORS and Body Parser Setup ---
@@ -75,14 +79,15 @@ app.use('/api/blogs', blogRoutes);
 app.use('/api/subscribers', subscriberRoutes);
 
 // 2. Serve the React Application's static files
-const buildPath = path.join(__dirname, '../client/build');
+// This path is for your NEW deployment structure
+const buildPath = path.join(__dirname, 'client/build');
 app.use(express.static(buildPath));
 
 // 3. The "catchall" handler for client-side routing.
 // ✅ THIS IS THE FIX. We are replacing app.get('*', ...) with this.
 // This middleware will run for any request that doesn't match an API route or a static file.
-app.use((req, res, next) => {
-    res.sendFile(path.join(buildPath, 'index.html'));
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
 });
 
 
