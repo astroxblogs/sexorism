@@ -50,7 +50,7 @@ const AdminBlogForm = ({ blog, onSave, onCancel }) => {
 
     useEffect(() => {
         if (blog) {
-            reset(blog); // Populates fields like category
+            reset(blog);
             const newContents = {};
             LANGUAGES.forEach(lang => {
                 setValue(`title_${lang.code}`, blog[`title_${lang.code}`] || '');
@@ -61,7 +61,6 @@ const AdminBlogForm = ({ blog, onSave, onCancel }) => {
             setContents(newContents);
             setValue('image', blog.image || '');
             
-            // ✅ FIX: Convert the blog.tags array to a string and set the form value
             if (blog.tags && Array.isArray(blog.tags)) {
                 setValue('tags', blog.tags.join(', '));
             } else {
@@ -151,7 +150,6 @@ const AdminBlogForm = ({ blog, onSave, onCancel }) => {
 
 
     const onSubmit = async (data) => {
-        // This part of your logic is already correct! No changes needed here.
         const tags = typeof data.tags === 'string' ? data.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [];
         let finalImageUrl = data.image;
         if (!finalImageUrl && !selectedFile) {
@@ -193,7 +191,7 @@ const AdminBlogForm = ({ blog, onSave, onCancel }) => {
                 className="mb-8 bg-gray-50 dark:bg-gray-800 p-6 rounded-lg shadow flex flex-col gap-4 max-w-4xl mx-auto"
             >
                 {/* Language Selection Tabs */}
-                <div className="flex justify-center border-b border-gray-200 dark:border-gray-700 mb-4">
+                <div className="flex justify-center border-b border-gray-200 dark:border-gray-700"> {/* ✅ REDUCED bottom margin */}
                     {LANGUAGES.map(lang => (
                         <button
                             key={lang.code} type="button" onClick={() => setActiveLang(lang.code)}
@@ -236,9 +234,10 @@ const AdminBlogForm = ({ blog, onSave, onCancel }) => {
 
                 {LANGUAGES.map(lang => (
                     activeLang === lang.code && (
-                        <div key={lang.code}>
-                            <h3 className="text-lg font-semibold mt-6 mb-2 text-gray-800 dark:text-gray-200">{lang.name} Content</h3>
-                            <input className="border border-gray-300 dark:border-gray-700 p-2 rounded w-full mb-4 text-gray-900 dark:text-white bg-white dark:bg-gray-700" placeholder={`Title (${lang.name})`} {...register(`title_${lang.code}`, { required: lang.code === 'en' })} />
+                        // ✅ REMOVED the extra div and spacing around the content section
+                        <div key={lang.code} className="space-y-2"> {/* ✅ ADDED space-y-2 for consistent spacing */}
+                            {/* ✅ REMOVED the h3 heading for "English Content" etc. */}
+                            <input className="border border-gray-300 dark:border-gray-700 p-2 rounded w-full text-gray-900 dark:text-white bg-white dark:bg-gray-700" placeholder={`Title (${lang.name})`} {...register(`title_${lang.code}`, { required: lang.code === 'en' })} />
                             <div>
                                 <label className="block font-medium text-sm mb-1 text-gray-700 dark:text-gray-300">Content ({lang.name})</label>
                                 <QuillEditor
@@ -252,7 +251,7 @@ const AdminBlogForm = ({ blog, onSave, onCancel }) => {
                     )
                 ))}
 
-                 <div className="flex justify-end items-center space-x-4 pt-6 border-t mt-6">
+                 <div className="flex justify-end items-center space-x-4 pt-4 mt-4 border-t"> {/* ✅ REDUCED top margin/padding */}
                 <button
                     type="button"
                     onClick={onCancel}

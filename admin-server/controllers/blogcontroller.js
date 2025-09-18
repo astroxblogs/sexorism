@@ -61,8 +61,10 @@ exports.getBlogs = async (req, res) => {
         if (category) filter.category = category.trim();
         if (tag) filter.tags = { $in: [new RegExp(`^${tag.trim()}$`, 'i')] };
 
-        if (req.user?.role === 'operator') {
+         if (req.user?.role === 'operator') {
             filter.createdBy = req.user.id;
+        } else {
+            filter.status = 'published'; // Only fetch published blogs for the admin's main list
         }
 
         const skip = (parsedPage - 1) * parsedLimit;
@@ -102,6 +104,8 @@ exports.searchBlogs = async (req, res) => {
 
         if (req.user?.role === 'operator') {
             searchFilter.createdBy = req.user.id;
+        } else {
+            searchFilter.status = 'published'; // Also apply to search results for admin
         }
 
         const skip = (parseInt(page, 10) - 1) * parseInt(limit, 10);

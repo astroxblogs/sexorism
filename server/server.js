@@ -1,4 +1,4 @@
-// server/server.js - FINAL VERSION 2 (FIXES PathError)
+// server/server.js - FINAL VERSION 5 (Fixes PathError with Regex)
 
 require('dotenv').config();
 const express = require('express');
@@ -6,23 +6,21 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const prerender = require('prerender-node');
 const path = require('path');
- 
 
 const blogRoutes = require('./routes/blogs');
 const subscriberRoutes = require('./routes/subscribers');
 const { startEmailJob } = require('./jobs/sendPersonalizedEmails');
 const app = express();
 
-// --- PRERENDER.IO MIDDLEWARE ---
+// --- PRERENDER.IO MIDDLEWARE (Correctly placed at the top) ---
 if (process.env.PRERENDER_TOKEN) {
-   // Prerender.io configuration
-app.use(
-    prerender
-        .set('prerenderToken', process.env.PRERENDER_TOKEN)
-        .set('forwardHeaders', true)
-        .set('protocol', 'https')
-        .whitelisted('^www.innvibs.com')
-);
+    app.use(
+        prerender
+            .set('prerenderToken', process.env.PRERENDER_TOKEN)
+            .set('forwardHeaders', true)
+            .set('protocol', 'https')
+            .whitelisted('^www.innvibs.com')
+    );
 }
 
 // --- CORS and Body Parser Setup ---
@@ -45,9 +43,9 @@ if (process.env.NODE_ENV !== 'production') {
         'http://localhost:3000',
         'http://localhost:3001',
         'http://localhost:8081',
-        'http://127.0.0.1:3000',
-        'http://127.0.0.1:3001',
-        'http://127.0.0.1:8081'
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'http://localhost:8081'
     ];
     for (const o of devOrigins) {
         if (!allowedOrigins.includes(o)) allowedOrigins.push(o);
@@ -72,22 +70,23 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
+
 // --- ROUTING LOGIC ---
 
-// 1. API routes
+// 1. API routes (Should come before static file serving)
 app.use('/api/blogs', blogRoutes);
 app.use('/api/subscribers', subscriberRoutes);
 
 // 2. Serve the React Application's static files
-// This path is for your NEW deployment structure
-const buildPath = path.join(__dirname, 'client/build');
+const buildPath = path.join(__dirname, '../client/build');
 app.use(express.static(buildPath));
 
 // 3. The "catchall" handler for client-side routing.
-// ✅ THIS IS THE FIX. We are replacing app.get('*', ...) with this.
-// This middleware will run for any request that doesn't match an API route or a static file.
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+// This must come AFTER API routes and static file serving.
+// ✅ FINAL FIX: Using a Regular Expression to match all non-API routes.
+// This is the most reliable way to create a catch-all for a Single Page App.
+app.get(/^\/(?!api).*/, (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
 });
 
 
@@ -111,3 +110,4 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
