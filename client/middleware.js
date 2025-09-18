@@ -35,10 +35,12 @@ export default function middleware(request) {
 
   // If it's a bot, fetch the prerendered page.
   if (isBot) {
-    const url = request.nextUrl.clone();
+    const url = request.nextUrl;
+    const host = request.headers.get('host');
     
-    // Construct the full URL of the page to prerender.
-    const targetUrl = `https://www.innvibs.com${url.pathname}${url.search}`;
+    // Construct the full URL of the page to prerender dynamically.
+    // This handles both 'innvibs.com' and 'www.innvibs.com' correctly.
+    const targetUrl = `https://${host}${url.pathname}${url.search}`;
     
     // Construct the Prerender.io service URL.
     const prerenderUrl = `https://service.prerender.io/${targetUrl}`;
