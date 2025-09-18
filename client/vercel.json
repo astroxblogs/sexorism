@@ -1,0 +1,14 @@
+    {
+      "functions": {
+        "middleware.js": {
+          "maxDuration": 15
+        }
+      },
+      "rewrites": [
+        {
+          "source": "/((?!api|_next/static|_next/image|favicon.ico|assets).*)",
+          "middlewarePath": "middleware"
+        }
+      ]
+    }
+    
