@@ -226,12 +226,12 @@ const incrementViews = async (req, res) => {
       const existingLog = await BlogViewLog.findOne({ blogId: id, ip });
 
       if (existingLog) {
-        const hoursSinceLastView = (Date.now() - existingLog.lastViewed.getTime()) / (1000 * 60 * 60);
+       // difference in seconds instead of hours
+const secondsSinceLastView = (Date.now() - existingLog.lastViewed.getTime()) / 1000;
 
-        if (hoursSinceLastView < 12) {
-          // Frontend should already have skipped, but safety net
-          return res.json({ message: 'View already counted recently', skip: true });
-        }
+if (secondsSinceLastView < 10) {
+  return res.json({ message: 'View already counted recently', skip: true });
+}
 
         // Update last viewed timestamp
         existingLog.lastViewed = new Date();
@@ -328,6 +328,144 @@ const addComment = async (req, res) => {
 };
 
 // ===============================
+// Social Media Preview Function
+// ===============================
+const getSocialMediaPreview = async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    if (!slug) {
+      return res.status(400).send(generateSocialPreviewHTML(null, 'Invalid blog slug'));
+    }
+
+    // Use the existing helper function to get blog data
+    const blog = await getBlogBySlugHelper(slug);
+
+    if (!blog) {
+      return res.status(404).send(generateSocialPreviewHTML(null, 'Blog not found'));
+    }
+
+    // Generate social media preview HTML
+    const html = generateSocialPreviewHTML(blog);
+    res.set('Content-Type', 'text/html');
+    res.send(html);
+
+  } catch (error) {
+    console.error('Error generating social media preview:', error);
+    res.status(500).send(generateSocialPreviewHTML(null, 'Internal server error'));
+  }
+};
+
+// ===============================
+// HTML Template Generator for Social Media Previews
+// ===============================
+const generateSocialPreviewHTML = (blog, errorMessage = null) => {
+  const baseUrl = process.env.NODE_ENV === 'production'
+    ? process.env.CORS_ORIGIN_PROD || 'https://www.innvibs.com'
+    : 'http://localhost:8081'; // Use backend URL for social previews
+
+  if (errorMessage || !blog) {
+    return `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${errorMessage || 'Blog Not Found'} - InnVibs</title>
+
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="${errorMessage || 'Blog Not Found'}">
+        <meta property="og:description" content="Visit InnVibs for the latest blogs and insights">
+        <meta property="og:image" content="${baseUrl}/logo.png">
+        <meta property="og:url" content="${baseUrl}">
+        <meta property="og:site_name" content="InnVibs">
+
+        <!-- Twitter -->
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="${errorMessage || 'Blog Not Found'}">
+        <meta name="twitter:description" content="Visit InnVibs for the latest blogs and insights">
+        <meta name="twitter:image" content="${baseUrl}/logo.png">
+      </head>
+      <body>
+        <h1>${errorMessage || 'Blog Not Found'}</h1>
+        <p><a href="${baseUrl}">Visit InnVibs</a></p>
+      </body>
+      </html>
+    `;
+  }
+
+  // Get the best available title (English, Hindi, or default)
+  const title = blog.title_en || blog.title_hi || blog.title;
+
+  // Get the best available content and create description (first 160 chars)
+  const content = blog.content_en || blog.content_hi || blog.content;
+  const description = content
+    ? content.replace(/<[^>]*>/g, '').substring(0, 160) + (content.length > 160 ? '...' : '')
+    : 'Read this amazing blog post on InnVibs';
+
+  // Optimize image URL for social media (1200x630)
+  let imageUrl = blog.image;
+  if (imageUrl && imageUrl.includes('cloudinary.com')) {
+    // Transform Cloudinary URL for social media optimization
+    imageUrl = imageUrl.replace('/upload/', '/upload/w_1200,h_630,c_fill,q_auto,f_auto/');
+  } else if (imageUrl) {
+    // Fallback for non-Cloudinary images
+    imageUrl = imageUrl;
+  } else {
+    // Default image if no blog image
+    imageUrl = `${baseUrl}/logo.png`;
+  }
+
+  const blogUrl = `${baseUrl}/blog/${blog.slug}`;
+
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${title} - InnVibs</title>
+
+      <!-- Open Graph / Facebook -->
+      <meta property="og:type" content="article">
+      <meta property="og:title" content="${title}">
+      <meta property="og:description" content="${description}">
+      <meta property="og:image" content="${imageUrl}">
+      <meta property="og:url" content="${blogUrl}">
+      <meta property="og:site_name" content="InnVibs">
+      <meta property="article:published_time" content="${blog.date.toISOString()}">
+      <meta property="article:modified_time" content="${blog.updatedAt.toISOString()}">
+      ${blog.category ? `<meta property="article:section" content="${blog.category}">` : ''}
+      ${blog.tags ? blog.tags.map(tag => `<meta property="article:tag" content="${tag}">`).join('\n      ') : ''}
+
+      <!-- Twitter -->
+      <meta name="twitter:card" content="summary_large_image">
+      <meta name="twitter:title" content="${title}">
+      <meta name="twitter:description" content="${description}">
+      <meta name="twitter:image" content="${imageUrl}">
+
+      <!-- Additional SEO -->
+      <meta name="description" content="${description}">
+      <link rel="canonical" href="${blogUrl}">
+    </head>
+    <body>
+      <article>
+        <h1>${title}</h1>
+        <p><strong>Category:</strong> ${blog.category}</p>
+        <p><strong>Published:</strong> ${new Date(blog.date).toLocaleDateString()}</p>
+        ${blog.tags && blog.tags.length > 0 ? `<p><strong>Tags:</strong> ${blog.tags.join(', ')}</p>` : ''}
+        <div>
+          ${content ? content.substring(0, 500) + (content.length > 500 ? '...' : '') : 'No preview available'}
+        </div>
+        <p><a href="${blogUrl}">Read full article on InnVibs</a></p>
+      </article>
+    </body>
+    </html>
+  `;
+};
+
+// ===============================
 // Export
 // ===============================
 module.exports = {
@@ -337,6 +475,7 @@ module.exports = {
   getBlog,
   getBlogBySlug,
   getBlogBySlugHelper, // NEW: Helper function for social media previews
+  getSocialMediaPreview, // NEW: Social media preview function
   incrementViews,
   incrementShares,
   likePost,

@@ -9,6 +9,7 @@ const path = require('path');
 
 const blogRoutes = require('./routes/blogs');
 const subscriberRoutes = require('./routes/subscribers');
+const socialPreviewRoutes = require('./routes/socialPreview');
 const { startEmailJob } = require('./jobs/sendPersonalizedEmails');
 const app = express();
 
@@ -73,7 +74,10 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // --- ROUTING LOGIC ---
 
-// 1. API routes (Should come before static file serving)
+// 1. Social media preview routes (Should come before API routes)
+app.use('/', socialPreviewRoutes);
+
+// 2. API routes (Should come before static file serving)
 app.use('/api/blogs', blogRoutes);
 app.use('/api/subscribers', subscriberRoutes);
 
