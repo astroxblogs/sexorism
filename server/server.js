@@ -1,8 +1,8 @@
-// server/server.js - AWS PRODUCTION VERSION (API-Only)
+// server/server.js - AWS PRODUCTION VERSION (API-Only) - FIXED CORS
 
 require('dotenv').config();
 // Add this line at the top of server.js (after require statements)
-console.log('🚀 SERVER VERSION: AWS-PRODUCTION-2024-09-21');
+console.log('🚀 SERVER VERSION: AWS-PRODUCTION-2024-09-21-FIXED-CORS');
 
 const express = require('express');
 const mongoose = require('mongoose');
@@ -26,7 +26,10 @@ const allowedOrigins = [
     // normalizeOrigin(process.env.CORS_ORIGIN_DEV),
      normalizeOrigin(process.env.CORS_ORIGIN_PROD),
     normalizeOrigin(process.env.CORS_ORIGIN_Main),
-     normalizeOrigin(process.env.FRONTEND_URL)
+     normalizeOrigin(process.env.FRONTEND_URL),
+    'http://65.1.60.27:80',  // AWS Load Balancer - DIRECT ADD
+    'http://localhost:3000',
+    'http://localhost:3001'
 ].filter(Boolean);
 
 if (process.env.NODE_ENV !== 'production') {
@@ -40,17 +43,7 @@ if (process.env.NODE_ENV !== 'production') {
     }
 }
 
-// Add AWS load balancer origin for production
-if (process.env.NODE_ENV === 'production') {
-    const awsOrigins = [
-        'http://65.1.60.27:80',  // AWS load balancer
-        'http://localhost:3000',
-        'http://localhost:3001'
-    ];
-    for (const o of awsOrigins) {
-        if (!allowedOrigins.includes(o)) allowedOrigins.push(o);
-    }
-}
+// AWS load balancer origin already added above
 
 app.use(cors({
     origin: function (origin, callback) {
@@ -88,7 +81,21 @@ app.use('/', socialPreviewRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/subscribers', subscriberRoutes);
 
-// 3. Health check endpoint for AWS load balancer
+// 3. Root endpoint for AWS load balancer
+app.get('/', (req, res) => {
+    res.status(200).json({
+        message: 'InnVibs Blog API Server',
+        version: 'AWS-PRODUCTION-2024-09-21',
+        endpoints: {
+            health: '/health',
+            api: '/api/blogs',
+            socialPreview: '/blog/:slug'
+        },
+        timestamp: new Date().toISOString()
+    });
+});
+
+// 4. Health check endpoint for AWS load balancer
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
 });
@@ -102,6 +109,21 @@ mongoose.connect(process.env.MONGO_URI)
     .catch(err => console.error('MongoDB connection error:', err));
 
 const PORT = process.env.PORT || 8081;
+
+// 404 handler for unmatched routes
+app.use('*', (req, res) => {
+    console.log(`Route not found: ${req.method} ${req.originalUrl}`);
+    res.status(404).json({
+        error: 'Route not found',
+        message: `Cannot ${req.method} ${req.originalUrl}`,
+        availableEndpoints: {
+            root: '/',
+            health: '/health',
+            api: '/api/blogs',
+            socialPreview: '/blog/:slug'
+        }
+    });
+});
 
 // Global error handler
 app.use((err, req, res, next) => {
