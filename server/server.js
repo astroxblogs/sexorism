@@ -81,6 +81,9 @@ app.use('/', socialPreviewRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/subscribers', subscriberRoutes);
 
+// 3. Social media preview routes (must come before React app routes)
+app.use('/', socialPreviewRoutes);
+
 // 3. Root endpoint for AWS load balancer
 app.get('/', (req, res) => {
     res.status(200).json({
@@ -113,15 +116,27 @@ const PORT = process.env.PORT || 8081;
 // 404 handler for unmatched routes (using a more compatible pattern)
 app.use((req, res) => {
     console.log(`Route not found: ${req.method} ${req.originalUrl}`);
+
+    // If it's an API route, return JSON error
+    if (req.path.startsWith('/api/')) {
+        return res.status(404).json({
+            error: 'API endpoint not found',
+            message: `Cannot ${req.method} ${req.originalUrl}`,
+            availableEndpoints: {
+                root: '/',
+                health: '/health',
+                api: '/api/blogs',
+                socialPreview: '/blog/:slug'
+            }
+        });
+    }
+
+    // For all other routes, return a simple message
+    // (Frontend is on different domain, so no need to serve React app)
     res.status(404).json({
-        error: 'Route not found',
-        message: `Cannot ${req.method} ${req.originalUrl}`,
-        availableEndpoints: {
-            root: '/',
-            health: '/health',
-            api: '/api/blogs',
-            socialPreview: '/blog/:slug'
-        }
+        error: 'Page not found',
+        message: 'This endpoint is not available on the API server',
+        note: 'Visit https://www.innvibs.com for the main website'
     });
 });
 

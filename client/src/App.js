@@ -89,8 +89,6 @@ function App() {
     useEffect(() => {
         const isAdminPath = window.location.pathname === "/admin";
         const isMainDomain =
-            window.location.hostname === "https://www.innvibs.com" ||
-            window.location.hostname === "https://innvibs.com" ||
             window.location.hostname === "www.innvibs.com" ||
             window.location.hostname === "innvibs.com";
 

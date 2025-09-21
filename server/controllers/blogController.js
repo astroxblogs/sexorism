@@ -345,10 +345,22 @@ const getSocialMediaPreview = async (req, res) => {
       return res.status(404).send(generateSocialPreviewHTML(null, 'Blog not found'));
     }
 
-    // Generate social media preview HTML
-    const html = generateSocialPreviewHTML(blog);
-    res.set('Content-Type', 'text/html');
-    res.send(html);
+    // Check if request is from social media crawler
+    const userAgent = req.get('User-Agent') || '';
+    const isSocialCrawler = /facebookexternalhit|Twitterbot|LinkedInBot|WhatsApp|TelegramBot/i.test(userAgent);
+
+    if (isSocialCrawler) {
+      // Serve social media preview HTML for crawlers
+      const html = generateSocialPreviewHTML(blog);
+      res.set('Content-Type', 'text/html');
+      res.send(html);
+    } else {
+      // For regular users, redirect to frontend blog detail page
+      const frontendUrl = process.env.NODE_ENV === 'production'
+        ? process.env.CORS_ORIGIN_PROD || 'https://www.innvibs.com'
+        : 'http://localhost:3000';
+      res.redirect(`${frontendUrl}/blog-detail/${slug}`);
+    }
 
   } catch (error) {
     console.error('Error generating social media preview:', error);
@@ -417,7 +429,7 @@ const generateSocialPreviewHTML = (blog, errorMessage = null) => {
     imageUrl = `${baseUrl}/logo.png`;
   }
 
-  const blogUrl = `${baseUrl}/blog/${blog.slug}`;
+  const blogUrl = `${baseUrl}/blog-detail/${blog.slug}`;
 
   return `
     <!DOCTYPE html>

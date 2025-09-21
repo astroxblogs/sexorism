@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 
 const useBlogData = (slug, initialBlog) => {
     const [blog, setBlog] = useState(initialBlog || null);
@@ -20,7 +20,7 @@ const useBlogData = (slug, initialBlog) => {
             setError(null);
             try {
                 // Fetch blog by slug
-                const res = await axios.get(`/api/blogs/${slug}`, { signal: controller.signal });
+                const res = await api.get(`/api/blogs/slug/${slug}`, { signal: controller.signal });
 
                 if (res.data) {
                     setBlog(res.data);
@@ -29,7 +29,7 @@ const useBlogData = (slug, initialBlog) => {
                 }
 
             } catch (err) {
-                if (axios.isCancel(err)) return;
+                if (err.name === 'AbortError') return;
                 console.error("Failed to fetch blog post:", err);
                 setError("Failed to load blog post. Please try again later.");
             } finally {
@@ -61,7 +61,7 @@ const useBlogData = (slug, initialBlog) => {
             } catch (e) { console.error("Failed to parse viewedData", e); }
         }
         viewIncrementedRef.current = true;
-        axios.patch(`/api/blogs/${blog._id}/views`)
+        api.patch(`/api/blogs/${blog._id}/views`)
             .then(res => {
                 if (res.data?.views !== undefined) {
                     setBlog(prev => prev ? { ...prev, views: res.data.views } : null);
