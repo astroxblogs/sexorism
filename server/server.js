@@ -71,18 +71,8 @@ app.use('/', socialPreviewRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/subscribers', subscriberRoutes);
 
-// 2. Serve the React Application's static files
-const buildPath = path.join(__dirname, '../client/build');
-app.use(express.static(buildPath));
-
-// 3. The "catchall" handler for client-side routing.
-// This must come AFTER API routes and static file serving.
-// ✅ FINAL FIX: Using a Regular Expression to match all non-API routes.
-// This is the most reliable way to create a catch-all for a Single Page App.
-app.get(/^\/(?!api).*/, (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
-});
-
+ 
+ 
 
 // --- Database and Server Start ---
 mongoose.connect(process.env.MONGO_URI)
