@@ -1,21 +1,17 @@
-// server/server.js - FINAL VERSION 5 (Fixes PathError with Regex)
+// server/server.js - AWS PRODUCTION VERSION (API-Only)
 
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
-const path = require('path');
-
 const blogRoutes = require('./routes/blogs');
 const subscriberRoutes = require('./routes/subscribers');
 const socialPreviewRoutes = require('./routes/socialPreview');
 const { startEmailJob } = require('./jobs/sendPersonalizedEmails');
 const app = express();
- 
 
 // --- CORS and Body Parser Setup ---
-// (Your CORS logic remains unchanged)
 const normalizeOrigin = (value) => {
     if (!value) return null;
     const trimmed = String(value).trim();
@@ -31,9 +27,6 @@ const allowedOrigins = [
 
 if (process.env.NODE_ENV !== 'production') {
     const devOrigins = [
-        'http://localhost:3000',
-        'http://localhost:3001',
-        'http://localhost:8081',
         'http://localhost:3000',
         'http://localhost:3001',
         'http://localhost:8081'
@@ -61,18 +54,19 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-
 // --- ROUTING LOGIC ---
 
 // 1. Social media preview routes (Should come before API routes)
 app.use('/', socialPreviewRoutes);
 
-// 2. API routes (Should come before static file serving)
+// 2. API routes only (No static file serving for AWS)
 app.use('/api/blogs', blogRoutes);
 app.use('/api/subscribers', subscriberRoutes);
 
- 
- 
+// 3. Health check endpoint for AWS load balancer
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
+});
 
 // --- Database and Server Start ---
 mongoose.connect(process.env.MONGO_URI)
@@ -94,4 +88,6 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+module.exports = app;
 
