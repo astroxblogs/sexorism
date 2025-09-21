@@ -23,8 +23,8 @@ const normalizeOrigin = (value) => {
 };
 
 const allowedOrigins = [
-    normalizeOrigin(process.env.CORS_ORIGIN_DEV),
-    normalizeOrigin(process.env.CORS_ORIGIN_PROD),
+    // normalizeOrigin(process.env.CORS_ORIGIN_DEV),
+     normalizeOrigin(process.env.CORS_ORIGIN_PROD),
     normalizeOrigin(process.env.CORS_ORIGIN_Main),
      normalizeOrigin(process.env.FRONTEND_URL)
 ].filter(Boolean);
@@ -43,7 +43,7 @@ if (process.env.NODE_ENV !== 'production') {
 // Add AWS load balancer origin for production
 if (process.env.NODE_ENV === 'production') {
     const awsOrigins = [
-        'http://65.1.60.27:80',  // AWS load balancer
+         // AWS load balancer
         'http://localhost:3000',
         'http://localhost:3001'
     ];
