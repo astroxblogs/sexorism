@@ -39,6 +39,18 @@ if (process.env.NODE_ENV !== 'production') {
     }
 }
 
+// Add AWS load balancer origin for production
+if (process.env.NODE_ENV === 'production') {
+    const awsOrigins = [
+        'http://65.1.60.27:80',  // AWS load balancer
+        'http://localhost:3000',
+        'http://localhost:3001'
+    ];
+    for (const o of awsOrigins) {
+        if (!allowedOrigins.includes(o)) allowedOrigins.push(o);
+    }
+}
+
 app.use(cors({
     origin: function (origin, callback) {
         if (!origin) return callback(null, true);
