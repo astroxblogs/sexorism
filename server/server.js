@@ -1,6 +1,9 @@
 // server/server.js - AWS PRODUCTION VERSION (API-Only)
 
 require('dotenv').config();
+// Add this line at the top of server.js (after require statements)
+console.log('🚀 SERVER VERSION: AWS-PRODUCTION-2024-09-21');
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
