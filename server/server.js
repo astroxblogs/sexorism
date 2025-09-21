@@ -25,7 +25,8 @@ const normalizeOrigin = (value) => {
 const allowedOrigins = [
     normalizeOrigin(process.env.CORS_ORIGIN_DEV),
     normalizeOrigin(process.env.CORS_ORIGIN_PROD),
-    normalizeOrigin(process.env.CORS_ORIGIN_Main)
+    normalizeOrigin(process.env.CORS_ORIGIN_Main),
+     normalizeOrigin(process.env.FRONTEND_URL)
 ].filter(Boolean);
 
 if (process.env.NODE_ENV !== 'production') {
