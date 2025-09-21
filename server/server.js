@@ -110,8 +110,8 @@ mongoose.connect(process.env.MONGO_URI)
 
 const PORT = process.env.PORT || 8081;
 
-// 404 handler for unmatched routes
-app.use('*', (req, res) => {
+// 404 handler for unmatched routes (using a more compatible pattern)
+app.use((req, res) => {
     console.log(`Route not found: ${req.method} ${req.originalUrl}`);
     res.status(404).json({
         error: 'Route not found',
