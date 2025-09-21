@@ -1,13 +1,13 @@
 import React, { Suspense } from 'react';
 import { Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet';
+import { Helmet } from 'react-helmet-async'; // Corrected import from react-helmet to react-helmet-async
 import DOMPurify from 'dompurify';
 import { marked } from 'marked';
 
 import LikeButton from '../LikeButton.jsx';
 import ShareButton from '../ShareButton.jsx';
 
-import TimedSubscriptionPopup from '../TimedSubscriptionPopup.jsx'; // NEW: Import timed popup
+import TimedSubscriptionPopup from '../TimedSubscriptionPopup.jsx';
 
 // Helper functions
 const createSafeAltText = (text) => {
@@ -22,8 +22,8 @@ const getLocalizedContent = (field, blogData, currentLang) => {
     return blogData[field] || '';
 };
 
-// Lazy loaded components
-const CommentSection = React.lazy(() => import('../../components/CommentSection'));
+// Lazy loaded components with corrected path
+const CommentSection = React.lazy(() => import('../CommentSection'));
 
 const BlogArticle = ({
     blog,
@@ -31,9 +31,9 @@ const BlogArticle = ({
     setIsSubscribed,
     showGatedPopup,
     setShowGatedPopup,
-    showTimedPopup, // NEW: Timed popup state
-    setShowTimedPopup, // NEW: Timed popup setter
-    onTimedPopupSuccess, // NEW: Timed popup success handler
+    showTimedPopup,
+    setShowTimedPopup,
+    onTimedPopupSuccess,
     handleTrackComment,
     getShareCount,
     currentLang
@@ -45,7 +45,6 @@ const BlogArticle = ({
     const rawContentHtml = marked.parse(displayContent);
     const cleanContentHtml = DOMPurify.sanitize(rawContentHtml);
     
-    // REMOVED: Content gating logic - now always show full content
     const contentToDisplay = cleanContentHtml;
 
     const coverImage = blog.image && blog.image.trim() !== '' ? blog.image.trim() : 'https://placehold.co/800x400/666/fff?text=No+Image';
@@ -59,88 +58,82 @@ const BlogArticle = ({
     return (
         <>
             <Helmet>
-    {/* Basic Meta Tags */}
-    <title>{`${displayTitle} - Innvibs | Innovation & Ideas Hub`}</title>
-    <meta name="description" content={metaDescription} />
-    <meta name="keywords" content={`${blog.tags?.join(', ') || ''}, innvibs, innovation, technology, ideas`} />
-    <meta name="author" content="Innvibs" />
-    
-    {/* Open Graph / Facebook */}
-    <meta property="og:type" content="article" />
-    <meta property="og:site_name" content="Innvibs" />
-    <meta property="og:title" content={`${displayTitle} | Innvibs`} />
-    <meta property="og:description" content={metaDescription} />
-    <meta property="og:image" content={coverImage} />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content={cleanAltTitle} />
-    <meta property="og:url" content={`https://www.innvibs.com/blog/${blog.slug}`} />
-    <meta property="og:locale" content="en_US" />
-    
-    {/* Article specific Open Graph */}
-    <meta property="article:published_time" content={blog.date} />
-    <meta property="article:author" content="Innvibs Team" />
-    <meta property="article:section" content={blog.category || 'Technology'} />
-    {blog.tags?.map(tag => (
-        <meta key={tag} property="article:tag" content={tag} />
-    ))}
-    
-    {/* Twitter Card */}
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@innvibs" /> {/* Add your Twitter handle if you have one */}
-    <meta name="twitter:creator" content="@innvibs" />
-    <meta name="twitter:title" content={`${displayTitle} | Innvibs`} />
-    <meta name="twitter:description" content={metaDescription} />
-    <meta name="twitter:image" content={coverImage} />
-    <meta name="twitter:image:alt" content={cleanAltTitle} />
-    
-    {/* LinkedIn specific */}
-    <meta property="og:image:type" content="image/jpeg" />
-    
-    {/* WhatsApp specific */}
-    <meta property="og:image:secure_url" content={coverImage} />
-    
-    {/* Additional SEO */}
-    <link rel="canonical" href={`https://www.innvibs.com/blog/${blog.slug}`} />
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-    
-    {/* Schema.org structured data */}
-    <script type="application/ld+json">
-        {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "BlogPosting",
-            "headline": displayTitle,
-            "description": metaDescription,
-            "image": {
-                "@type": "ImageObject",
-                "url": coverImage,
-                "width": 1200,
-                "height": 630
-            },
-            "author": {
-                "@type": "Organization",
-                "name": "Innvibs"
-            },
-            "publisher": {
-                "@type": "Organization",
-                "name": "Innvibs",
-                "logo": {
-                    "@type": "ImageObject",
-                    "url": "https://www.innvibs.com/logo.png" // Add your logo URL
-                }
-            },
-            "datePublished": blog.date,
-            "dateModified": blog.updatedAt || blog.date,
-            "mainEntityOfPage": {
-                "@type": "WebPage",
-                "@id": `https://www.innvibs.com/blog/${blog.slug}`
-            },
-            "keywords": blog.tags?.join(', ') || '',
-            "articleSection": blog.category || 'Technology',
-            "url": `https://www.innvibs.com/blog/${blog.slug}`
-        })}
-    </script>
-</Helmet>
+                {/* Basic Meta Tags */}
+                <title>{`${displayTitle} - Innvibs | Innovation & Ideas Hub`}</title>
+                <meta name="description" content={metaDescription} />
+                <meta name="keywords" content={`${blog.tags?.join(', ') || ''}, innvibs, innovation, technology, ideas`} />
+                <meta name="author" content="Innvibs" />
+                
+                {/* Open Graph / Facebook */}
+                <meta property="og:type" content="article" />
+                <meta property="og:site_name" content="Innvibs" />
+                <meta property="og:title" content={`${displayTitle} | Innvibs`} />
+                <meta property="og:description" content={metaDescription} />
+                <meta property="og:image" content={coverImage} />
+                <meta property="og:image:width" content="1200" />
+                <meta property="og:image:height" content="630" />
+                <meta property="og:image:alt" content={cleanAltTitle} />
+                <meta property="og:url" content={`https://www.innvibs.com/blog/${blog.slug}`} />
+                <meta property="og:locale" content="en_US" />
+                
+                {/* Article specific Open Graph */}
+                <meta property="article:published_time" content={blog.date} />
+                <meta property="article:author" content="Innvibs Team" />
+                <meta property="article:section" content={blog.category || 'Technology'} />
+                {blog.tags?.map(tag => (
+                    <meta key={tag} property="article:tag" content={tag} />
+                ))}
+                
+                {/* Twitter Card */}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:site" content="@innvibs" /> {/* Add your Twitter handle if you have one */}
+                <meta name="twitter:creator" content="@innvibs" />
+                <meta name="twitter:title" content={`${displayTitle} | Innvibs`} />
+                <meta name="twitter:description" content={metaDescription} />
+                <meta name="twitter:image" content={coverImage} />
+                <meta name="twitter:image:alt" content={cleanAltTitle} />
+                
+                {/* Additional SEO */}
+                <link rel="canonical" href={`https://www.innvibs.com/blog/${blog.slug}`} />
+                <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+                
+                {/* Schema.org structured data */}
+                <script type="application/ld+json">
+                    {JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "BlogPosting",
+                        "headline": displayTitle,
+                        "description": metaDescription,
+                        "image": {
+                            "@type": "ImageObject",
+                            "url": coverImage,
+                            "width": 1200,
+                            "height": 630
+                        },
+                        "author": {
+                            "@type": "Organization",
+                            "name": "Innvibs"
+                        },
+                        "publisher": {
+                            "@type": "Organization",
+                            "name": "Innvibs",
+                            "logo": {
+                                "@type": "ImageObject",
+                                "url": "https://www.innvibs.com/logo.png" // Add your logo URL
+                            }
+                        },
+                        "datePublished": blog.date,
+                        "dateModified": blog.updatedAt || blog.date,
+                        "mainEntityOfPage": {
+                            "@type": "WebPage",
+                            "@id": `https://www.innvibs.com/blog/${blog.slug}`
+                        },
+                        "keywords": blog.tags?.join(', ') || '',
+                        "articleSection": blog.category || 'Technology',
+                        "url": `https://www.innvibs.com/blog/${blog.slug}`
+                    })}
+                </script>
+            </Helmet>
 
             <article className="max-w-4xl mx-auto bg-white dark:bg-gray-900 rounded-lg shadow-xl p-4 sm:p-6 md:p-8 mt-4 md:mt-8 mb-8 relative">
                 <div className="w-full h-55 flex items-center justify-center bg-gray-100">
@@ -157,16 +150,12 @@ const BlogArticle = ({
                     <ShareButton blogId={blog._id} blogSlug={blog.slug} title={blog.title} url={typeof window !== "undefined" ? `${window.location.origin}/blog/${blog.slug}` : ""} initialShareCount={getShareCount(blog._id)}/>
                 </div>
                 
-                {/* UPDATED: Always show full content, no more gating */}
                 <div className="relative">
-                    <div className="prose prose-base sm:prose-lg lg:prose-xl dark:prose-invert max-w-none mb-6 md:mb-8 prose-img:rounded-xl prose-img:max-h-[400px] prose-img:mx-auto">
+                    <div className="prose prose-base sm:prose-lg lg:prose-xl dark:prose-invert max-w-none mb-6 md:mb-8 prose-img:rounded-xl prose-img:max-h-[400px] prose-img:mx-auto blog-post-content">
                         <div dangerouslySetInnerHTML={{ __html: contentToDisplay }} />
                     </div>
                 </div>
 
-                {/* REMOVED: Content overlay and gated subscription button */}
-                
-                {/* Keep the existing gated popup for manual triggers (if needed) */}
                 {showGatedPopup && (
                     <TimedSubscriptionPopup 
                         showPopup={showGatedPopup} 
@@ -178,7 +167,6 @@ const BlogArticle = ({
                     />
                 )}
 
-                {/* NEW: Timed subscription popup */}
                 {showTimedPopup && !isSubscribed && (
                     <TimedSubscriptionPopup 
                         showPopup={showTimedPopup} 
@@ -225,3 +213,4 @@ const BlogArticle = ({
 };
 
 export default BlogArticle;
+

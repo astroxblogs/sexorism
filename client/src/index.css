@@ -160,4 +160,24 @@ body {
     border-top-left-radius: 0.5rem;
     border-top-right-radius: 0.5rem;
 }
-/* === END OF FIX === */
+
+
+
+ 
+.blog-post-content a {
+  color: #2563eb; /* A standard, catchy blue */
+  text-decoration: underline;
+  font-weight: 500; /* Makes the link text slightly bolder */
+}
+
+
+ 
+
+
+
+
+
+
+
+
+
