@@ -138,7 +138,7 @@ function App() {
                         <Route path="/" element={<Home activeCategory={activeCategory} searchQuery={searchQuery} />} />
                         <Route path="/category/:categoryName" element={<CategoryPage />} />
                         <Route path="/tag/:tagName" element={<TagPage />} />
-                        <Route path="/blog/:slug" element={<BlogDetailPage />} />
+                        <Route path="/blog-detail/:slug" element={<BlogDetailPage />} />
                         <Route path="/admin" element={<AdminRedirectComponent />} />
                         <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>

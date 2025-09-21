@@ -45,7 +45,7 @@ const BlogCard = ({ blog, onLikeUpdate }) => {
     <div className="flex flex-col sm:flex-row items-stretch bg-white dark:bg-gray-900 rounded-xl shadow-sm hover:shadow transition overflow-visible w-full">
       {blog.image && (
         <Link
-          to={`/blog/${blog.slug || blog._id}`}
+          to={`/blog-detail/${blog.slug || blog._id}`}
           className="w-full aspect-[16/9] sm:w-40 md:w-48 sm:aspect-auto sm:self-stretch flex-shrink-0 overflow-hidden group"
         >
           <img
@@ -83,7 +83,7 @@ const BlogCard = ({ blog, onLikeUpdate }) => {
             </span>
           </div>
 
-          <Link to={`/blog/${blog.slug || blog._id}`} className="block">
+          <Link to={`/blog-detail/${blog.slug || blog._id}`} className="block">
             <h2 className="text-sm sm:text-lg md:text-xl font-semibold leading-snug text-gray-900 dark:text-gray-100 hover:underline line-clamp-2">
               {displayTitle}
             </h2>
@@ -115,7 +115,7 @@ const BlogCard = ({ blog, onLikeUpdate }) => {
             onLikeSuccess={onLikeUpdate}
           />
           <Link
-            to={`/blog/${blog.slug || blog._id}#comments`}
+            to={`/blog-detail/${blog.slug || blog._id}#comments`}
             className="flex items-center gap-1.5 hover:text-gray-900 dark:hover:text-white"
           >
             <MessageSquare size={14} />
@@ -125,7 +125,7 @@ const BlogCard = ({ blog, onLikeUpdate }) => {
             title={displayTitle}
             url={
               typeof window !== "undefined"
-                ? `${window.location.origin}/blog/${blog.slug || blog._id}`
+                ? `${window.location.origin}/blog-detail/${blog.slug || blog._id}`
                 : ""
             }
             blogId={blog._id}
