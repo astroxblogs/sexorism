@@ -4,24 +4,15 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const prerender = require('prerender-node');
+
 const path = require('path');
 
 const blogRoutes = require('./routes/blogs');
 const subscriberRoutes = require('./routes/subscribers');
+const socialPreviewRoutes = require('./routes/socialPreview');
 const { startEmailJob } = require('./jobs/sendPersonalizedEmails');
 const app = express();
-
-// --- PRERENDER.IO MIDDLEWARE (Correctly placed at the top) ---
-if (process.env.PRERENDER_TOKEN) {
-    app.use(
-        prerender
-            .set('prerenderToken', process.env.PRERENDER_TOKEN)
-            .set('forwardHeaders', true)
-            .set('protocol', 'https')
-            .whitelisted('^www.innvibs.com')
-    );
-}
+ 
 
 // --- CORS and Body Parser Setup ---
 // (Your CORS logic remains unchanged)
@@ -73,7 +64,10 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // --- ROUTING LOGIC ---
 
-// 1. API routes (Should come before static file serving)
+// 1. Social media preview routes (Should come before API routes)
+app.use('/', socialPreviewRoutes);
+
+// 2. API routes (Should come before static file serving)
 app.use('/api/blogs', blogRoutes);
 app.use('/api/subscribers', subscriberRoutes);
 

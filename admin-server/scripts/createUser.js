@@ -50,8 +50,8 @@ async function main() {
     console.log('No admin found. Proceeding with initial admin creation...');
 
     // --- Step 3: Interactively and securely get credentials ---
-    const username = "Astrox"; // await askQuestion('Enter the desired admin username: ');
-    const password = "Innvibs@123"; // await askQuestion('Enter the desired admin password: ');
+    const username = await askQuestion('Enter the desired admin username: ');
+    const password = await askQuestion('Enter the desired admin password: ');
     
     // Safety checks
     if (!username || !password) {

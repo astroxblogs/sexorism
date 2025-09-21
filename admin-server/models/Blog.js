@@ -7,26 +7,21 @@ const CommentSchema = new mongoose.Schema({
 });
 
 const BlogSchema = new mongoose.Schema({
-    // Original fields - keeping them for now, but consider if they are still strictly needed
-    // or if title_en/content_en should fully replace them.
-    // If you plan to fully rely on _en fields, these can eventually be removed.
+    // Original fields
     title: {
         type: String,
-        required: true // Keeping required for original title if needed as fallback
+        required: true
     },
     content: {
         type: String,
-        required: true // Keeping required for original content if needed as fallback
+        required: true
     },
 
-    // Multilingual fields - Make them NOT required
-    title_en: { type: String }, // Assuming English is the primary default, can be required if always needed
+    // Multilingual fields
+    title_en: { type: String },
     title_hi: { type: String },
-
-
-    content_en: { type: String }, // Assuming English is the primary default, can be required if always needed
+    content_en: { type: String },
     content_hi: { type: String },
-
 
     image: { type: String },
     date: { type: Date, default: Date.now },
@@ -38,14 +33,19 @@ const BlogSchema = new mongoose.Schema({
     likes: { type: Number, default: 0 },
     shareCount: { type: Number, default: 0 },
     slug: { type: String, unique: true, sparse: true },
-    comments: [CommentSchema]
-    ,
+    comments: [CommentSchema],
     status: {
         type: String,
         enum: ['pending', 'published', 'rejected'],
         default: 'published'
     },
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin', required: false }
+    // --- CHANGE ---
+    // Make createdBy required to ensure we always know the author.
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Admin', // This links to your Admin/Operator model
+        required: true
+    }
 }, { timestamps: true }); // Adding timestamps for createdAt and updatedAt
 
 module.exports = mongoose.model('Blog', BlogSchema);
