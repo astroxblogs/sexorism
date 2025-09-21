@@ -43,7 +43,7 @@ if (process.env.NODE_ENV !== 'production') {
 // Add AWS load balancer origin for production
 if (process.env.NODE_ENV === 'production') {
     const awsOrigins = [
-         // AWS load balancer
+        'http://65.1.60.27:80',  // AWS load balancer
         'http://localhost:3000',
         'http://localhost:3001'
     ];
@@ -55,11 +55,20 @@ if (process.env.NODE_ENV === 'production') {
 app.use(cors({
     origin: function (origin, callback) {
         if (!origin) return callback(null, true);
+
         const normalizedOrigin = normalizeOrigin(origin);
         const isAllowed = allowedOrigins.includes(normalizedOrigin);
+
         if (isAllowed) {
             callback(null, true);
         } else {
+            // Log for debugging
+            console.log('CORS Debug:');
+            console.log('- Request Origin:', origin);
+            console.log('- Normalized Origin:', normalizedOrigin);
+            console.log('- Allowed Origins:', allowedOrigins);
+            console.log('- Is Allowed:', isAllowed);
+
             const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
             callback(new Error(msg), false);
         }
