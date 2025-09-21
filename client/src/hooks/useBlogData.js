@@ -19,14 +19,8 @@ const useBlogData = (slug, initialBlog) => {
             setLoading(true);
             setError(null);
             try {
-                // First, try fetching by slug
-                let res = await axios.get(`/api/blogs/slug/${slug}`, { signal: controller.signal });
-
-                // If no data, fallback to trying by ID
-                if (!res.data) {
-                    console.warn(`Blog not found by slug "${slug}", trying fallback by ID.`);
-                    res = await axios.get(`/api/blogs/${slug}`, { signal: controller.signal });
-                }
+                // Fetch blog by slug
+                const res = await axios.get(`/api/blogs/${slug}`, { signal: controller.signal });
 
                 if (res.data) {
                     setBlog(res.data);
