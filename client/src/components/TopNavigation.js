@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import axios from 'axios';
 
 import ThemeToggle from './ThemeToggle';
 import LanguageSelector from './LanguageSelector';
@@ -65,10 +66,53 @@ const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLog
         onCategoryChange(categoryValue.trim());
     };
 
-    const handleSearchSubmit = (e) => {
+    const handleSearchSubmit = async (e) => {
         e.preventDefault();
         if (!inputValue.trim()) return;
-        setSearchQuery(inputValue);
+
+        const searchTerm = inputValue.trim();
+
+        // Check if there's an exact match for a blog title
+        try {
+            const response = await axios.get(`/api/blogs/search?q=${encodeURIComponent(searchTerm)}&limit=1&_t=${Date.now()}`);
+            const blogs = response.data.blogs;
+
+            if (blogs && blogs.length > 0) {
+                const blog = blogs[0];
+                console.log('Smart search - Found blog:', blog.title);
+                console.log('Smart search - Search term:', searchTerm);
+
+                // Check if the search term matches the blog title exactly (case insensitive)
+                // Use word boundaries for more precise matching
+                const exactTitleMatch = blog.title && new RegExp(`\\b${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(blog.title);
+                const exactTitleEnMatch = blog.title_en && new RegExp(`\\b${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(blog.title_en);
+                const exactTitleHiMatch = blog.title_hi && new RegExp(`\\b${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(blog.title_hi);
+
+                console.log('Smart search - Title match:', exactTitleMatch);
+                console.log('Smart search - Title EN match:', exactTitleEnMatch);
+                console.log('Smart search - Title HI match:', exactTitleHiMatch);
+
+                if (exactTitleMatch || exactTitleEnMatch || exactTitleHiMatch) {
+                    console.log('Smart search - Redirecting to:', blog.slug);
+                    // Redirect to the blog detail page
+                    const frontendUrl = process.env.NODE_ENV === 'production'
+                        ? process.env.REACT_APP_FRONTEND_URL || 'https://www.innvibs.com'
+                        : 'http://localhost:3000';
+
+                    window.location.href = `${frontendUrl}/blog-detail/${blog.slug}`;
+                    return;
+                } else {
+                    console.log('Smart search - No exact match found, proceeding with regular search');
+                }
+            } else {
+                console.log('Smart search - No blogs found');
+            }
+        } catch (error) {
+            console.error('Error checking for exact blog match:', error);
+        }
+
+        // If no exact match found, proceed with regular search
+        setSearchQuery(searchTerm);
     };
 
     const handleCloseSearch = () => {

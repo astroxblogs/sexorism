@@ -12,6 +12,9 @@ const generateSlug = (title) => {
     .replace(/^-+|-+$/g, '');     // Trim leading/trailing hyphens
 };
 
+
+
+
 // ===============================
 // HELPER FUNCTION for Social Media Previews
 // ===============================
@@ -168,6 +171,7 @@ const searchBlogs = async (req, res) => {
   }
 };
 
+
 // ===============================
 // Get single blog by ID
 // ===============================
@@ -208,6 +212,9 @@ const getBlogBySlug = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+
+
 
 // ===============================
 // Increment views
@@ -266,6 +273,8 @@ const incrementShares = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+
 
 // ===============================
 // Likes
@@ -332,17 +341,30 @@ const addComment = async (req, res) => {
 // ===============================
 const getSocialMediaPreview = async (req, res) => {
   try {
-    const { slug } = req.params;
+    const { slug, categoryName } = req.params;
 
     if (!slug) {
-      return res.status(400).send(generateSocialPreviewHTML(null, 'Invalid blog slug'));
+      return res.status(400).send(generateSocialPreviewHTML(null, 'Invalid blog slug', categoryName));
     }
 
-    // Use the existing helper function to get blog data
-    const blog = await getBlogBySlugHelper(slug);
+    let blog;
+
+    if (categoryName) {
+      // New category-based URL structure
+      blog = await Blog.findOne({
+        slug: slug,
+        category: new RegExp(`^${categoryName}$`, 'i'),
+        $or: [{ status: 'published' }, { status: { $exists: false } }]
+      }).lean().select(
+        'title title_en title_hi content content_en content_hi image date category tags slug views comments likes shareCount updatedAt'
+      );
+    } else {
+      // Old slug-only structure (fallback)
+      blog = await getBlogBySlugHelper(slug);
+    }
 
     if (!blog) {
-      return res.status(404).send(generateSocialPreviewHTML(null, 'Blog not found'));
+      return res.status(404).send(generateSocialPreviewHTML(null, 'Blog not found', categoryName));
     }
 
     // Check if request is from social media crawler
@@ -351,7 +373,7 @@ const getSocialMediaPreview = async (req, res) => {
 
     if (isSocialCrawler) {
       // Serve social media preview HTML for crawlers
-      const html = generateSocialPreviewHTML(blog);
+      const html = generateSocialPreviewHTML(blog, null, categoryName);
       res.set('Content-Type', 'text/html');
       res.send(html);
     } else {
@@ -359,19 +381,26 @@ const getSocialMediaPreview = async (req, res) => {
       const frontendUrl = process.env.NODE_ENV === 'production'
         ? process.env.CORS_ORIGIN_PROD || 'https://www.innvibs.com'
         : 'http://localhost:3000';
-      res.redirect(`${frontendUrl}/blog-detail/${slug}`);
+
+      if (categoryName) {
+        // New category-based URL
+        res.redirect(`${frontendUrl}/category/${categoryName}/${slug}`);
+      } else {
+        // Old URL structure (fallback)
+        res.redirect(`${frontendUrl}/blog-detail/${slug}`);
+      }
     }
 
   } catch (error) {
     console.error('Error generating social media preview:', error);
-    res.status(500).send(generateSocialPreviewHTML(null, 'Internal server error'));
+    res.status(500).send(generateSocialPreviewHTML(null, 'Internal server error', categoryName));
   }
 };
 
 // ===============================
 // HTML Template Generator for Social Media Previews
 // ===============================
-const generateSocialPreviewHTML = (blog, errorMessage = null) => {
+const generateSocialPreviewHTML = (blog, errorMessage = null, categoryName = null) => {
   const baseUrl = process.env.NODE_ENV === 'production'
     ? process.env.CORS_ORIGIN_PROD || 'https://www.innvibs.com'
     : 'http://localhost:8081'; // Use backend URL for social previews
@@ -429,7 +458,16 @@ const generateSocialPreviewHTML = (blog, errorMessage = null) => {
     imageUrl = `${baseUrl}/logo.png`;
   }
 
-  const blogUrl = `${baseUrl}/blog-detail/${blog.slug}`;
+  // Generate the correct URL based on whether we have a category
+  const blogUrl = categoryName
+    ? `${baseUrl}/category/${categoryName}/${blog.slug}`
+    : `${baseUrl}/blog-detail/${blog.slug}`;
+
+  // For social media previews, we want to use the category-based URL if available
+  // This ensures social media platforms show the correct URL structure
+  const socialMediaUrl = categoryName
+    ? `${baseUrl}/category/${categoryName}/${blog.slug}`
+    : blogUrl;
 
   return `
     <!DOCTYPE html>
@@ -444,7 +482,7 @@ const generateSocialPreviewHTML = (blog, errorMessage = null) => {
       <meta property="og:title" content="${title}">
       <meta property="og:description" content="${description}">
       <meta property="og:image" content="${imageUrl}">
-      <meta property="og:url" content="${blogUrl}">
+      <meta property="og:url" content="${socialMediaUrl}">
       <meta property="og:site_name" content="InnVibs">
       <meta property="article:published_time" content="${blog.date.toISOString()}">
       <meta property="article:modified_time" content="${blog.updatedAt.toISOString()}">
@@ -459,7 +497,7 @@ const generateSocialPreviewHTML = (blog, errorMessage = null) => {
 
       <!-- Additional SEO -->
       <meta name="description" content="${description}">
-      <link rel="canonical" href="${blogUrl}">
+      <link rel="canonical" href="${socialMediaUrl}">
     </head>
     <body>
       <article>
@@ -470,11 +508,42 @@ const generateSocialPreviewHTML = (blog, errorMessage = null) => {
         <div>
           ${content ? content.substring(0, 500) + (content.length > 500 ? '...' : '') : 'No preview available'}
         </div>
-        <p><a href="${blogUrl}">Read full article on InnVibs</a></p>
+        <p><a href="${socialMediaUrl}">Read full article on InnVibs</a></p>
       </article>
     </body>
     </html>
   `;
+};
+
+// ===============================
+// Get single blog by category and slug (for category-based URLs)
+// ===============================
+const getBlogByCategoryAndSlug = async (req, res) => {
+  try {
+    const { categoryName, slug } = req.params;
+
+    const blog = await Blog.findOne({
+      // Find a blog where the slug matches...
+      slug: slug,
+      // ...and the category matches, ignoring case (e.g., 'technology' matches 'Technology')
+      category: new RegExp(`^${categoryName}$`, 'i'),
+      // And ensure it's published
+      $or: [{ status: 'published' }, { status: { $exists: false } }],
+    })
+      .populate('comments')
+      .select(
+        'title title_en title_hi content content_en content_hi image date category tags slug views comments likes shareCount'
+      );
+
+    if (!blog) {
+      // If no blog is found with that combination, return an error
+      return res.status(404).json({ error: 'Blog not found in this category' });
+    }
+
+    res.json(blog);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
 // ===============================
@@ -486,6 +555,7 @@ module.exports = {
   searchBlogs,
   getBlog,
   getBlogBySlug,
+  getBlogByCategoryAndSlug, // Added back for category-based URLs
   getBlogBySlugHelper, // NEW: Helper function for social media previews
   getSocialMediaPreview, // NEW: Social media preview function
   incrementViews,

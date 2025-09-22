@@ -3,7 +3,7 @@ import BlogCard from './BlogCard';
 import { useTranslation } from 'react-i18next';
 
 // --- FIX: Accept the onLikeUpdate prop from the parent (Home.js) ---
-const BlogList = ({ blogs, loadingMore, hasMore, onLoadMore, totalBlogsCount, onLikeUpdate }) => {
+const BlogList = ({ blogs, loadingMore, hasMore, onLoadMore, totalBlogsCount, onLikeUpdate, searchQuery }) => {
     const { t } = useTranslation();
     const observerRef = useRef(null);
 
@@ -42,7 +42,7 @@ const BlogList = ({ blogs, loadingMore, hasMore, onLoadMore, totalBlogsCount, on
                         return (
                             <div key={blog._id} ref={isLast ? observerRef : null}>
                                 {/* --- FIX: Pass the onLikeUpdate prop down to each BlogCard --- */}
-                                <BlogCard blog={blog} onLikeUpdate={onLikeUpdate} />
+                                <BlogCard blog={blog} onLikeUpdate={onLikeUpdate} searchQuery={searchQuery} />
                             </div>
                         );
                     })}

@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import api from '../services/api';
+// ✅ The service file should be imported from the correct relative path
+import api from '../services/api'; 
 
-const useBlogData = (slug, initialBlog) => {
+// ✅ The hook now accepts categoryName and blogSlug
+const useBlogData = (categoryName, blogSlug, initialBlog) => {
     const [blog, setBlog] = useState(initialBlog || null);
     const [loading, setLoading] = useState(!initialBlog);
     const [error, setError] = useState(null);
@@ -19,8 +21,8 @@ const useBlogData = (slug, initialBlog) => {
             setLoading(true);
             setError(null);
             try {
-                // Fetch blog by slug
-                const res = await api.get(`/api/blogs/slug/${slug}`, { signal: controller.signal });
+                // ✅ This is the critical change: building the new API URL
+                const res = await api.get(`/api/blogs/${categoryName}/${blogSlug}`, { signal: controller.signal });
 
                 if (res.data) {
                     setBlog(res.data);
@@ -29,7 +31,7 @@ const useBlogData = (slug, initialBlog) => {
                 }
 
             } catch (err) {
-                if (err.name === 'AbortError') return;
+                 if (err.name === 'CanceledError') return;
                 console.error("Failed to fetch blog post:", err);
                 setError("Failed to load blog post. Please try again later.");
             } finally {
@@ -37,12 +39,15 @@ const useBlogData = (slug, initialBlog) => {
             }
         };
 
-        if (slug) {
+        // ✅ Check for both categoryName and blogSlug before fetching
+        if (categoryName && blogSlug) {
             fetchBlog();
         }
 
         return () => controller.abort();
-    }, [slug, initialBlog]);
+        
+    // ✅ Update dependencies for the useEffect hook
+    }, [categoryName, blogSlug, initialBlog]);
 
     // The view count logic remains the same, no changes needed here
     useEffect(() => {

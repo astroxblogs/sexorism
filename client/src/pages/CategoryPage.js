@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Home from './Home';
 
@@ -22,7 +22,7 @@ const CategoryPage = () => {
     const activeCategory = unslugify(categoryName);
 
     // We reuse the Home component to display the filtered blogs
-    return <Home activeCategory={activeCategory} searchQuery="" />;
+    return <Home activeCategory={activeCategory} />;
 };
 
 export default CategoryPage;

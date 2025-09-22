@@ -17,12 +17,24 @@ import BlogArticle from './BlogArticle';
 const MIN_READ_DURATION_SECONDS = 30;
 const POPUP_DELAY_SECONDS = 10; // 15 seconds delay for popup
 
+const slugify = (text) => {
+    const normalized = text.replace(/\s*&\s*/g, ' & ');
+    return normalized
+        .toLowerCase()
+        .replace(/\s*&\s*/g, ' & ')
+        .replace(/ & /g, '-')
+        .replace(/\s+/g, '-');
+};
+
 const BlogDetail = ({ blog: initialBlog }) => {
-    const { slug } = useParams();
+    const { categoryName, blogSlug } = useParams();
     const { i18n } = useTranslation();
     
-    // Get data and state from our custom hook, passing the slug
-    const { blog, loading, error } = useBlogData(slug, initialBlog);
+    // Determine which routing pattern we're using
+    const isNewRouting = categoryName && blogSlug;
+    // const blogIdentifier = isNewRouting ? blogSlug : slug;
+
+const { blog, loading, error } = useBlogData(categoryName, blogSlug, initialBlog);
 
     // Manage UI-specific state
     const [isSubscribed, setIsSubscribed] = useState(hasSubscriberId());
@@ -132,10 +144,22 @@ const BlogDetail = ({ blog: initialBlog }) => {
         return () => window.removeEventListener('storage', updateSubscriptionStatus);
     }, [isSubscribed]);
 
+    // Generate the canonical URL for SEO
+    const generateCanonicalUrl = () => {
+        if (!blog) return '';
+        
+        // Always use the new URL format for canonical URL
+        const categorySlug = blog.category ? slugify(blog.category) : 'uncategorized';
+        const blogSlug = blog.slug || blog._id;
+        return `https://www.innvibs.com/category/${categorySlug}/${blogSlug}`;
+    };
+
     // Render loading/error states
     if (loading) return <div className="text-center mt-20 p-4 dark:text-gray-300">Loading post...</div>;
     if (error) return <div className="text-center mt-20 p-4 text-red-500">{error}</div>;
     if (!blog) return <div className="text-center mt-20 p-4 dark:text-gray-300">Blog post not found.</div>;
+
+    const canonicalUrl = generateCanonicalUrl();
 
     return (
         <>
@@ -146,12 +170,13 @@ const BlogDetail = ({ blog: initialBlog }) => {
                 <meta property="og:title" content={blog.title} />
                 <meta property="og:description" content={blog.content?.slice(0, 150)} />
                 <meta property="og:image" content={blog.image} />
-                <meta property="og:url" content={`https://www.innvibs.com/blog-detail/${blog.slug}`} />
+                <meta property="og:url" content={canonicalUrl} />
                 <meta property="og:type" content="article" />
                 <meta name="twitter:card" content="summary_large_image" />
                 <meta name="twitter:title" content={blog.title} />
                 <meta name="twitter:description" content={blog.content?.slice(0, 150)} />
                 <meta name="twitter:image" content={blog.image} />
+                <link rel="canonical" href={canonicalUrl} />
             </Helmet>
 
             <BlogArticle

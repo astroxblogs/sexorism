@@ -8,7 +8,16 @@ import { useTranslation } from "react-i18next";
 import { getCategoryClasses } from "../../utils/categoryColors.js";
 import { useShare } from "../../context/ShareContext.js"; // ✅ context
 
-const BlogCard = ({ blog, onLikeUpdate }) => {
+const slugify = (text) => {
+  const normalized = text.replace(/\s*&\s*/g, ' & ');
+  return normalized
+    .toLowerCase()
+    .replace(/\s*&\s*/g, ' & ') // keep a consistent space-around-& for mapping
+    .replace(/ & /g, '-')
+    .replace(/\s+/g, '-');
+};
+
+const BlogCard = ({ blog, onLikeUpdate, searchQuery }) => {
   const { i18n, t } = useTranslation();
   const currentLang = i18n.language;
   const { setInitialShareCount } = useShare();
@@ -41,11 +50,37 @@ const BlogCard = ({ blog, onLikeUpdate }) => {
 
   const excerpt = getPlainTextExcerpt(displayContent);
 
+  // Function to highlight search terms
+  const highlightSearchTerms = (text, searchQuery) => {
+    if (!searchQuery || !text) return text;
+
+    const searchTerms = searchQuery.trim().split(/\s+/);
+    let highlightedText = text;
+
+    searchTerms.forEach(term => {
+      if (term.length > 0) {
+        const regex = new RegExp(`(${term})`, 'gi');
+        highlightedText = highlightedText.replace(regex, '<mark class="bg-yellow-200 dark:bg-yellow-800 px-1 rounded">$1</mark>');
+      }
+    });
+
+    return highlightedText;
+  };
+
+  // Generate the new URL format
+  const generateBlogUrl = () => {
+    const categorySlug = blog.category ? slugify(blog.category) : 'uncategorized';
+    const blogSlug = blog.slug || blog._id;
+    return `/category/${categorySlug}/${blogSlug}`;
+  };
+
+  const blogUrl = generateBlogUrl();
+
   return (
     <div className="flex flex-col sm:flex-row items-stretch bg-white dark:bg-gray-900 rounded-xl shadow-sm hover:shadow transition overflow-visible w-full">
       {blog.image && (
         <Link
-          to={`/blog-detail/${blog.slug || blog._id}`}
+          to={blogUrl}
           className="w-full aspect-[16/9] sm:w-40 md:w-48 sm:aspect-auto sm:self-stretch flex-shrink-0 overflow-hidden group"
         >
           <img
@@ -83,10 +118,13 @@ const BlogCard = ({ blog, onLikeUpdate }) => {
             </span>
           </div>
 
-          <Link to={`/blog-detail/${blog.slug || blog._id}`} className="block">
-            <h2 className="text-sm sm:text-lg md:text-xl font-semibold leading-snug text-gray-900 dark:text-gray-100 hover:underline line-clamp-2">
-              {displayTitle}
-            </h2>
+          <Link to={blogUrl} className="block">
+            <h2
+              className="text-sm sm:text-lg md:text-xl font-semibold leading-snug text-gray-900 dark:text-gray-100 hover:underline line-clamp-2"
+              dangerouslySetInnerHTML={{
+                __html: searchQuery ? highlightSearchTerms(displayTitle, searchQuery) : displayTitle
+              }}
+            />
           </Link>
 
           {blog.tags && blog.tags.length > 0 && (
@@ -103,9 +141,12 @@ const BlogCard = ({ blog, onLikeUpdate }) => {
             </div>
           )}
           
-          <p className="mt-1.5 text-sm text-gray-600 dark:text-gray-400 line-clamp-2 break-words">
-            {excerpt}
-          </p>
+          <p
+            className="mt-1.5 text-sm text-gray-600 dark:text-gray-400 line-clamp-2 break-words"
+            dangerouslySetInnerHTML={{
+              __html: searchQuery ? highlightSearchTerms(excerpt, searchQuery) : excerpt
+            }}
+          />
         </div>
 
         <div className="mt-auto pt-2 flex items-center gap-4 sm:gap-5 text-gray-500 dark:text-gray-400 text-[11px] sm:text-xs">
@@ -115,7 +156,7 @@ const BlogCard = ({ blog, onLikeUpdate }) => {
             onLikeSuccess={onLikeUpdate}
           />
           <Link
-            to={`/blog-detail/${blog.slug || blog._id}#comments`}
+            to={`${blogUrl}#comments`}
             className="flex items-center gap-1.5 hover:text-gray-900 dark:hover:text-white"
           >
             <MessageSquare size={14} />
@@ -125,7 +166,7 @@ const BlogCard = ({ blog, onLikeUpdate }) => {
             title={displayTitle}
             url={
               typeof window !== "undefined"
-                ? `${window.location.origin}/blog-detail/${blog.slug || blog._id}`
+                ? `${window.location.origin}${blogUrl}`
                 : ""
             }
             blogId={blog._id}

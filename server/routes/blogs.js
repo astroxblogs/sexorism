@@ -1,21 +1,24 @@
+// server/routes/blogs.js
+
 const express = require('express');
 const router = express.Router();
 const blogController = require('../controllers/blogController');
-const categoryController = require('../controllers/categoryController'); // <-- NEW IMPORT
+const categoryController = require('../controllers/categoryController');
 
 router.get('/', blogController.getBlogs);
-
 router.get('/categories', categoryController.getCategories);
-
-// Existing routes
+ 
 router.get('/search', blogController.searchBlogs);
 router.get('/latest', blogController.getLatestBlogs);
-router.get('/slug/:slug', blogController.getBlogBySlug);
-router.get('/:id', blogController.getBlog);
+
+// ✅ ADD THIS NEW ROUTE HERE
+router.get('/:categoryName/:slug', blogController.getBlogByCategoryAndSlug);
+
+router.get('/slug/:slug', blogController.getBlogBySlug); // You can keep this or remove it
+router.get('/:id', blogController.getBlog); // The new route MUST be before this one
+
 router.patch('/:id/views', blogController.incrementViews);
 router.post('/:id/share', blogController.incrementShares);
-
-// New routes for likes and comments
 router.post('/:id/like', blogController.likePost);
 router.post('/:id/unlike', blogController.unlikePost);
 router.post('/:id/comments', blogController.addComment);

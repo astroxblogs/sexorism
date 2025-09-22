@@ -11,7 +11,7 @@ import { motion } from 'framer-motion';
 
 const INITIAL_PAGE_SIZE = 6;
 
-const Home = ({ activeCategory, searchQuery }) => {
+const Home = ({ activeCategory, searchQuery, setSearchQuery }) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
 
@@ -125,12 +125,17 @@ const Home = ({ activeCategory, searchQuery }) => {
             let url = `/api/blogs?page=${pageToLoad}&limit=${INITIAL_PAGE_SIZE}`;
 
             if (searchQuery) {
-                url = `/api/blogs/search?q=${encodeURIComponent(searchQuery)}&page=${pageToLoad}&limit=${INITIAL_PAGE_SIZE}`;
+                url = `/api/blogs/search?q=${encodeURIComponent(searchQuery)}&page=${pageToLoad}&limit=${INITIAL_PAGE_SIZE}&_t=${Date.now()}`;
             } else if (activeCategory && activeCategory.toLowerCase() !== 'all') {
                 url = `/api/blogs?category=${encodeURIComponent(activeCategory)}&page=${pageToLoad}&limit=${INITIAL_PAGE_SIZE}`;
             }
 
+            console.log('Fetching blogs from URL:', url); // Debug log
             const res = await axios.get(url);
+            console.log('API Response:', res.data); // Debug log
+            console.log('Search query:', searchQuery); // Debug log
+            console.log('Active category:', activeCategory); // Debug log
+
             const { blogs: newBlogs, currentPage: apiCurrentPage, totalPages: apiTotalPages, totalBlogs: apiTotalBlogs } = res.data;
 
             if (append) {
@@ -226,6 +231,7 @@ const Home = ({ activeCategory, searchQuery }) => {
                             hasMore={currentPage < totalPages}
                             onLoadMore={loadMoreBlogs}
                             totalBlogsCount={totalBlogsCount}
+                            searchQuery={searchQuery}
                         />
 
                         {!hasBlogsToDisplay && !loading && (

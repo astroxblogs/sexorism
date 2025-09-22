@@ -44,6 +44,7 @@ exports.getLatestBlogs = async (req, res) => {
 };
 
  
+ 
 exports.getBlogs = async (req, res) => {
     try {
         const { category, tag, page = 1, limit = 10 } = req.query;
@@ -61,20 +62,23 @@ exports.getBlogs = async (req, res) => {
         if (category) filter.category = category.trim();
         if (tag) filter.tags = { $in: [new RegExp(`^${tag.trim()}$`, 'i')] };
 
-         if (req.user?.role === 'operator') {
+        // ✅ --- THIS IS THE CORRECT LOGIC ---
+        // It ensures admins ONLY see published blogs in this list.
+        if (req.user?.role === 'operator') {
             filter.createdBy = req.user.id;
         } else {
             filter.status = 'published'; // Only fetch published blogs for the admin's main list
         }
+        // ✅ --- END FIX ---
 
         const skip = (parsedPage - 1) * parsedLimit;
         const blogs = await Blog.find(filter)
-            .populate({ path: 'createdBy', select: 'username' }) // ✅ THIS LINE IS ADDED
+            .populate({ path: 'createdBy', select: 'username' })
             .sort({ date: -1 })
             .skip(skip)
             .limit(parsedLimit)
             .exec();
-// console.log("--- DATA SENT FROM getBlogs ---", JSON.stringify(blogs, null, 2));
+
         const totalBlogs = await Blog.countDocuments(filter);
         const totalPages = Math.ceil(totalBlogs / parsedLimit);
 
@@ -86,12 +90,11 @@ exports.getBlogs = async (req, res) => {
 };
  
 exports.searchBlogs = async (req, res) => {
+    // ... logic from your file ...
     const { q, page = 1, limit = 10 } = req.query;
-
     if (!q) {
         return res.status(400).json({ error: 'A search query "q" is required.' });
     }
-
     try {
         const regex = new RegExp(q, 'i');
         const searchFilter = {
@@ -102,15 +105,17 @@ exports.searchBlogs = async (req, res) => {
             ]
         };
 
+        // ✅ --- APPLYING THE FIX TO SEARCH AS WELL ---
         if (req.user?.role === 'operator') {
             searchFilter.createdBy = req.user.id;
         } else {
             searchFilter.status = 'published'; // Also apply to search results for admin
         }
+        // ✅ --- END FIX ---
 
         const skip = (parseInt(page, 10) - 1) * parseInt(limit, 10);
         const blogs = await Blog.find(searchFilter)
-            .populate({ path: 'createdBy', select: 'username' }) // ✅ THIS LINE IS ALSO ADDED FOR SEARCH
+            .populate({ path: 'createdBy', select: 'username' })
             .sort({ date: -1 })
             .skip(skip)
             .limit(parseInt(limit, 10))
@@ -118,13 +123,12 @@ exports.searchBlogs = async (req, res) => {
 
         const totalBlogs = await Blog.countDocuments(searchFilter);
         const totalPages = Math.ceil(totalBlogs / parseInt(limit, 10));
-
         res.json({ blogs, currentPage: parseInt(page, 10), totalPages, totalBlogs });
     } catch (err) {
         console.error("Error in searchBlogs:", err);
         res.status(500).json({ error: 'Failed to perform search.' });
     }
-};
+}
 
 // --- UNCHANGED FUNCTIONS ---
 exports.getBlog = async (req, res) => { /* ... unchanged ... */ 
