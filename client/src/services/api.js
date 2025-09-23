@@ -1,9 +1,10 @@
 import axios from 'axios';
 
 // The base URL for the main blog's server API
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://api.innvibs.com';
 
 const api = axios.create({
+    baseURL: API_BASE_URL,
     withCredentials: true,
 });
 

@@ -16,7 +16,7 @@ const BlogDetailPage = React.lazy(() => import('./pages/BlogDetailPage'));
 const CategoryPage = React.lazy(() => import('./pages/CategoryPage'));
 const TagPage = React.lazy(() => import('./pages/TagPage'));
 
-axios.defaults.baseURL = process.env.REACT_APP_API_BASE_URL;
+// Base URL is now set in the api service
 
 axios.interceptors.request.use(
     (config) => {
@@ -77,7 +77,7 @@ function App() {
 
     const fetchCategories = useCallback(async () => {
         try {
-            const response = await axios.get('/api/blogs/categories');
+            const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL || 'https://api.innvibs.com'}/api/blogs/categories`);
             setCategories(response.data);
         } catch (error) {
             console.error('Error fetching categories:', error);
