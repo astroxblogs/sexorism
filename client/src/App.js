@@ -77,7 +77,8 @@ function App() {
 
     const fetchCategories = useCallback(async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL || 'https://api.innvibs.com'}/api/blogs/categories`);
+            const baseUrl = process.env.REACT_APP_API_BASE_URL || 'https://api.innvibs.com';
+            const response = await axios.get(`${baseUrl}/api/blogs/categories`);
             setCategories(response.data);
         } catch (error) {
             console.error('Error fetching categories:', error);

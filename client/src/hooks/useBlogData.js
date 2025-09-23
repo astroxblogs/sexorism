@@ -21,8 +21,10 @@ const useBlogData = (categoryName, blogSlug, initialBlog) => {
             setLoading(true);
             setError(null);
             try {
+                console.log('useBlogData: Fetching blog with:', { categoryName, blogSlug });
                 // ✅ This is the critical change: building the new API URL
                 const res = await api.get(`/api/blogs/${categoryName}/${blogSlug}`, { signal: controller.signal });
+                console.log('useBlogData: API response:', res.data);
 
                 if (res.data) {
                     setBlog(res.data);
@@ -31,9 +33,9 @@ const useBlogData = (categoryName, blogSlug, initialBlog) => {
                 }
 
             } catch (err) {
-                 if (err.name === 'CanceledError') return;
-                console.error("Failed to fetch blog post:", err);
-                setError("Failed to load blog post. Please try again later.");
+                  if (err.name === 'CanceledError') return;
+                 console.error("Failed to fetch blog post:", err);
+                 setError(`Failed to load blog post: ${err.message}`);
             } finally {
                 setLoading(false);
             }

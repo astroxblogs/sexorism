@@ -32,9 +32,13 @@ const BlogDetail = ({ blog: initialBlog }) => {
     
     // Determine which routing pattern we're using
     const isNewRouting = categoryName && blogSlug;
-    // const blogIdentifier = isNewRouting ? blogSlug : slug;
 
-const { blog, loading, error } = useBlogData(categoryName, blogSlug, initialBlog);
+ const { blog, loading, error } = useBlogData(categoryName, blogSlug, initialBlog);
+
+    // Debug logging (after useBlogData hook)
+    useEffect(() => {
+        console.log('BlogDetail Debug:', { categoryName, blogSlug, isNewRouting, loading, error, blog: blog?.title });
+    }, [categoryName, blogSlug, isNewRouting, loading, error, blog]);
 
     // Manage UI-specific state
     const [isSubscribed, setIsSubscribed] = useState(hasSubscriberId());
