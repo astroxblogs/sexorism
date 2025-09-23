@@ -14,7 +14,7 @@ import useBlogData from '../../hooks/useBlogData';
 // Presentational Component
 import BlogArticle from './BlogArticle';
 
-const MIN_READ_DURATION_SECONDS = 30;
+const MIN_READ_DURATION_SECONDS = 35;
 const POPUP_DELAY_SECONDS = 10; // 15 seconds delay for popup
 
 const slugify = (text) => {
