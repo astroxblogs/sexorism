@@ -11,10 +11,9 @@ router.get('/categories', categoryController.getCategories);
 router.get('/search', blogController.searchBlogs);
 router.get('/latest', blogController.getLatestBlogs);
 
-// ✅ ADD THIS NEW ROUTE HERE
-router.get('/:categoryName/:slug', blogController.getBlogByCategoryAndSlug);
-
+// ✅ ADD THIS NEW ROUTE HERE - Keep specific routes before generic ones
 router.get('/slug/:slug', blogController.getBlogBySlug); // You can keep this or remove it
+router.get('/:categoryName/:slug', blogController.getBlogByCategoryAndSlug);
 router.get('/:id', blogController.getBlog); // The new route MUST be before this one
 
 router.patch('/:id/views', blogController.incrementViews);

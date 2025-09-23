@@ -161,7 +161,7 @@ const BlogDetail = ({ blog: initialBlog }) => {
     // Render loading/error states
     if (loading) return <div className="text-center mt-20 p-4 dark:text-gray-300">Loading post...</div>;
     if (error) return <div className="text-center mt-20 p-4 text-red-500">{error}</div>;
-    if (!blog) return <div className="text-center mt-20 p-4 dark:text-gray-300">Blog post not found.</div>;
+    if (!blog) return <div className="text-center mt-20 p-4 dark:text-gray-300">Loading Blogs....</div>;
 
     const canonicalUrl = generateCanonicalUrl();
 

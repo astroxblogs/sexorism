@@ -1,12 +1,12 @@
 // client/src/components/CommentSection.js
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 import { Trash2 } from 'lucide-react'; // An icon for the delete button
 
 // NEW: Import getSubscriberId and trackUserComment
 import { getSubscriberId } from '../utils/localStorage'; // <-- ADD THIS LINE
 import { trackUserComment } from '../services/api';     // <-- ADD THIS LINE
+import api from '../services/api';
 
 const CommentSection = ({ blogId, initialComments }) => {
     const { t } = useTranslation();
@@ -52,7 +52,7 @@ const CommentSection = ({ blogId, initialComments }) => {
         setError('');
 
         try {
-            const res = await axios.post(`/api/blogs/${blogId}/comments`, { name, comment });
+            const res = await api.post(`/api/blogs/${blogId}/comments`, { name, comment });
 
             // --- FIX IS HERE: Add res.data.comment, not res.data ---
             setComments([...comments, res.data.comment]);
@@ -88,7 +88,7 @@ const CommentSection = ({ blogId, initialComments }) => {
 
         try {
             // This is the correct URL for DELETING a comment
-            await axios.delete(`/api/blogs/${blogId}/comments/${commentId}`, {
+            await api.delete(`/api/blogs/${blogId}/comments/${commentId}`, {
                 headers: { Authorization: `Bearer ${adminToken}` }
             });
             setComments(comments.filter(c => c._id !== commentId));

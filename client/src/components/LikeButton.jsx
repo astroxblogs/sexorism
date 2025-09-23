@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { ThumbsUp } from 'lucide-react';
 import { getSubscriberId } from '../utils/localStorage';
 // --- FIX: Import the user tracking function directly into this component ---
 import { trackUserLike } from '../services/api';
+import api from '../services/api';
 
 const LikeButton = ({ blogId, initialLikes = 0 }) => {
     const [likes, setLikes] = useState(initialLikes);
@@ -14,7 +14,7 @@ const LikeButton = ({ blogId, initialLikes = 0 }) => {
         let isMounted = true;
         const fetchCorrectLikeCount = async () => {
             try {
-                const res = await axios.get(`/api/blogs/${blogId}`);
+                const res = await api.get(`/api/blogs/${blogId}`);
                 if (isMounted && res.data) {
                     setLikes(res.data.likes);
                 }
@@ -45,7 +45,7 @@ const LikeButton = ({ blogId, initialLikes = 0 }) => {
         try {
             // --- STEP 1: Update the public like count ---
             const endpoint = newLikedState ? 'like' : 'unlike';
-            await axios.post(`/api/blogs/${blogId}/${endpoint}`);
+            await api.post(`/api/blogs/${blogId}/${endpoint}`);
 
             const likedBlogsJSON = localStorage.getItem('likedBlogs');
             let likedBlogs = likedBlogsJSON ? JSON.parse(likedBlogsJSON) : [];

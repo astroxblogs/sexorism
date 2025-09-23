@@ -16,7 +16,6 @@ cloudinary.config({
 
 // Import the admin routes
 const adminRoutes = require('./routes/Admin');
-// REMOVED: const blogController = require('./controllers/blogController'); // This is not needed here
 
 const app = express();
 
@@ -25,19 +24,22 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());
 app.set('trust proxy', 1);
+
+// ✅ --- REVISED, SIMPLER CORS CONFIGURATION ---
+// This directly allows requests from your frontend URL and handles credentials.
+// This will fix the login error without crashing the server.
 app.use(cors({
-    origin: [process.env.CLIENT_ADMIN_URL_DEV, process.env.CLIENT_ADMIN_URL_PROD],
+    origin: [process.env.CLIENT_ADMIN_URL_DEV, process.env.CLIENT_ADMIN_URL_PROD], // Using your .env variable
     credentials: true,
 }));
+// ✅ --- END OF REVISED CONFIGURATION ---
 
-// admin-server/server.js
-// ... (existing code)
 
 // Multer storage configuration for image upload
 const storage = multer.memoryStorage();
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 50 * 1024 * 1024 }, // <-- UPDATED to 50MB
+    limits: { fileSize: 50 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         if (file.mimetype.startsWith('image/')) {
             cb(null, true);

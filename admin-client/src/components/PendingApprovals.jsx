@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, {useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
+import { toast } from 'react-hot-toast'; // Using toast for notifications
 
-const PendingApprovals = ({ onApprovedOrRejected }) => {
+const PendingApprovals = ({ onApprovedOrRejected, onEdit }) => { // ✅ 1. Accept the new 'onEdit' prop
     const { t } = useTranslation();
     const [blogs, setBlogs] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -16,6 +17,7 @@ const PendingApprovals = ({ onApprovedOrRejected }) => {
             setError('');
         } catch (e) {
             setError('Failed to load pending blogs');
+            toast.error('Failed to load pending blogs');
         } finally {
             setLoading(false);
         }
@@ -27,14 +29,16 @@ const PendingApprovals = ({ onApprovedOrRejected }) => {
         try {
             if (action === 'approve') {
                 await api.post(`/api/admin/blogs/${id}/approve`);
+                toast.success('Blog has been approved!');
             } else {
                 await api.post(`/api/admin/blogs/${id}/reject`);
+                toast.error('Blog has been rejected.');
             }
             // Update the UI optimistically and notify the dashboard to refresh the count
             setBlogs(prev => prev.filter(b => b._id !== id));
             onApprovedOrRejected && onApprovedOrRejected();
         } catch (e) {
-            alert(`Failed to ${action} the blog.`);
+            toast.error(`Failed to ${action} the blog.`);
         }
     };
 
@@ -65,7 +69,6 @@ const PendingApprovals = ({ onApprovedOrRejected }) => {
                         {blogs.map(blog => (
                             <tr key={blog._id} className="hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
                                 <td className="py-4 px-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                                    {/* Safely access the populated username */}
                                     {blog.createdBy?.username || 'Unknown'}
                                 </td>
                                 <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{blog.title_en || blog.title}</td>
@@ -73,6 +76,13 @@ const PendingApprovals = ({ onApprovedOrRejected }) => {
                                 <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{new Date(blog.createdAt || blog.date).toLocaleDateString()}</td>
                                 <td className="py-4 px-4 whitespace-nowrap text-center text-sm font-medium">
                                     <div className="flex justify-center gap-2">
+                                        {/* ✅ 2. ADD THE NEW EDIT/VIEW BUTTON */}
+                                        <button 
+                                            onClick={() => onEdit(blog)} 
+                                            className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                                        >
+                                            View
+                                        </button>
                                         <button onClick={() => handleAction(blog._id, 'approve')} className="px-3 py-1 rounded bg-green-600 text-white hover:bg-green-700 transition-colors">Approve</button>
                                         <button onClick={() => handleAction(blog._id, 'reject')} className="px-3 py-1 rounded bg-red-600 text-white hover:bg-red-700 transition-colors">Reject</button>
                                     </div>

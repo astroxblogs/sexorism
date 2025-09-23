@@ -170,9 +170,22 @@ const adminOnlyItems = role === 'admin' ? [
                 return ( <div className="bg-white rounded-xl shadow-sm border"> <div className="p-6 border-b"> <h2 className="text-2xl font-semibold text-gray-800">{t('Manage Blogs')}</h2> </div> <div className="p-6"> <AdminBlogList onEdit={(blog) => { setEditingBlog(blog); handleViewChange('blogForm'); }} /> </div> </div> );
             case 'categoryManager':
                 return ( <div className="bg-white rounded-xl shadow-sm border"> <div className="p-6 border-b"> <h2 className="text-2xl font-semibold text-gray-800">{t('Category Management')}</h2> </div> <div className="p-6"> <CategoryManager /> </div> </div> );
-            case 'pendingApprovals':
-                return ( <div className="bg-white rounded-xl shadow-sm border"> <div className="p-6 border-b"> <h2 className="text-2xl font-semibold text-gray-800">{t('Pending Approvals')}</h2> </div> <div className="p-6"> <PendingApprovals onApprovedOrRejected={fetchPendingCount} /> </div> </div> );
-            case 'operatorManagement':
+       case 'pendingApprovals':
+    return (
+        <div className="bg-white rounded-xl shadow-sm border">
+            {/* ... header ... */}
+            <div className="p-6">
+                <PendingApprovals 
+                    onApprovedOrRejected={fetchPendingCount} 
+                    // ✅ ADD THIS PROP
+                    // This tells the dashboard to set the blog for editing and switch views
+                    onEdit={(blog) => { setEditingBlog(blog); setActiveView('blogForm'); }}
+                />
+            </div>
+        </div>
+    );
+            
+                case 'operatorManagement':
                 return ( <div className="bg-white rounded-xl shadow-sm border"> <div className="p-6 border-b"> <h2 className="text-2xl font-semibold text-gray-800">{t('Operator Management')}</h2> </div> <div className="p-6"> <OperatorManagement /> </div> </div> );
             case 'adminSettings':
                 return ( <div className="bg-white rounded-xl shadow-sm border"> <div className="p-6 border-b"> <h2 className="text-2xl font-semibold text-gray-800">{t('Admin Settings')}</h2> </div> <div className="p-6"> <AdminSetting /> </div> </div> );

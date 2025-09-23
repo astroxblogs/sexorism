@@ -9,12 +9,12 @@ import { getCategoryClasses } from "../../utils/categoryColors.js";
 import { useShare } from "../../context/ShareContext.js"; // ✅ context
 
 const slugify = (text) => {
-  const normalized = text.replace(/\s*&\s*/g, ' & ');
-  return normalized
+  return text
     .toLowerCase()
-    .replace(/\s*&\s*/g, ' & ') // keep a consistent space-around-& for mapping
-    .replace(/ & /g, '-')
-    .replace(/\s+/g, '-');
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/[^a-z0-9\-&]/g, '') // Remove special characters except hyphens and ampersands
+    .replace(/-+/g, '-') // Replace multiple hyphens with single
+    .replace(/^-+|-+$/g, ''); // Trim leading/trailing hyphens
 };
 
 const BlogCard = ({ blog, onLikeUpdate, searchQuery }) => {
@@ -108,7 +108,8 @@ const BlogCard = ({ blog, onLikeUpdate, searchQuery }) => {
                   `category.${String(blog.category)
                     .toLowerCase()
                     .replace(/ & /g, "_")
-                    .replace(/\s+/g, "_")}`,
+                    .replace(/\s+/g, "_")
+                    .replace(/&/g, "_")}`,
                   { defaultValue: blog.category }
                 )}
               </span>

@@ -351,9 +351,32 @@ const getSocialMediaPreview = async (req, res) => {
 
     if (categoryName) {
       // New category-based URL structure
+      // First, find the category by its slug to get the actual category name
+      // Handle both encoded ampersands (&-) and actual ampersands (&)
+      const Category = require('../models/Category');
+
+      // Try to find category with the exact slug first
+      let category = await Category.findOne({ slug: categoryName });
+
+      // If not found, try with encoded ampersand format for backward compatibility
+      if (!category) {
+        const encodedCategoryName = categoryName.replace(/&/g, '-&-');
+        category = await Category.findOne({ slug: encodedCategoryName });
+      }
+
+      // If still not found, try with decoded ampersand format
+      if (!category) {
+        const decodedCategoryName = categoryName.replace(/-&-/g, '&');
+        category = await Category.findOne({ slug: decodedCategoryName });
+      }
+
+      if (!category) {
+        return res.status(404).send(generateSocialPreviewHTML(null, 'Category not found', categoryName));
+      }
+
       blog = await Blog.findOne({
         slug: slug,
-        category: new RegExp(`^${categoryName}$`, 'i'),
+        category: category.name_en,
         $or: [{ status: 'published' }, { status: { $exists: false } }]
       }).lean().select(
         'title title_en title_hi content content_en content_hi image date category tags slug views comments likes shareCount updatedAt'
@@ -459,6 +482,7 @@ const generateSocialPreviewHTML = (blog, errorMessage = null, categoryName = nul
   }
 
   // Generate the correct URL based on whether we have a category
+  // Use the category name as-is (with actual ampersand) for the URL
   const blogUrl = categoryName
     ? `${baseUrl}/category/${categoryName}/${blog.slug}`
     : `${baseUrl}/blog-detail/${blog.slug}`;
@@ -522,11 +546,34 @@ const getBlogByCategoryAndSlug = async (req, res) => {
   try {
     const { categoryName, slug } = req.params;
 
+    // First, find the category by its slug to get the actual category name
+    // Handle both encoded ampersands (&-) and actual ampersands (&)
+    const Category = require('../models/Category');
+
+    // Try to find category with the exact slug first
+    let category = await Category.findOne({ slug: categoryName });
+
+    // If not found, try with encoded ampersand format for backward compatibility
+    if (!category) {
+      const encodedCategoryName = categoryName.replace(/&/g, '-&-');
+      category = await Category.findOne({ slug: encodedCategoryName });
+    }
+
+    // If still not found, try with decoded ampersand format
+    if (!category) {
+      const decodedCategoryName = categoryName.replace(/-&-/g, '&');
+      category = await Category.findOne({ slug: decodedCategoryName });
+    }
+
+    if (!category) {
+      return res.status(404).json({ error: 'Category not found' });
+    }
+
     const blog = await Blog.findOne({
       // Find a blog where the slug matches...
       slug: slug,
-      // ...and the category matches, ignoring case (e.g., 'technology' matches 'Technology')
-      category: new RegExp(`^${categoryName}$`, 'i'),
+      // ...and the category matches the actual category name
+      category: category.name_en,
       // And ensure it's published
       $or: [{ status: 'published' }, { status: { $exists: false } }],
     })

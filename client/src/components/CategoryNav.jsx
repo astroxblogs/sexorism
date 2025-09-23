@@ -97,7 +97,7 @@ export default function CategoryNav({ activeCategory, onCategoryChange }) {
                           : "text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
                         }`}
                     >
-                      {t(`category.${String(cat.value).toLowerCase().replace(/ & /g, '_').replace(/\s+/g, '_')}`, { defaultValue: cat.label })}
+                      {t(`category.${String(cat.value).toLowerCase().replace(/ & /g, '_').replace(/\s+/g, '_').replace(/&/g, '_')}`, { defaultValue: cat.label })}
                     </button>
                   </li>
                 ))}
@@ -146,7 +146,7 @@ export default function CategoryNav({ activeCategory, onCategoryChange }) {
                 }
               `}
             >
-              {t(`category.${String(cat.value).toLowerCase().replace(/ & /g, '_').replace(/\s+/g, '_')}`, { defaultValue: cat.label })}
+              {t(`category.${String(cat.value).toLowerCase().replace(/ & /g, '_').replace(/\s+/g, '_').replace(/&/g, '_')}`, { defaultValue: cat.label })}
             </button>
           ))}
         </div>
