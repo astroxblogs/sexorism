@@ -3,6 +3,15 @@ import { Link } from 'react-router-dom';
 import { getCategoryClasses } from '../utils/categoryColors';
 import { useTranslation } from 'react-i18next';
 
+const slugify = (text) => {
+    const normalized = text.replace(/\s*&\s*/g, ' & ');
+    return normalized
+        .toLowerCase()
+        .replace(/\s*&\s*/g, ' & ')
+        .replace(/ & /g, '-')
+        .replace(/\s+/g, '-');
+};
+
 const SidebarLatest = ({ title = 'Latest Updates', items = [] }) => {
     const { i18n, t } = useTranslation();
     const currentLang = i18n.language;
@@ -41,26 +50,31 @@ const SidebarLatest = ({ title = 'Latest Updates', items = [] }) => {
                 {title}
             </div>
             <ul>
-                {items.map((blog, idx) => (
-                    console.log('DEBUG (SidebarLatest): Rendering blog item:', blog),
+                {items.map((blog, idx) => {
+                    const categorySlug = blog.category ? slugify(blog.category) : 'uncategorized';
+                    const blogSlug = blog.slug || blog._id;
+                    const blogUrl = `/category/${categorySlug}/${blogSlug}`;
 
-                    <li key={blog._id} className="mb-6 last:mb-0">
-                        <Link to={`/blog/${blog.slug || blog._id}`} className="block">
-                            {blog.image && (
-                                <img
-                                    src={blog.image}
-                                    alt={getLocalized(blog, 'title')}
-                                    className="w-full h-44 sm:h-48 object-cover rounded"
-                                    loading="lazy"
-                                />
-                            )}
-                        </Link>
-                        <Link
-                            to={`/blog/${blog.slug || blog._id}`}
-                            className="mt-3 block font-sans text-[15px] sm:text-base md:text-[17px] leading-relaxed font-medium text-gray-900 dark:text-gray-100 hover:underline line-clamp-3"
-                        >
-                            {getLocalized(blog, 'title')}
-                        </Link>
+                    console.log('DEBUG (SidebarLatest): Rendering blog item:', blog);
+
+                    return (
+                        <li key={blog._id} className="mb-6 last:mb-0">
+                            <Link to={blogUrl} className="block">
+                                {blog.image && (
+                                    <img
+                                        src={blog.image}
+                                        alt={getLocalized(blog, 'title')}
+                                        className="w-full h-44 sm:h-48 object-cover rounded"
+                                        loading="lazy"
+                                    />
+                                )}
+                            </Link>
+                            <Link
+                                to={blogUrl}
+                                className="mt-3 block font-sans text-[15px] sm:text-base md:text-[17px] leading-relaxed font-medium text-gray-900 dark:text-gray-100 hover:underline line-clamp-3"
+                            >
+                                {getLocalized(blog, 'title')}
+                            </Link>
                         <div className="mt-2 flex items-center gap-2 text-[11px]">
                             {blog.category && (
                                 <span className={`px-2 py-0.5 rounded-full ${getCategoryClasses(blog.category)}`}>
@@ -75,8 +89,9 @@ const SidebarLatest = ({ title = 'Latest Updates', items = [] }) => {
                         {idx !== items.length - 1 && (
                             <div className="mt-4 border-b border-gray-200 dark:border-gray-800" />
                         )}
-                    </li>
-                ))}
+                        </li>
+                    );
+                })}
             </ul>
         </aside>
     );

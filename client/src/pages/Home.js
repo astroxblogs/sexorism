@@ -8,6 +8,9 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 
+// Use the configured API service
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://api.innvibs.com';
+
 
 const INITIAL_PAGE_SIZE = 6;
 
@@ -40,7 +43,10 @@ const Home = ({ activeCategory, searchQuery, setSearchQuery }) => {
     useEffect(() => {
         const fetchFeaturedBlogs = async () => {
             try {
-                const res = await axios.get('/api/blogs/latest');
+                const baseUrl = process.env.NODE_ENV === 'production'
+                    ? (process.env.REACT_APP_API_BASE_URL || 'https://api.innvibs.com')
+                    : (process.env.REACT_APP_API_BASE_URL || 'http://localhost:8081');
+                const res = await axios.get(`${baseUrl}/api/blogs/latest`);
                 setFeaturedBlogs(res.data);
             } catch (err) {
                 console.error("Error fetching featured blogs:", err);
@@ -53,9 +59,12 @@ const Home = ({ activeCategory, searchQuery, setSearchQuery }) => {
     useEffect(() => {
         const buildHomeSidebar = async () => {
             try {
-                const catRes = await axios.get('/api/blogs/categories');
+                const baseUrl = process.env.NODE_ENV === 'production'
+                    ? (process.env.REACT_APP_API_BASE_URL || 'https://api.innvibs.com')
+                    : (process.env.REACT_APP_API_BASE_URL || 'http://localhost:8081');
+                const catRes = await axios.get(`${baseUrl}/api/blogs/categories`);
                 const categories = Array.isArray(catRes.data) ? catRes.data : [];
-                
+
                 const preferred = ['Technology', 'Health & Wellness', 'Fashion', 'Vastu Shastra'];
 
                 const preferredPresent = preferred
@@ -65,7 +74,7 @@ const Home = ({ activeCategory, searchQuery, setSearchQuery }) => {
                 const chosen = (preferredPresent.length ? preferredPresent : others).slice(0, 4);
                 const sections = await Promise.all(
                     chosen.map(async (cat) => {
-                        const url = `/api/blogs?category=${encodeURIComponent(cat.name_en)}&page=1&limit=3`;
+                        const url = `${baseUrl}/api/blogs?category=${encodeURIComponent(cat.name_en)}&page=1&limit=3`;
                         const res = await axios.get(url);
                         return { title: cat.name_en, items: res.data?.blogs || [] };
                     })
@@ -79,11 +88,14 @@ const Home = ({ activeCategory, searchQuery, setSearchQuery }) => {
 
         const buildLatestSidebar = async () => {
             try {
-                let url = '/api/blogs/latest'; 
+                const baseUrl = process.env.NODE_ENV === 'production'
+                    ? (process.env.REACT_APP_API_BASE_URL || 'https://api.innvibs.com')
+                    : (process.env.REACT_APP_API_BASE_URL || 'http://localhost:8081');
+                let url = `${baseUrl}/api/blogs/latest`;
                 if (activeCategory && activeCategory.toLowerCase() !== 'all') {
-                    url = `/api/blogs?page=1&limit=5&excludeCategory=${encodeURIComponent(activeCategory)}`;
+                    url = `${baseUrl}/api/blogs?page=1&limit=5&excludeCategory=${encodeURIComponent(activeCategory)}`;
                 }
-                
+
                 const res = await axios.get(url);
                 setSidebarLatest(res.data?.blogs || res.data || []);
             } catch (err) {
@@ -122,12 +134,15 @@ const Home = ({ activeCategory, searchQuery, setSearchQuery }) => {
         }
 
         try {
-            let url = `/api/blogs?page=${pageToLoad}&limit=${INITIAL_PAGE_SIZE}`;
+            const baseUrl = process.env.NODE_ENV === 'production'
+                ? (process.env.REACT_APP_API_BASE_URL || 'https://api.innvibs.com')
+                : (process.env.REACT_APP_API_BASE_URL || 'http://localhost:8081');
+            let url = `${baseUrl}/api/blogs?page=${pageToLoad}&limit=${INITIAL_PAGE_SIZE}`;
 
             if (searchQuery) {
-                url = `/api/blogs/search?q=${encodeURIComponent(searchQuery)}&page=${pageToLoad}&limit=${INITIAL_PAGE_SIZE}&_t=${Date.now()}`;
+                url = `${baseUrl}/api/blogs/search?q=${encodeURIComponent(searchQuery)}&page=${pageToLoad}&limit=${INITIAL_PAGE_SIZE}&_t=${Date.now()}`;
             } else if (activeCategory && activeCategory.toLowerCase() !== 'all') {
-                url = `/api/blogs?category=${encodeURIComponent(activeCategory)}&page=${pageToLoad}&limit=${INITIAL_PAGE_SIZE}`;
+                url = `${baseUrl}/api/blogs?category=${encodeURIComponent(activeCategory)}&page=${pageToLoad}&limit=${INITIAL_PAGE_SIZE}`;
             }
 
             console.log('Fetching blogs from URL:', url); // Debug log

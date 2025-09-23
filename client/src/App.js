@@ -78,11 +78,17 @@ function App() {
     const fetchCategories = useCallback(async () => {
         try {
             const baseUrl = process.env.REACT_APP_API_BASE_URL || 'https://api.innvibs.com';
-            const response = await axios.get(`${baseUrl}/api/blogs/categories`);
+            const response = await axios.get(`${baseUrl.replace(/\/$/, '')}/api/blogs/categories`);
             setCategories(response.data);
         } catch (error) {
             console.error('Error fetching categories:', error);
-
+            // Fallback: try without base URL
+            try {
+                const response = await axios.get('/api/blogs/categories');
+                setCategories(response.data);
+            } catch (fallbackError) {
+                console.error('Fallback API call also failed:', fallbackError);
+            }
         }
     }, []);
 
