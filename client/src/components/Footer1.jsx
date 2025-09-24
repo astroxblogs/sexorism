@@ -41,7 +41,7 @@ export default function BalancedMonumentFooter() {
       titleKey: "footer.company_title",
       links: [
         { nameKey: "footer.about_us", path: "/about" },
-        { nameKey: "footer.careers", path: "/careers" },
+        // { nameKey: "footer.careers", path: "/careers" },
         { nameKey: "footer.contact", path: "/contact" },
       ],
     },

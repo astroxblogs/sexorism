@@ -17,6 +17,15 @@ const slugify = (text) => {
     .replace(/^-+|-+$/g, ''); // Trim leading/trailing hyphens
 };
 
+const tagSlugify = (tag) => {
+  return tag
+    .toLowerCase()
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/[^a-z0-9-]/g, '') // Remove special characters except hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single
+    .replace(/^-+|-+$/g, ''); // Trim leading/trailing hyphens
+};
+
 const BlogCard = ({ blog, onLikeUpdate, searchQuery }) => {
   const { i18n, t } = useTranslation();
   const currentLang = i18n.language;
@@ -133,7 +142,7 @@ const BlogCard = ({ blog, onLikeUpdate, searchQuery }) => {
               {blog.tags.slice(0, 3).map((tag) => (
                 <Link
                   key={tag}
-                  to={`/tag/${encodeURIComponent(tag.toLowerCase())}`}
+                  to={`/tag/${tagSlugify(tag)}`}
                   className="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
                 >
                   #{tag}

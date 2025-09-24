@@ -1,29 +1,34 @@
+// FILE: client/src/App.js
+
 import React, { useState, useEffect, Suspense, useRef, useCallback } from 'react';
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import './index.css';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import { useTranslation } from 'react-i18next';
 
+// --- Core Components ---
 import Footer1 from './components/Footer1';
 import TopNavigation from './components/TopNavigation';
-import Home from './pages/Home';
 import ScrollToTop from './components/ScrollToTop';
 import GtmTracker from './components/GtmTracker';
 import LanguageNudge from './components/LanguageNudge.jsx';
+import MinimalFooter from './components/MinimalFooter'; // <-- Import the new footer
 
+// --- Page Components ---
+import Home from './pages/Home';
 const BlogDetailPage = React.lazy(() => import('./pages/BlogDetailPage'));
 const CategoryPage = React.lazy(() => import('./pages/CategoryPage'));
 const TagPage = React.lazy(() => import('./pages/TagPage'));
-
-// Base URL is now set in the api service
+const AboutUsPage = React.lazy(() => import('./pages/AboutUsPage'));
+const PrivacyPolicyPage = React.lazy(() => import('./pages/PrivacyPolicyPage'));
+const TermsOfServicePage = React.lazy(() => import('./pages/TermsOfServicePage'));
+const ContactUsPage = React.lazy(() => import('./pages/ContactUsPage'));
 
 axios.interceptors.request.use(
     (config) => {
         const cloudinaryUploadUrl = `https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME}/image/upload`;
-        if (config.url && !config.url.startsWith(cloudinaryUploadUrl)) {
-
-        }
+        if (config.url && !config.url.startsWith(cloudinaryUploadUrl)) { }
         return config;
     },
     (error) => {
@@ -34,10 +39,10 @@ axios.interceptors.request.use(
 const slugify = (text) => {
     return text
         .toLowerCase()
-        .replace(/\s+/g, '-') // Replace spaces with hyphens
-        .replace(/[^a-z0-9\-&]/g, '') // Remove special characters except hyphens and ampersands
-        .replace(/-+/g, '-') // Replace multiple hyphens with single
-        .replace(/^-+|-+$/g, ''); // Trim leading/trailing hyphens
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9\-&]/g, '')
+        .replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, '');
 };
 
 const AdminRedirectComponent = () => {
@@ -45,35 +50,32 @@ const AdminRedirectComponent = () => {
     const hasRedirected = useRef(false);
 
     useEffect(() => {
-
-        if (hasRedirected.current) {
-            return;
-        }
-
+        if (hasRedirected.current) return;
         const adminUrl = process.env.REACT_APP_ADMIN_URL;
         if (adminUrl) {
-            // Open the admin URL in a new tab
             window.open(adminUrl, '_blank', 'noopener,noreferrer');
             hasRedirected.current = true;
         } else {
-            console.error("Admin URL not found in environment variables.");
+            console.error("Admin URL not found.");
         }
-
         navigate('/', { replace: true });
-
     }, [navigate]);
 
     return null;
 };
-// -----------------------------------------------------
 
-function App() {
+// This is a new helper component to contain the main logic
+const AppContent = () => {
     const { t } = useTranslation();
     const [categories, setCategories] = useState([]);
     const [activeCategory, setActiveCategory] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
+    const location = useLocation(); // <-- Get current URL location
 
+    // Define the paths for the standalone pages
+    const standalonePages = ['/about', '/contact', '/privacy', '/terms'];
+    const isStandalonePage = standalonePages.includes(location.pathname);
 
     const fetchCategories = useCallback(async () => {
         try {
@@ -82,28 +84,8 @@ function App() {
             setCategories(response.data);
         } catch (error) {
             console.error('Error fetching categories:', error);
-            // Fallback: try without base URL
-            try {
-                const response = await axios.get('/api/blogs/categories');
-                setCategories(response.data);
-            } catch (fallbackError) {
-                console.error('Fallback API call also failed:', fallbackError);
-            }
         }
     }, []);
-
-
-    useEffect(() => {
-        const isAdminPath = window.location.pathname === "/admin";
-        const isMainDomain =
-            window.location.hostname === "www.innvibs.com" ||
-            window.location.hostname === "innvibs.com";
-
-        if (isAdminPath && isMainDomain) {
-            window.open(process.env.REACT_APP_ADMIN_URL, "_blank");
-        }
-    }, []);
-
 
     useEffect(() => {
         fetchCategories();
@@ -130,13 +112,19 @@ function App() {
         <div className="min-h-screen bg-light-bg-primary dark:bg-dark-bg-primary transition-colors flex flex-col">
             <ScrollToTop />
             <GtmTracker />
-            <TopNavigation
-                activeCategory={activeCategory}
-                onCategoryChange={handleCategoryChange}
-                setSearchQuery={setSearchQuery}
-                onLogoClick={handleLogoClick}
-                categories={categories}
-            />
+            
+            {/* --- CONDITIONAL RENDERING LOGIC --- */}
+            {/* Only show Header if it's NOT a standalone page */}
+            {!isStandalonePage && (
+                <TopNavigation
+                    activeCategory={activeCategory}
+                    onCategoryChange={handleCategoryChange}
+                    setSearchQuery={setSearchQuery}
+                    onLogoClick={handleLogoClick}
+                    categories={categories}
+                />
+            )}
+
             <main className="flex-1 overflow-y-auto">
                 <Suspense fallback={<div className="text-center py-20 dark:text-gray-200">{t('loading page')}</div>}>
                     <Routes>
@@ -144,16 +132,31 @@ function App() {
                         <Route path="/category/:categoryName" element={<CategoryPage />} />
                         <Route path="/category/:categoryName/:blogSlug" element={<BlogDetailPage />} />
                         <Route path="/tag/:tagName" element={<TagPage />} />
-                        {/* <Route path="/blog-detail/:slug" element={<BlogDetailPage />} /> */}
+                        
+                        {/* Add all the standalone page routes */}
+                        <Route path="/about" element={<AboutUsPage />} />
+                        <Route path="/privacy" element={<PrivacyPolicyPage />} />
+                        <Route path="/terms" element={<TermsOfServicePage />} />
+                        <Route path="/contact" element={<ContactUsPage />} />
+
                         <Route path="/admin" element={<AdminRedirectComponent />} />
                         <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
                 </Suspense>
-                <LanguageNudge />
+
+                {/* Only show Language Nudge if it's NOT a standalone page */}
+                {!isStandalonePage && <LanguageNudge />}
             </main>
-            <Footer1 />
+            
+            {/* Show the correct footer based on the page type */}
+            {isStandalonePage ? <MinimalFooter /> : <Footer1 />}
         </div>
     );
+};
+
+// The main App component now just wraps the logic in the Router
+function App() {
+    return <AppContent />;
 }
 
 export default App;

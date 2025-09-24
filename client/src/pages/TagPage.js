@@ -1,7 +1,7 @@
 // client/src/pages/TagPage.js
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 import { useTranslation } from 'react-i18next';
 
 // Lazy load BlogList as it's a heavier component
@@ -26,7 +26,9 @@ const TagPage = () => {
             setLoading(true);
             setError(null);
             try {
-                const res = await axios.get(`/api/blogs?tag=${tagName}&page=${currentPage}&limit=${blogsPerPage}`);
+                // Decode the tagName from URL format (hyphens) back to original format (spaces)
+                const decodedTagName = tagName.replace(/-/g, ' ');
+                const res = await api.get(`/api/blogs?tag=${encodeURIComponent(decodedTagName)}&page=${currentPage}&limit=${blogsPerPage}`);
                 setBlogs(res.data.blogs);
                 setCurrentPage(res.data.currentPage);
                 setTotalPages(res.data.totalPages);
@@ -71,7 +73,8 @@ const TagPage = () => {
         return <div className="text-center py-20 text-red-500 text-lg">{error}</div>;
     }
 
-    const displayTag = tagName.charAt(0).toUpperCase() + tagName.slice(1); // Capitalize first letter
+    // Decode the tagName from URL format (hyphens) back to display format (spaces)
+    const displayTag = tagName.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()); // Capitalize first letter of each word
 
     return (
         <Suspense fallback={<div className="text-center py-20 text-lg dark:text-gray-300">{t('loading components')}</div>}>
