@@ -10,6 +10,15 @@ import ShareButton from '../ShareButton.jsx';
 import TimedSubscriptionPopup from '../TimedSubscriptionPopup.jsx';
 
 // Helper functions
+const slugify = (text) => {
+    return text
+        .toLowerCase()
+        .replace(/\s+/g, '-') // Replace spaces with hyphens
+        .replace(/[^a-z0-9\-&]/g, '') // Remove special characters except hyphens and ampersands
+        .replace(/-+/g, '-') // Replace multiple hyphens with single
+        .replace(/^-+|-+$/g, ''); // Trim leading/trailing hyphens
+};
+
 const createSafeAltText = (text) => {
     if (!text) return '';
     return text.replace(/\b(image|photo|picture)\b/gi, '').replace(/\s\s+/g, ' ').trim();
@@ -73,7 +82,7 @@ const BlogArticle = ({
                 <meta property="og:image:width" content="1200" />
                 <meta property="og:image:height" content="630" />
                 <meta property="og:image:alt" content={cleanAltTitle} />
-                <meta property="og:url" content={`https://www.innvibs.com/blog/${blog.slug}`} />
+                <meta property="og:url" content={`https://www.innvibs.com/category/${blog.category ? slugify(blog.category) : 'uncategorized'}/${blog.slug}`} />
                 <meta property="og:locale" content="en_US" />
                 
                 {/* Article specific Open Graph */}
@@ -94,7 +103,7 @@ const BlogArticle = ({
                 <meta name="twitter:image:alt" content={cleanAltTitle} />
                 
                 {/* Additional SEO */}
-                <link rel="canonical" href={`https://www.innvibs.com/blog/${blog.slug}`} />
+                <link rel="canonical" href={`https://www.innvibs.com/category/${blog.category ? slugify(blog.category) : 'uncategorized'}/${blog.slug}`} />
                 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
                 
                 {/* Schema.org structured data */}
@@ -126,11 +135,11 @@ const BlogArticle = ({
                         "dateModified": blog.updatedAt || blog.date,
                         "mainEntityOfPage": {
                             "@type": "WebPage",
-                            "@id": `https://www.innvibs.com/blog/${blog.slug}`
+                            "@id": `https://www.innvibs.com/category/${blog.category ? slugify(blog.category) : 'uncategorized'}/${blog.slug}`
                         },
                         "keywords": blog.tags?.join(', ') || '',
                         "articleSection": blog.category || 'Technology',
-                        "url": `https://www.innvibs.com/blog/${blog.slug}`
+                        "url": `https://www.innvibs.com/category/${blog.category ? slugify(blog.category) : 'uncategorized'}/${blog.slug}`
                     })}
                 </script>
             </Helmet>
@@ -147,7 +156,7 @@ const BlogArticle = ({
                     <span className="flex items-center gap-1"><svg className="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.562 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.865.802V10.333z"></path></svg>{blog.likes || 0}</span>
                     <span className="flex items-center gap-1"><svg className="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.08-3.242A8.877 8.877 0 012 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM4.72 14.48A6.879 6.879 0 008 15c3.314 0 6-2.686 6-6s-2.686-6-6-6a6.879 6.879 0 00-3.28.52l.995 2.985A.5.5 0 016 7h.5a.5.5 0 01.5.5v.5a.5.5 0 01-.5.5h-.5a.5.5 0 01-.5-.5v-.5a.5.5 0 01.3-.464L4.72 14.48z" clipRule="evenodd"></path></svg>{blog.comments?.length || 0}</span>
                     <span className="flex items-center gap-1"><svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>{blog.views || 0}</span>
-                    <ShareButton blogId={blog._id} blogSlug={blog.slug} title={blog.title} url={typeof window !== "undefined" ? `${window.location.origin}/blog/${blog.slug}` : ""} initialShareCount={getShareCount(blog._id)}/>
+                    <ShareButton blogId={blog._id} blogSlug={blog.slug} title={blog.title} url={typeof window !== "undefined" ? `${window.location.origin}/category/${blog.category ? slugify(blog.category) : 'uncategorized'}/${blog.slug}` : ""} initialShareCount={getShareCount(blog._id)}/>
                 </div>
                 
                 <div className="relative">

@@ -3,6 +3,15 @@ import { Link } from 'react-router-dom';
 import { marked } from 'marked';
 import { useTranslation } from 'react-i18next';
 
+const slugify = (text) => {
+    return text
+        .toLowerCase()
+        .replace(/\s+/g, '-') // Replace spaces with hyphens
+        .replace(/[^a-z0-9\-&]/g, '') // Remove special characters except hyphens and ampersands
+        .replace(/-+/g, '-') // Replace multiple hyphens with single
+        .replace(/^-+|-+$/g, ''); // Trim leading/trailing hyphens
+};
+
 const HeroCarousel = ({ blogs }) => {
     const { i18n, t } = useTranslation();
     const currentLang = i18n.language;
@@ -64,7 +73,7 @@ const HeroCarousel = ({ blogs }) => {
                 <div className="relative z-10 h-full flex items-end pointer-events-none">
                     <div className="p-4 sm:p-6 md:p-8 w-full max-w-[720px] pointer-events-auto">
                        
-                        <Link to={`/category/${currentBlog?.category?.toLowerCase().replace(/\s+/g, '-')}/${currentBlog?.slug || currentBlog?._id}`} className="block">
+                        <Link to={`/category/${currentBlog?.category ? slugify(currentBlog.category) : 'uncategorized'}/${currentBlog?.slug || currentBlog?._id}`} className="block">
     <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight drop-shadow">
         {title}
     </h2>
@@ -73,7 +82,7 @@ const HeroCarousel = ({ blogs }) => {
                             {excerpt}
                         </p>
                         <Link
-    to={`/category/${currentBlog?.category?.toLowerCase().replace(/\s+/g, '-')}/${currentBlog?.slug || currentBlog?._id}`}
+    to={`/category/${currentBlog?.category ? slugify(currentBlog.category) : 'uncategorized'}/${currentBlog?.slug || currentBlog?._id}`}
     className="inline-block mt-4 px-4 py-2 rounded-md bg-white/90 text-gray-900 text-sm font-semibold hover:bg-white"
 >
     {t('blog_card.read_more')}

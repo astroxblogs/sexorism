@@ -6,6 +6,7 @@ import {
   FaLinkedin,
   FaTwitter,
   FaInstagram,
+  FaFacebook,
   FaSun,
   FaMoon,
   FaArrowRight,
@@ -41,7 +42,7 @@ export default function BalancedMonumentFooter() {
       titleKey: "footer.company_title",
       links: [
         { nameKey: "footer.about_us", path: "/about" },
-        // { nameKey: "footer.careers", path: "/careers" },
+        
         { nameKey: "footer.contact", path: "/contact" },
       ],
     },
@@ -56,10 +57,12 @@ export default function BalancedMonumentFooter() {
   ];
 
   const socialLinks = [
-    { name: "LinkedIn", icon: <FaLinkedin />, url: "https://linkedin.com", colorClass: "text-[#0077B5]" },
-    { name: "Twitter", icon: <FaTwitter />, url: "https://twitter.com", colorClass: "text-[#1DA1F2]" },
-    { name: "Instagram", icon: <FaInstagram />, url: "https://instagram.com", colorClass: "text-pink-500" },
-  ];
+  { name: "LinkedIn", icon: <FaLinkedin />, url: "https://linkedin.com", colorClass: "text-[#0077B5]" },
+  { name: "Twitter", icon: <FaTwitter />, url: "https://twitter.com", colorClass: "text-[#1DA1F2]" },
+  { name: "Instagram", icon: <FaInstagram />, url: "https://instagram.com", colorClass: "text-pink-500" },
+  { name: "Facebook", icon: <FaFacebook />, url: "https://www.facebook.com/innvibs", colorClass: "text-[#1877F2]" },
+];
+
 
   return (
     <footer className="bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800">

@@ -251,7 +251,12 @@ const Home = ({ activeCategory, searchQuery, setSearchQuery }) => {
                                         title={sec.title}
                                         items={sec.items}
                                         onViewMore={() => {
-                                            const slug = sec.title.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-');
+                                            const slug = sec.title
+                                                .toLowerCase()
+                                                .replace(/\s+/g, '-') // Replace spaces with hyphens
+                                                .replace(/[^a-z0-9\-&]/g, '') // Remove special characters except hyphens and ampersands
+                                                .replace(/-+/g, '-') // Replace multiple hyphens with single
+                                                .replace(/^-+|-+$/g, ''); // Trim leading/trailing hyphens
                                             navigate(`/category/${slug}`);
                                         }}
                                     />

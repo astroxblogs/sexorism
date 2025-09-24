@@ -41,7 +41,7 @@ const TermsOfServicePage = () => {
 
           <h2 className="text-2xl font-semibold mt-8">5. Contact Us</h2>
           <p>
-            If you have any questions about these Terms, please contact us at: <a href="mailto:legal@innvibs.com" className="text-violet-600 dark:text-violet-400 hover:underline">legal@innvibs.com</a>.
+            If you have any questions about these Terms, please contact us at: <a href="mailto:contact@astroxsoftech.com" className="text-violet-600 dark:text-violet-400 hover:underline">contact@astroxsoftech.com</a>.
           </p>
         </div>
       </div>

@@ -219,41 +219,49 @@ const getBlogBySlug = async (req, res) => {
 // ===============================
 // Increment views
 // ===============================
+// server/controllers/blogController.js
+
 const incrementViews = async (req, res) => {
   try {
     const { id } = req.params;
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
-    // **** THIS IS THE FIXED LINE ****
-    // It now safely handles cases where req.body is empty or undefined.
     const { skipLog = false } = req.body || {};
 
     if (!skipLog) {
-      // Check if this IP already viewed this blog recently
       const existingLog = await BlogViewLog.findOne({ blogId: id, ip });
 
       if (existingLog) {
-       // difference in seconds instead of hours
-const secondsSinceLastView = (Date.now() - existingLog.lastViewed.getTime()) / 1000;
+        const secondsSinceLastView = (Date.now() - existingLog.lastViewed.getTime()) / 1000;
 
-if (secondsSinceLastView < 10) {
-  return res.json({ message: 'View already counted recently', skip: true });
-}
+        // ✅ CHANGED: The cooldown is now 1 hour (3600 seconds)
+        if (secondsSinceLastView < 3600) { 
+          
+          const blog = await Blog.findById(id).select('views');
+          return res.json({ 
+              message: 'View already counted within the last hour.', 
+              views: blog ? blog.views : 0,
+              skip: true 
+          });
+        }
 
-        // Update last viewed timestamp
+        // If it's been more than an hour, update the timestamp for the next check
         existingLog.lastViewed = new Date();
         await existingLog.save();
       } else {
-        // First time this IP viewed this blog
+        // If this is the first view from this IP, log it
         await BlogViewLog.create({ blogId: id, ip });
       }
     }
 
-    // Increment actual blog views
-    const updated = await Blog.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true });
-    if (!updated) return res.status(404).json({ error: 'Blog not found' });
+    // This line now only runs if it's a new view (or a view after 1 hour)
+    const updatedBlog = await Blog.findByIdAndUpdate(id, { $inc: { views: 1 } }, { new: true });
+    
+    if (!updatedBlog) {
+      return res.status(404).json({ error: 'Blog not found' });
+    }
 
-    res.json({ views: updated.views });
+    res.json({ views: updatedBlog.views });
   } catch (err) {
     console.error('Error in incrementViews:', err);
     res.status(500).json({ error: err.message });

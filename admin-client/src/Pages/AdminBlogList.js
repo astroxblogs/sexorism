@@ -1,7 +1,14 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminBlogTable from '../components/AdminBlogTable';
-import api from '../services/api';
+// ==========================================================
+// ============== ADDED FUNCTIONALITY START =================
+// ==========================================================
+// Switched to using the full apiService object for consistency
+import { apiService } from '../services/api'; 
+// ==========================================================
+// =============== ADDED FUNCTIONALITY END ==================
+// ==========================================================
 import { useTranslation } from 'react-i18next';
 
 const ITEMS_PER_PAGE = 10;
@@ -34,10 +41,13 @@ const AdminBlogList = ({ onEdit }) => {
 
         const controller = new AbortController();
         setLoading(true);
-
-        api.get('/api/admin/blogs?limit=500', { signal: controller.signal })
+        
+        // Using the new apiService to fetch blogs
+        apiService.getBlogs({ params: { limit: 500 }, signal: controller.signal })
             .then(res => {
-                setAllBlogs(res.data.blogs || []);
+                // Initial sort to ensure blogs are always in the correct order
+                const sortedBlogs = res.data.blogs.sort((a, b) => new Date(b.date) - new Date(a.date));
+                setAllBlogs(sortedBlogs || []);
                 setError('');
             })
             .catch(err => {
@@ -59,7 +69,6 @@ const AdminBlogList = ({ onEdit }) => {
         }
         return allBlogs.filter(blog =>
             (blog.title_en || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-            // ✅ ADDED: You can now search by the author's username
             (blog.createdBy?.username || '').toLowerCase().includes(searchQuery.toLowerCase())
         );
     }, [searchQuery, allBlogs]);
@@ -74,18 +83,46 @@ const AdminBlogList = ({ onEdit }) => {
             return;
         }
 
-        if (window.confirm(t('admin_panel.confirm_delete'))) {
-            const originalBlogs = [...allBlogs];
-            setAllBlogs(currentBlogs => currentBlogs.filter(b => b._id !== id));
-            try {
-                await api.delete(`/api/admin/blogs/${id}`);
-            } catch (err) {
-                console.error('Error deleting blog:', err.response?.data || err.message);
-                alert(`${t('admin_panel.delete_error_message')}: ${err.response?.data?.error || err.message}`);
-                setAllBlogs(originalBlogs);
-            }
+        // No confirmation needed here as the table component has a modal
+        const originalBlogs = [...allBlogs];
+        setAllBlogs(currentBlogs => currentBlogs.filter(b => b._id !== id));
+        try {
+            // Using the new apiService to delete blogs
+            await apiService.deleteBlog(id);
+        } catch (err) {
+            console.error('Error deleting blog:', err.response?.data || err.message);
+            alert(`${t('admin_panel.delete_error_message')}: ${err.response?.data?.error || err.message}`);
+            setAllBlogs(originalBlogs);
         }
     };
+
+    // ==========================================================
+    // ============== ADDED FUNCTIONALITY START =================
+    // ==========================================================
+    const handleUpdateDate = async (blogId, newDate) => {
+        try {
+            const response = await apiService.updateBlogDate(blogId, newDate);
+            const updatedBlog = response.data.blog;
+
+            setAllBlogs(currentBlogs => {
+                // Create a new list with the updated blog replacing the old one
+                const updatedList = currentBlogs.map(blog =>
+                    blog._id === blogId ? updatedBlog : blog
+                );
+                // IMPORTANT: Re-sort the entire list by date to move the updated item
+                updatedList.sort((a, b) => new Date(b.date) - new Date(a.date));
+                return updatedList;
+            });
+
+        } catch (err) {
+            console.error('Error updating blog date:', err.response?.data || err.message);
+            alert(`Failed to update date: ${err.response?.data?.error || err.message}`);
+            // Note: No need to revert state, as the UI edit would have already closed.
+        }
+    };
+    // ==========================================================
+    // =============== ADDED FUNCTIONALITY END ==================
+    // ==========================================================
 
     const totalPages = Math.ceil(filteredBlogs.length / ITEMS_PER_PAGE);
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -135,6 +172,13 @@ const AdminBlogList = ({ onEdit }) => {
                         blogs={currentBlogs}
                         onEdit={onEdit}
                         onDelete={userRole === 'admin' ? handleDelete : null}
+                        // ==========================================================
+                        // ============== ADDED FUNCTIONALITY START =================
+                        // ==========================================================
+                        onUpdateDate={handleUpdateDate} // Pass the handler function as a prop
+                        // ==========================================================
+                        // =============== ADDED FUNCTIONALITY END ==================
+                        // ==========================================================
                         startIndex={startIndex}
                     />
                 </div>

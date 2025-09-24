@@ -10,65 +10,65 @@ const api = axios.create({
 
 // This interceptor is now only for the main blog's public API
 api.interceptors.request.use(
-    (config) => {
-        // No authentication token is needed for the public-facing blog API
-        console.log('Request Interceptor: Sending public request for', config.url);
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
-    }
+    (config) => {
+        // No authentication token is needed for the public-facing blog API
+        console.log('Request Interceptor: Sending public request for', config.url);
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
 );
 
 api.interceptors.response.use(
-    (response) => {
-        return response;
-    },
-    (error) => {
-        console.error('Response Interceptor: Unhandled public API error for', error.config?.url, ':', error.message);
-        return Promise.reject(error);
-    }
+    (response) => {
+        return response;
+    },
+    (error) => {
+        console.error('Response Interceptor: Unhandled public API error for', error.config?.url, ':', error.message);
+        return Promise.reject(error);
+    }
 );
 
 // Functions for public-facing blog actions
 export const subscribeUser = async (email) => {
-    try {
-        const response = await api.post('/api/subscribers', { email });
-        return response.data;
-    } catch (error) {
-        console.error('Error during subscription API call:', error);
-        throw error;
-    }
+    try {
+        const response = await api.post('/api/subscribers', { email });
+        return response.data;
+    } catch (error) {
+        console.error('Error during subscription API call:', error);
+        throw error;
+    }
 };
 
 export const trackUserLike = async (subscriberId, blogId) => {
-    try {
-        const response = await api.post('/api/subscribers/track/like', { subscriberId, blogId });
-        return response.data;
-    } catch (error) {
-        console.error('Error tracking user like:', error);
-        throw error;
-    }
+    try {
+        const response = await api.post('/api/subscribers/track/like', { subscriberId, blogId });
+        return response.data;
+    } catch (error) {
+        console.error('Error tracking user like:', error);
+        throw error;
+    }
 };
 
 export const trackUserComment = async (subscriberId, blogId) => {
-    try {
-        const response = await api.post('/api/subscribers/track/comment', { subscriberId, blogId });
-        return response.data;
-    } catch (error) {
-        console.error('Error tracking user comment:', error);
-        throw error;
-    }
+    try {
+        const response = await api.post('/api/subscribers/track/comment', { subscriberId, blogId });
+        return response.data;
+    } catch (error) {
+        console.error('Error tracking user comment:', error);
+        throw error;
+    }
 };
 
 export const trackUserRead = async (subscriberId, blogId, duration) => {
-    try {
-        const response = await api.post('/api/subscribers/track/read', { subscriberId, blogId, duration });
-        return response.data;
-    } catch (error) {
-        console.error('Error tracking user read behavior:', error);
-        throw error;
-    }
+    try {
+        const response = await api.post('/api/subscribers/track/read', { subscriberId, blogId, duration });
+        return response.data;
+    } catch (error) {
+        console.error('Error tracking user read behavior:', error);
+        throw error;
+    }
 };
 
 /**
@@ -85,5 +85,23 @@ export const incrementShareCount = async (blogId) => {
         throw error;
     }
 };
+
+// ✅ NEW: Function to increment a blog's view count
+/**
+ * Increments the view count for a specific blog post.
+ * @param {string} blogId The ID of the blog post.
+ * @returns {Promise<any>} A promise that resolves when the view is counted.
+ */
+export const incrementBlogView = async (blogId) => {
+    try {
+        // Using .post following the pattern of other state-changing actions in this file.
+        const response = await api.patch(`/api/blogs/${blogId}/views`);
+        return response.data;
+    } catch (error) {
+        console.error('Error incrementing view count:', error);
+        throw error;
+    }
+};
+
 
 export default api;

@@ -1,15 +1,53 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-const AdminBlogTable = ({ blogs, onEdit, onDelete, startIndex = 0 }) => {
+const AdminBlogTable = ({ blogs, onEdit, onDelete, onUpdateDate, startIndex = 0 }) => {
     const { t } = useTranslation();
     const [deleteId, setDeleteId] = useState(null);
+    const [editingDateId, setEditingDateId] = useState(null);
+
+    // ==========================================================
+    // ============== ADDED FUNCTIONALITY START =================
+    // ==========================================================
+    // Get today's date in YYYY-MM-DD format to set a maximum date on the input.
+    const todayString = new Date().toISOString().split('T')[0];
+    // ==========================================================
+    // =============== ADDED FUNCTIONALITY END ==================
+    // ==========================================================
 
     const validBlogs = blogs ? blogs.filter(blog => blog) : [];
 
     const handleConfirmDelete = (id) => {
         onDelete(id);
         setDeleteId(null);
+    };
+
+    const handleDateChange = (blogId, newDate) => {
+        // ==========================================================
+        // ============== ADDED FUNCTIONALITY START =================
+        // ==========================================================
+        const selectedDate = new Date(newDate);
+        const today = new Date();
+        // Set time to the very end of today to ensure today's date is considered valid.
+        today.setHours(23, 59, 59, 999);
+
+        if (selectedDate > today) {
+            alert("Time travel isn't a feature... yet! 😉 Please select a date from today or the past.");
+            setEditingDateId(null); // Exit editing mode without making a change
+            return;
+        }
+        // ==========================================================
+        // =============== ADDED FUNCTIONALITY END ==================
+        // ==========================================================
+
+        if (newDate) {
+            onUpdateDate(blogId, newDate);
+        }
+        setEditingDateId(null); // Exit editing mode
+    };
+    
+    const formatDateForInput = (date) => {
+        return new Date(date).toISOString().split('T')[0];
     };
 
     return (
@@ -21,7 +59,7 @@ const AdminBlogTable = ({ blogs, onEdit, onDelete, startIndex = 0 }) => {
                         <tr className="border-b border-gray-200 dark:border-gray-700">
                             <th className="p-4 text-left font-semibold text-gray-700 dark:text-gray-200 w-16">{t('S.No.')}</th>
                             <th className="p-4 text-left font-semibold text-gray-700 dark:text-gray-200">{t('Title')}</th>
-                            <th className="p-4 text-left font-semibold text-gray-700 dark:text-gray-200">{t('Author')}</th> {/* ✅ ADDED Author Header */}
+                            <th className="p-4 text-left font-semibold text-gray-700 dark:text-gray-200">{t('Author')}</th>
                             <th className="p-4 text-left font-semibold text-gray-700 dark:text-gray-200">{t('Category')}</th>
                             <th className="p-4 text-left font-semibold text-gray-700 dark:text-gray-200">{t('Date')}</th>
                             <th className="p-4 text-left font-semibold text-gray-700 dark:text-gray-200">{t('Actions')}</th>
@@ -32,12 +70,30 @@ const AdminBlogTable = ({ blogs, onEdit, onDelete, startIndex = 0 }) => {
                             <tr key={blog._id} className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                                 <td className="p-4 font-medium text-gray-900 dark:text-gray-100">{startIndex + index + 1}</td>
                                 <td className="p-4 font-medium text-gray-900 dark:text-gray-100">{blog.title_en || blog.title}</td>
-                                
-                                {/* ✅ ADDED Author Cell. Optional chaining (?.) prevents errors if author is missing. */}
                                 <td className="p-4 text-gray-600 dark:text-gray-300">{blog.createdBy?.username || 'N/A'}</td>
-                                
                                 <td className="p-4 text-gray-600 dark:text-gray-300">{blog.category}</td>
-                                <td className="p-4 text-gray-500 dark:text-gray-400">{new Date(blog.date).toLocaleDateString()}</td>
+                                <td className="p-4 text-gray-500 dark:text-gray-400">
+                                    {editingDateId === blog._id ? (
+                                        <input
+                                            type="date"
+                                            defaultValue={formatDateForInput(blog.date)}
+                                            max={todayString} // <-- Added validation here
+                                            onBlur={(e) => handleDateChange(blog._id, e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    handleDateChange(blog._id, e.target.value);
+                                                }
+                                            }}
+                                            autoFocus
+                                            className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                    ) : (
+                                        <div className="flex items-center gap-2 cursor-pointer" onClick={() => setEditingDateId(blog._id)}>
+                                            <span>{new Date(blog.date).toLocaleDateString()}</span>
+                                            <span className="text-gray-400 hover:text-blue-500" title="Edit Date">✏️</span>
+                                        </div>
+                                    )}
+                                </td>
                                 <td className="p-4">
                                     <button className="text-green-600 hover:underline mr-4" onClick={() => onEdit(blog)}>{t('Edit')}</button>
                                     <button className="text-red-600 hover:underline" onClick={() => setDeleteId(blog._id)}>{t('Delete')}</button>
@@ -56,12 +112,31 @@ const AdminBlogTable = ({ blogs, onEdit, onDelete, startIndex = 0 }) => {
                             {startIndex + index + 1}
                         </span>
                         <h3 className="text-lg font-bold mb-1 text-gray-900 dark:text-gray-100 pr-8">{blog.title_en || blog.title}</h3>
-                        
-                        {/* ✅ ADDED Author info for mobile view */}
                         <p className="text-sm text-gray-600 dark:text-gray-300">{t('Author')}: <span className="font-semibold">{blog.createdBy?.username || 'N/A'}</span></p>
-
                         <p className="text-sm text-gray-600 dark:text-gray-300">{t('Category')}: <span className="font-semibold">{blog.category}</span></p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t('Date')}: <span className="font-semibold">{new Date(blog.date).toLocaleDateString()}</span></p>
+                         <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                            {t('Date')}:{' '}
+                             {editingDateId === blog._id ? (
+                                <input
+                                    type="date"
+                                    defaultValue={formatDateForInput(blog.date)}
+                                    max={todayString} // <-- Added validation here
+                                    onBlur={(e) => handleDateChange(blog._id, e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            handleDateChange(blog._id, e.target.value);
+                                        }
+                                    }}
+                                    autoFocus
+                                    className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md p-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 mt-1"
+                                />
+                            ) : (
+                                <span className="font-semibold cursor-pointer" onClick={() => setEditingDateId(blog._id)}>
+                                    {new Date(blog.date).toLocaleDateString()}
+                                    <span className="ml-2 text-gray-400 hover:text-blue-500" title="Edit Date">✏️</span>
+                                </span>
+                            )}
+                        </div>
                         <div className="flex gap-4">
                             <button className="text-sm text-green-600 hover:underline font-medium" onClick={() => onEdit(blog)}>{t('Edit')}</button>
                             <button className="text-sm text-red-600 hover:underline font-medium" onClick={() => setDeleteId(blog._id)}>{t('Delete')}</button>

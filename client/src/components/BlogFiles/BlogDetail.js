@@ -6,7 +6,8 @@ import { Helmet } from 'react-helmet-async';
 
 // Utility & API imports
 import { getSubscriberId, hasSubscriberId } from '../../utils/localStorage';
-import { trackUserRead, trackUserComment } from '../../services/api';
+// NEW: Import the function to increment the view count
+import { trackUserRead, trackUserComment, incrementBlogView } from '../../services/api';
 
 // Custom Hook for data fetching
 import useBlogData from '../../hooks/useBlogData';
@@ -15,44 +16,89 @@ import useBlogData from '../../hooks/useBlogData';
 import BlogArticle from './BlogArticle';
 
 const MIN_READ_DURATION_SECONDS = 36;
-const POPUP_DELAY_SECONDS = 10; // 15 seconds delay for popup
+const POPUP_DELAY_SECONDS = 10;
 
 const slugify = (text) => {
-    const normalized = text.replace(/\s*&\s*/g, ' & ');
-    return normalized
+    return text
         .toLowerCase()
-        .replace(/\s*&\s*/g, ' & ')
-        .replace(/ & /g, '-')
-        .replace(/\s+/g, '-');
+        .replace(/\s+/g, '-') // Replace spaces with hyphens
+        .replace(/[^a-z0-9\-&]/g, '') // Remove special characters except hyphens and ampersands
+        .replace(/-+/g, '-') // Replace multiple hyphens with single
+        .replace(/^-+|-+$/g, ''); // Trim leading/trailing hyphens
 };
 
 const BlogDetail = ({ blog: initialBlog }) => {
     const { categoryName, blogSlug } = useParams();
     const { i18n } = useTranslation();
     
-    // Determine which routing pattern we're using
     const isNewRouting = categoryName && blogSlug;
 
- const { blog, loading, error } = useBlogData(categoryName, blogSlug, initialBlog);
+    const { blog, loading, error } = useBlogData(categoryName, blogSlug, initialBlog);
 
-    // Debug logging (after useBlogData hook)
     useEffect(() => {
         console.log('BlogDetail Debug:', { categoryName, blogSlug, isNewRouting, loading, error, blog: blog?.title });
     }, [categoryName, blogSlug, isNewRouting, loading, error, blog]);
 
-    // Manage UI-specific state
     const [isSubscribed, setIsSubscribed] = useState(hasSubscriberId());
     const [showGatedPopup, setShowGatedPopup] = useState(false);
     const [showTimedPopup, setShowTimedPopup] = useState(false); 
     
-    // Manage other business logic & side effects
     const { getShareCount, setInitialShareCount } = useShare();
     const startTimeRef = useRef(null);
     const timeSpentRef = useRef(0);
     const lastActivityTimeRef = useRef(Date.now());
     const timerRef = useRef(null); 
+    const processedBlogId = useRef(null);
 
-    const sendReadTrackingData = useCallback(async (currentBlogId, currentSubscriberId, duration) => {
+    // ✅ NEW: View Count Logic
+  // In BlogDetail.js
+
+// ...
+
+// ✅ NEW: View Count Logic (FIXED)
+useEffect(() => {
+    if (!blog || !blog._id) {
+        return; // Blog data not loaded yet
+    }
+
+    // ✅ CHECK: If we've already processed this blog ID, stop.
+    if (processedBlogId.current === blog._id) {
+        return;
+    }
+
+    const COOLDOWN_PERIOD = 60 * 60 * 1000; // 1 hour
+    const now = Date.now();
+
+    try {
+        const viewedBlogs = JSON.parse(localStorage.getItem('viewedBlogs')) || {};
+        const lastViewed = viewedBlogs[blog._id];
+
+        if (!lastViewed || now - lastViewed > COOLDOWN_PERIOD) {
+            viewedBlogs[blog._id] = now;
+            localStorage.setItem('viewedBlogs', JSON.stringify(viewedBlogs));
+            
+            incrementBlogView(blog._id)
+                .then(() => {
+                    console.log(`View count updated for blog: ${blog._id}`);
+                })
+                .catch(err => {
+                    console.error('Failed to update view count:', err);
+                });
+        }
+        
+        // ✅ FLAG: Mark this blog ID as processed for this component instance.
+        processedBlogId.current = blog._id;
+
+    } catch (e) {
+        console.error('Error handling blog view logic:', e);
+    }
+
+}, [blog]); // This hook depends on the blog data
+
+    
+
+
+const sendReadTrackingData = useCallback(async (currentBlogId, currentSubscriberId, duration) => {
         if (!currentSubscriberId || !currentBlogId || duration < MIN_READ_DURATION_SECONDS) {
             return;
         }
@@ -63,6 +109,7 @@ const BlogDetail = ({ blog: initialBlog }) => {
         }
     }, []);
 
+    
     const handleTrackComment = useCallback(() => {
         const subscriberId = getSubscriberId();
         if (subscriberId && blog?._id) {
@@ -72,14 +119,12 @@ const BlogDetail = ({ blog: initialBlog }) => {
         }
     }, [blog]);
 
-    // 15-second timer logic
     useEffect(() => {
         if (!isSubscribed && blog && !showTimedPopup) {
             timerRef.current = setTimeout(() => {
                 setShowTimedPopup(true);
             }, POPUP_DELAY_SECONDS * 1000);
         }
-
         return () => {
             if (timerRef.current) {
                 clearTimeout(timerRef.current);
@@ -105,7 +150,6 @@ const BlogDetail = ({ blog: initialBlog }) => {
 
     useEffect(() => {
         if (!blog || !startTimeRef.current || !hasSubscriberId()) return;
-
         const updateTimeSpent = () => {
             const now = Date.now();
             if (document.visibilityState === 'visible') {
@@ -148,17 +192,13 @@ const BlogDetail = ({ blog: initialBlog }) => {
         return () => window.removeEventListener('storage', updateSubscriptionStatus);
     }, [isSubscribed]);
 
-    // Generate the canonical URL for SEO
     const generateCanonicalUrl = () => {
         if (!blog) return '';
-        
-        // Always use the new URL format for canonical URL
         const categorySlug = blog.category ? slugify(blog.category) : 'uncategorized';
         const blogSlug = blog.slug || blog._id;
         return `https://www.innvibs.com/category/${categorySlug}/${blogSlug}`;
     };
 
-    // Render loading/error states
     if (loading) return <div className="text-center mt-20 p-4 dark:text-gray-300">Loading post...</div>;
     if (error) return <div className="text-center mt-20 p-4 text-red-500">{error}</div>;
     if (!blog) return <div className="text-center mt-20 p-4 dark:text-gray-300">Loading Blogs....</div>;
@@ -167,7 +207,6 @@ const BlogDetail = ({ blog: initialBlog }) => {
 
     return (
         <>
-            {/* ✅ Helmet SEO tags */}
             <Helmet>
                 <title>{blog.title} - Innvibs</title>
                 <meta name="description" content={blog.content?.slice(0, 150)} />
