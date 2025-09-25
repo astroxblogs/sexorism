@@ -119,41 +119,148 @@ const searchBlogs = async (req, res) => {
   }
 
   try {
-    const regex = new RegExp(q, 'i');
-    const searchFilter = {
-      $or: [
-        { title: regex },
-        { content: regex },
-        { title_en: regex },
-        { title_hi: regex },
-        { content_en: regex },
-        { content_hi: regex },
-        { tags: regex },
-        { category: regex }
-      ],
-      $or: [{ status: 'published' }, { status: { $exists: false } }]
-    };
+    // CORRECTED: Backticks replaced with proper backslashescls
+    
+// CORRECTED escapeRegex
+const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const pattern = escapeRegex(q);
 
+    
     const skip = (parsedPage - 1) * parsedLimit;
 
-    const blogs = await Blog.find(searchFilter)
-      .sort({ date: -1 })
-      .skip(skip)
-      .limit(parsedLimit)
-      .select(
-        'title title_en title_hi content content_en content_hi image date category tags slug views comments likes shareCount'
-      );
+    // MongoDB aggregation pipeline
+    const results = await Blog.aggregate([
+      {
+        $match: {
+          $and: [
+            {
+              $or: [
+                { title: { $regex: pattern, $options: 'i' } },
+                { content: { $regex: pattern, $options: 'i' } },
+                { title_en: { $regex: pattern, $options: 'i' } },
+                { title_hi: { $regex: pattern, $options: 'i' } },
+                { content_en: { $regex: pattern, $options: 'i' } },
+                { content_hi: { $regex: pattern, $options: 'i' } },
+                { tags: { $regex: pattern, $options: 'i' } },
+                { category: { $regex: pattern, $options: 'i' } }
+              ]
+            },
+            {
+              $or: [
+                { status: 'published' },
+                { status: { $exists: false } }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        $addFields: {
+          relevanceScore: {
+            $cond: [
+              { $regexMatch: { input: "$title", regex: new RegExp(pattern, 'i') } },
+              10,
+              {
+                $cond: [
+                  { $regexMatch: { input: "$category", regex: new RegExp(pattern, 'i') } },
+                  5,
+                  {
+                    $cond: [
+                      { $gt: [{ $size: { $ifNull: ["$tags", []] } }, 0] },
+                      {
+                        $cond: [
+                          { $regexMatch: { 
+                            input: { $reduce: { 
+                              input: "$tags", 
+                              initialValue: "", 
+                              in: { $concat: ["$$value", " ", "$$this"] } 
+                            }},
+                            regex: new RegExp(pattern, 'i') 
+                          }},
+                          3,
+                          1
+                        ]
+                      },
+                      1
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        $sort: {
+          relevanceScore: -1,
+          createdAt: -1
+        }
+      },
+      {
+        $skip: skip
+      },
+      {
+        $limit: parsedLimit
+      },
+      {
+        $project: {
+          title: 1,
+          title_en: 1,
+          title_hi: 1,
+          content: 1,
+          content_en: 1,
+          content_hi: 1,
+          image: 1,
+          date: 1,
+          category: 1,
+          tags: 1,
+          slug: 1,
+          views: 1,
+          comments: 1,
+          likes: 1,
+          shareCount: 1,
+          relevanceScore: 1
+        }
+      }
+    ]);
 
-    const totalBlogs = await Blog.countDocuments(searchFilter);
+    // Count total documents
+    const totalBlogs = await Blog.countDocuments({
+      $and: [
+        {
+          $or: [
+            { title: { $regex: pattern, $options: 'i' } },
+            { content: { $regex: pattern, $options: 'i' } },
+            { title_en: { $regex: pattern, $options: 'i' } },
+            { title_hi: { $regex: pattern, $options: 'i' } },
+            { content_en: { $regex: pattern, $options: 'i' } },
+            { content_hi: { $regex: pattern, $options: 'i' } },
+            { tags: { $regex: pattern, $options: 'i' } },
+            { category: { $regex: pattern, $options: 'i' } }
+          ]
+        },
+        {
+          $or: [
+            { status: 'published' },
+            { status: { $exists: false } }
+          ]
+        }
+      ]
+    });
+
     const totalPages = Math.ceil(totalBlogs / parsedLimit);
 
-    res.json({ blogs, currentPage: parsedPage, totalPages, totalBlogs });
+    res.json({
+      blogs: results,
+      currentPage: parsedPage,
+      totalPages,
+      totalBlogs
+    });
   } catch (err) {
     console.error('Error in searchBlogs:', err);
     res.status(500).json({ error: 'Failed to perform search.' });
   }
 };
-
 
 // ===============================
 // Get single blog by ID

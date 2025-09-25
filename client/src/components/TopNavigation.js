@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import axios from 'axios';
 
 import ThemeToggle from './ThemeToggle';
 import LanguageSelector from './LanguageSelector';
@@ -10,16 +9,6 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
 
-
-
-const slugify = (text) => {
-    return text
-        .toLowerCase()
-        .replace(/\s+/g, '-') // Replace spaces with hyphens
-        .replace(/[^a-z0-9\-&]/g, '') // Remove special characters except hyphens and ampersands
-        .replace(/-+/g, '-') // Replace multiple hyphens with single
-        .replace(/^-+|-+$/g, ''); // Trim leading/trailing hyphens
-};
 
 const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLogoClick, categories }) => {
     const { t, i18n } = useTranslation();
@@ -72,49 +61,18 @@ const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLog
         onCategoryChange(categoryValue.trim());
     };
 
-    const handleSearchSubmit = async (e) => {
-        e.preventDefault();
-        if (!inputValue.trim()) return;
+  const handleSearchSubmit = (e) => {
+  e.preventDefault();
+  if (!inputValue.trim()) return;
 
-        const searchTerm = inputValue.trim();
+  const searchTerm = inputValue.trim();
 
-        try {
-            const response = await axios.get(`/api/blogs/search?q=${encodeURIComponent(searchTerm)}&limit=1&_t=${Date.now()}`);
-            const blogs = response.data.blogs;
+  // ✅ Send user to search results page instead of redirecting to one blog
+  window.location.href = `/search?q=${encodeURIComponent(searchTerm)}`;
+};
 
-            if (blogs && blogs.length > 0) {
-                const blog = blogs[0];
-                console.log('Smart search - Found blog:', blog.title);
-                console.log('Smart search - Search term:', searchTerm);
 
-                const exactTitleMatch = blog.title && new RegExp(`\\b${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(blog.title);
-                const exactTitleEnMatch = blog.title_en && new RegExp(`\\b${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(blog.title_en);
-                const exactTitleHiMatch = blog.title_hi && new RegExp(`\\b${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i').test(blog.title_hi);
 
-                console.log('Smart search - Title match:', exactTitleMatch);
-                console.log('Smart search - Title EN match:', exactTitleEnMatch);
-                console.log('Smart search - Title HI match:', exactTitleHiMatch);
-
-                if (exactTitleMatch || exactTitleEnMatch || exactTitleHiMatch) {
-                    console.log('Smart search - Redirecting to:', blog.slug);
-                    const frontendUrl = process.env.NODE_ENV === 'production'
-                        ? process.env.REACT_APP_FRONTEND_URL || 'https://www.innvibs.com'
-                        : 'http://localhost:3000';
-
-                    window.location.href = `${frontendUrl}/category/${blog.category ? slugify(blog.category) : 'uncategorized'}/${blog.slug}`;
-                    return;
-                } else {
-                    console.log('Smart search - No exact match found, proceeding with regular search');
-                }
-            } else {
-                console.log('Smart search - No blogs found');
-            }
-        } catch (error) {
-            console.error('Error checking for exact blog match:', error);
-        }
-
-        setSearchQuery(searchTerm);
-    };
 
     const handleCloseSearch = () => {
         setShowSearchInput(false);

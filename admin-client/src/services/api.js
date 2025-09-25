@@ -162,8 +162,13 @@ export const apiService = {
     // ==========================================================
     // ============== ADDED FUNCTIONALITY START =================
     // ==========================================================
+
+
+
+  
     // Blog Management
-    getBlogs: (params) => api.get('/api/admin/blogs', { params }),
+
+       getBlogs: (config) => api.get('/api/admin/blogs', config),
     searchBlogs: (query, page = 1) => api.get(`/api/admin/blogs/search?q=${query}&page=${page}`),
     createBlog: (blogData) => api.post('/api/admin/blogs', blogData),
     updateBlog: (id, blogData) => api.put(`/api/admin/blogs/${id}`, blogData),
