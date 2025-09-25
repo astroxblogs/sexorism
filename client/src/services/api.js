@@ -12,7 +12,7 @@ const api = axios.create({
 api.interceptors.request.use(
     (config) => {
         // No authentication token is needed for the public-facing blog API
-        // console.log('Request Interceptor: Sending public request for', config.url);
+         console.log('Request Interceptor: Sending public request for', config.url);
         return config;
     },
     (error) => {
