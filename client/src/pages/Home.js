@@ -8,15 +8,20 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import api from '../services/api';
 
+// ✅ STEP 1: Import the custom hook to use our global state
+import { useBlogs } from '../context/BlogContext';
+
 
 const INITIAL_PAGE_SIZE = 6;
 
-const Home = ({ activeCategory, searchQuery, setSearchQuery }) => {
+const Home = ({ activeCategory, searchQuery }) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
 
-    const [blogs, setBlogs] = useState([]);
-    const [featuredBlogs, setFeaturedBlogs] = useState([]);
+    // ✅ STEP 2: Use the global state from the context instead of local state
+    const { blogs, setBlogs, featuredBlogs, setFeaturedBlogs } = useBlogs();
+
+    // These states remain local to the Home component as they are not needed globally
     const [sidebarSections, setSidebarSections] = useState([]);
     const [sidebarLatest, setSidebarLatest] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -24,7 +29,6 @@ const Home = ({ activeCategory, searchQuery, setSearchQuery }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalBlogsCount, setTotalBlogsCount] = useState(0);
-
     const [sidebarLoading, setSidebarLoading] = useState(true);
 
     const textVariants = {
@@ -37,30 +41,33 @@ const Home = ({ activeCategory, searchQuery, setSearchQuery }) => {
         visible: { opacity: 1, y: 0, transition: { delay: 0.3, duration: 0.8, ease: "easeOut" } },
     };
 
+    // ✅ STEP 3: The local `handleLikeUpdate` function is no longer needed and has been removed.
+    // The `updateBlog` function from our context will handle this globally.
+
     useEffect(() => {
         const fetchFeaturedBlogs = async () => {
             try {
                 const res = await api.get('/api/blogs/latest');
+                // Update the global state
                 setFeaturedBlogs(res.data);
             } catch (err) {
                 console.error("Error fetching featured blogs:", err);
             }
         };
 
-        fetchFeaturedBlogs();
-    }, []);
+        // Only fetch featured blogs if they aren't already in the global state
+        if (featuredBlogs.length === 0) {
+            fetchFeaturedBlogs();
+        }
+    }, [featuredBlogs.length, setFeaturedBlogs]);
 
     useEffect(() => {
         const buildHomeSidebar = async () => {
             try {
                 const catRes = await api.get('/api/blogs/categories');
                 const categories = Array.isArray(catRes.data) ? catRes.data : [];
-
                 const preferred = ['Technology', 'Health & Wellness', 'Fashion', 'Vastu Shastra'];
-
-                const preferredPresent = preferred
-                    .map(name => categories.find(c => c.name_en === name))
-                    .filter(Boolean);
+                const preferredPresent = preferred.map(name => categories.find(c => c.name_en === name)).filter(Boolean);
                 const others = categories.filter(c => !preferred.includes(c.name_en));
                 const chosen = (preferredPresent.length ? preferredPresent : others).slice(0, 4);
                 const sections = await Promise.all(
@@ -82,7 +89,6 @@ const Home = ({ activeCategory, searchQuery, setSearchQuery }) => {
                 if (activeCategory && activeCategory.toLowerCase() !== 'all') {
                     url = `/api/blogs?page=1&limit=5&excludeCategory=${encodeURIComponent(activeCategory)}`;
                 }
-
                 const res = await api.get(url);
                 setSidebarLatest(res.data?.blogs || res.data || []);
             } catch (err) {
@@ -92,11 +98,11 @@ const Home = ({ activeCategory, searchQuery, setSearchQuery }) => {
         };
 
         const loadSidebar = async () => {
-            setSidebarLoading(true); 
+            setSidebarLoading(true);
             if (searchQuery) {
                 setSidebarSections([]);
                 setSidebarLatest([]);
-                setSidebarLoading(false); 
+                setSidebarLoading(false);
                 return;
             }
 
@@ -107,7 +113,7 @@ const Home = ({ activeCategory, searchQuery, setSearchQuery }) => {
                 await buildHomeSidebar();
                 setSidebarLatest([]);
             }
-            setSidebarLoading(false); 
+            setSidebarLoading(false);
         };
 
         loadSidebar();
@@ -122,24 +128,20 @@ const Home = ({ activeCategory, searchQuery, setSearchQuery }) => {
 
         try {
             let url = `/api/blogs?page=${pageToLoad}&limit=${INITIAL_PAGE_SIZE}`;
-
             if (searchQuery) {
                 url = `/api/blogs/search?q=${encodeURIComponent(searchQuery)}&page=${pageToLoad}&limit=${INITIAL_PAGE_SIZE}&_t=${Date.now()}`;
             } else if (activeCategory && activeCategory.toLowerCase() !== 'all') {
                 url = `/api/blogs?category=${encodeURIComponent(activeCategory)}&page=${pageToLoad}&limit=${INITIAL_PAGE_SIZE}`;
             }
 
-            console.log('Fetching blogs from URL:', url); // Debug log
             const res = await api.get(url);
-            console.log('API Response:', res.data); // Debug log
-            console.log('Search query:', searchQuery); // Debug log
-            console.log('Active category:', activeCategory); // Debug log
-
             const { blogs: newBlogs, currentPage: apiCurrentPage, totalPages: apiTotalPages, totalBlogs: apiTotalBlogs } = res.data;
 
             if (append) {
+                // Update global state by appending
                 setBlogs(prevBlogs => [...prevBlogs, ...newBlogs]);
             } else {
+                // Set global state
                 setBlogs(newBlogs);
             }
             setCurrentPage(apiCurrentPage);
@@ -154,7 +156,7 @@ const Home = ({ activeCategory, searchQuery, setSearchQuery }) => {
             setLoading(false);
             setLoadingMore(false);
         }
-    }, [activeCategory, searchQuery]);
+    }, [activeCategory, searchQuery, setBlogs]);
 
     useEffect(() => {
         fetchBlogs(1, false);
@@ -193,20 +195,10 @@ const Home = ({ activeCategory, searchQuery, setSearchQuery }) => {
 
                         {!isSearchView && !isCategoryView && (
                             <div className="text-center md:text-left">
-                                <motion.h1
-                                    className="text-2xl md:text-4xl font-extrabold text-gray-900 dark:text-white"
-                                    variants={textVariants}
-                                    initial="hidden"
-                                    animate="visible"
-                                >
+                                <motion.h1 className="text-2xl md:text-4xl font-extrabold text-gray-900 dark:text-white" variants={textVariants} initial="hidden" animate="visible">
                                     {t('homepage.welcome_title')}
                                 </motion.h1>
-                                <motion.p
-                                    className="mt-2 text-gray-600 dark:text-gray-400 max-w-2xl"
-                                    variants={taglineVariants}
-                                    initial="hidden"
-                                    animate="visible"
-                                >
+                                <motion.p className="mt-2 text-gray-600 dark:text-gray-400 max-w-2xl" variants={taglineVariants} initial="hidden" animate="visible">
                                     {t('homepage.tagline')}
                                 </motion.p>
                             </div>
@@ -231,6 +223,8 @@ const Home = ({ activeCategory, searchQuery, setSearchQuery }) => {
                             onLoadMore={loadMoreBlogs}
                             totalBlogsCount={totalBlogsCount}
                             searchQuery={searchQuery}
+                            // ✅ STEP 4: Remove the `onLikeUpdate` prop.
+                            // Components will now use the context directly.
                         />
 
                         {!hasBlogsToDisplay && !loading && (
@@ -251,16 +245,16 @@ const Home = ({ activeCategory, searchQuery, setSearchQuery }) => {
                                         title={sec.title}
                                         items={sec.items}
                                         onViewMore={() => {
-                                            const slug = sec.title.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-');
+                                            const slug = sec.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-&]/g, '').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
                                             navigate(`/category/${slug}`);
                                         }}
                                     />
                                 ))}
 
                                 {!isSearchView && isCategoryView && (
-                                    <SidebarLatest 
-                                        title={t('homepage.featured_posts').replace('Featured Posts', 'Latest Articles')} 
-                                        items={sidebarLatest} 
+                                    <SidebarLatest
+                                        title={t('homepage.featured_posts').replace('Featured Posts', 'Latest Articles')}
+                                        items={sidebarLatest}
                                     />
                                 )}
                             </>

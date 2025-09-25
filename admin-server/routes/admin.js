@@ -58,6 +58,7 @@ router.post('/blogs', adminAuth, blogController.createBlog);
 router.put('/blogs/:id', adminAuth, blogController.updateBlog);
 router.delete('/blogs/:id', adminAuth, requireRole('admin'), blogController.deleteBlog);
 router.get('/blogs', adminAuth, blogController.getBlogs);
+router.put('/blogs/:id/date', adminAuth, requireRole('admin'), blogController.updateBlogDate);
 
 // ---------------------Pending approvals (admin only)--------------------------
 router.get('/blogs/pending', adminAuth, requireRole('admin'), blogController.getPendingBlogs);

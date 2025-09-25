@@ -45,7 +45,7 @@ const PrivacyPolicyPage = () => {
 
           <h2 className="text-2xl font-semibold mt-8">4. Contact Us</h2>
           <p>
-            If you have questions or comments about this Privacy Policy, please contact us at: <a href="mailto:privacy@innvibs.com" className="text-violet-600 dark:text-violet-400 hover:underline">privacy@innvibs.com</a>.
+            If you have questions or comments about this Privacy Policy, please contact us at: <a href="mailto:contact@astroxsoftech.com" className="text-violet-600 dark:text-violet-400 hover:underline">contact@astroxsoftech.com</a>.
           </p>
         </div>
       </div>

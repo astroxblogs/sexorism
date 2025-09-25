@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 const slugify = (text) => {
-    const normalized = text.replace(/\s*&\s*/g, ' & ');
-    return normalized
+    return text
         .toLowerCase()
-        .replace(/\s*&\s*/g, ' & ')
-        .replace(/ & /g, '-')
-        .replace(/\s+/g, '-');
+        .replace(/\s+/g, '-') // Replace spaces with hyphens
+        .replace(/[^a-z0-9\-&]/g, '') // Remove special characters except hyphens and ampersands
+        .replace(/-+/g, '-') // Replace multiple hyphens with single
+        .replace(/^-+|-+$/g, ''); // Trim leading/trailing hyphens
 };
 
 const SidebarSection = ({ title, items = [], onViewMore }) => {

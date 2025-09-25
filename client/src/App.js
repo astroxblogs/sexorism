@@ -6,13 +6,14 @@ import axios from 'axios';
 import './index.css';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import { useTranslation } from 'react-i18next';
-
+import { BlogProvider } from './context/BlogContext';
 // --- Core Components ---
 import Footer1 from './components/Footer1';
 import TopNavigation from './components/TopNavigation';
 import ScrollToTop from './components/ScrollToTop';
 import GtmTracker from './components/GtmTracker';
 import LanguageNudge from './components/LanguageNudge.jsx';
+import SearchResultsPage from "./pages/SearchResultsPage";
 import MinimalFooter from './components/MinimalFooter'; // <-- Import the new footer
 
 // --- Page Components ---
@@ -24,6 +25,7 @@ const AboutUsPage = React.lazy(() => import('./pages/AboutUsPage'));
 const PrivacyPolicyPage = React.lazy(() => import('./pages/PrivacyPolicyPage'));
 const TermsOfServicePage = React.lazy(() => import('./pages/TermsOfServicePage'));
 const ContactUsPage = React.lazy(() => import('./pages/ContactUsPage'));
+
 
 axios.interceptors.request.use(
     (config) => {
@@ -138,6 +140,7 @@ const AppContent = () => {
                         <Route path="/privacy" element={<PrivacyPolicyPage />} />
                         <Route path="/terms" element={<TermsOfServicePage />} />
                         <Route path="/contact" element={<ContactUsPage />} />
+                        <Route path="/search" element={<SearchResultsPage />} />
 
                         <Route path="/admin" element={<AdminRedirectComponent />} />
                         <Route path="*" element={<Navigate to="/" replace />} />
@@ -156,7 +159,11 @@ const AppContent = () => {
 
 // The main App component now just wraps the logic in the Router
 function App() {
-    return <AppContent />;
+    return (
+        <BlogProvider>
+            <AppContent />
+        </BlogProvider>
+    );
 }
 
 export default App;

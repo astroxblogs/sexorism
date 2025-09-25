@@ -186,6 +186,40 @@ exports.updateBlog = async (req, res) => { /* ... unchanged ... */
         res.status(400).json({ error: err.message });
     }
 };
+
+
+
+
+
+
+
+
+exports.updateBlogDate = async (req, res) => {
+    try {
+        const { date } = req.body;
+        if (!date) {
+            return res.status(400).json({ error: 'Date is required.' });
+        }
+
+        const blog = await Blog.findById(req.params.id);
+        if (!blog) {
+            return res.status(404).json({ error: 'Blog not found' });
+        }
+
+        // Update the date and save the document
+        blog.date = new Date(date);
+        await blog.save();
+
+        res.json({ message: 'Blog date updated successfully', blog });
+    } catch (err) {
+        console.error("Error updating blog date:", err);
+        res.status(500).json({ error: 'Failed to update blog date.' });
+    }
+};
+
+
+
+
 exports.deleteBlog = async (req, res) => { /* ... unchanged ... */ 
     try {
         if (req.user?.role !== 'admin') {

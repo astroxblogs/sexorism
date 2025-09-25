@@ -3,6 +3,15 @@ import { Link } from 'react-router-dom';
 import { marked } from 'marked';
 import { useTranslation } from 'react-i18next';
 
+const slugify = (text) => {
+    return text
+        .toLowerCase()
+        .replace(/\s+/g, '-') // Replace spaces with hyphens
+        .replace(/[^a-z0-9\-&]/g, '') // Remove special characters except hyphens and ampersands
+        .replace(/-+/g, '-') // Replace multiple hyphens with single
+        .replace(/^-+|-+$/g, ''); // Trim leading/trailing hyphens
+};
+
 const FeaturedBlogCarousel = ({ blogs }) => {
     const { i18n, t } = useTranslation();
     const currentLang = i18n.language;
@@ -104,7 +113,7 @@ const FeaturedBlogCarousel = ({ blogs }) => {
                     </p>
 
                    <Link
-    to={`/blog/${currentBlog.slug || currentBlog._id}`}
+    to={`/category/${currentBlog?.category ? slugify(currentBlog.category) : 'uncategorized'}/${currentBlog?.slug || currentBlog?._id}`}
     className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold rounded-lg shadow-lg transition-colors duration-200"
 >
     {t('blog_card.read_more')}

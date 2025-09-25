@@ -157,12 +157,30 @@ export const apiService = {
 
     // Password Change (for modern UI)
     changeAdminPassword: (passwordData) => api.put('/api/admin/change-password', passwordData),
-
-// ✅ ADD THIS NEW LINE FOR THE OPERATOR
     changeOperatorPassword: (passwordData) => api.put('/api/admin/operator/change-password', passwordData),
     
+    // ==========================================================
+    // ============== ADDED FUNCTIONALITY START =================
+    // ==========================================================
+
+
+
+  
     // Blog Management
+
+       getBlogs: (config) => api.get('/api/admin/blogs', config),
+    searchBlogs: (query, page = 1) => api.get(`/api/admin/blogs/search?q=${query}&page=${page}`),
+    createBlog: (blogData) => api.post('/api/admin/blogs', blogData),
+    updateBlog: (id, blogData) => api.put(`/api/admin/blogs/${id}`, blogData),
+    deleteBlog: (id) => api.delete(`/api/admin/blogs/${id}`),
+    updateBlogDate: (id, date) => api.put(`/api/admin/blogs/${id}/date`, { date }),
     getPendingBlogs: (config = {}) => api.get('/api/admin/blogs/pending', config),
+    approveBlog: (id) => api.post(`/api/admin/blogs/${id}/approve`),
+    rejectBlog: (id) => api.post(`/api/admin/blogs/${id}/reject`),
+    // ==========================================================
+    // =============== ADDED FUNCTIONALITY END ==================
+    // ==========================================================
+    
     // Subscriber Management
     getSubscribers: () => api.get('/api/admin/subscribers'),
     getSubscriberStats: () => api.get('/api/admin/subscribers/stats'), // Optional, if you want stats later
