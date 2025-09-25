@@ -3,7 +3,7 @@ import { useTheme } from '../components/ThemeContext';
 
 const ThemeToggle = () => {
     const { theme, toggleTheme } = useTheme();
-    console.log("Current theme:", theme);
+    // console.log("Current theme:", theme);
 
     return (
         <button

@@ -6,7 +6,7 @@ import axios from 'axios';
 import './index.css';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import { useTranslation } from 'react-i18next';
-
+import { BlogProvider } from './context/BlogContext';
 // --- Core Components ---
 import Footer1 from './components/Footer1';
 import TopNavigation from './components/TopNavigation';
@@ -156,7 +156,11 @@ const AppContent = () => {
 
 // The main App component now just wraps the logic in the Router
 function App() {
-    return <AppContent />;
+    return (
+        <BlogProvider>
+            <AppContent />
+        </BlogProvider>
+    );
 }
 
 export default App;

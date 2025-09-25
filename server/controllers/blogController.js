@@ -1,5 +1,6 @@
 const Blog = require('../models/Blog');
-const BlogViewLog = require('../models/BlogViewLog');  // ✅ new name
+const BlogViewLog = require('../models/BlogViewLog');
+const Category = require('../models/Category');  // ✅ new name
 // ✅ only here
 
 // Helper function to generate slug from title
@@ -54,53 +55,35 @@ const getBlogBySlugHelper = async (slug) => {
 // Get all blogs (homepage, with pagination + filters)
 // ===============================
 const getBlogs = async (req, res) => {
-  try {
-    const { category, tag, page = 1, limit = 10, excludeCategory } = req.query;
-    const parsedLimit = parseInt(limit, 10);
-    const parsedPage = parseInt(page, 10);
+    try {
+        // ... (all your existing query and filter logic remains the same) ...
+        const { category, tag, page = 1, limit = 10, excludeCategory } = req.query;
+        const parsedLimit = parseInt(limit, 10);
+        const parsedPage = parseInt(page, 10);
+        let filter = {};
+        if (category && category.toLowerCase() !== 'all') { filter.category = category.trim(); }
+        if (excludeCategory) { filter.category = { $ne: excludeCategory.trim() }; }
+        if (tag) { filter.tags = { $in: [new RegExp(`^${tag.trim()}$`, 'i')] }; }
+        const skip = (parsedPage - 1) * parsedLimit;
+        const publicFilter = { ...filter, $or: [{ status: 'published' }, { status: { $exists: false } }] };
+        
+        const blogs = await Blog.find(publicFilter).sort({ date: -1 }).skip(skip).limit(parsedLimit);
 
-    if (isNaN(parsedLimit) || parsedLimit <= 0) {
-      return res.status(400).json({ error: 'Invalid limit parameter.' });
+        // ✅ FIX: Safely transform the data after fetching
+        const blogsWithLikeCount = blogs.map(blog => {
+            const blogObject = blog.toObject();
+            blogObject.likes = blog.likedBy ? blog.likedBy.length : 0;
+            return blogObject;
+        });
+
+        const totalBlogs = await Blog.countDocuments(publicFilter);
+        const totalPages = Math.ceil(totalBlogs / parsedLimit);
+
+        res.json({ blogs: blogsWithLikeCount, currentPage: parsedPage, totalPages, totalBlogs });
+    } catch (err) {
+        console.error('Error in getBlogs:', err);
+        res.status(500).json({ error: err.message || 'Failed to retrieve blogs.' });
     }
-    if (isNaN(parsedPage) || parsedPage <= 0) {
-      return res.status(400).json({ error: 'Invalid page parameter.' });
-    }
-
-    let filter = {};
-    if (category && category.toLowerCase() !== 'all') {
-      filter.category = category.trim();
-    }
-    if (excludeCategory) {
-      filter.category = { $ne: excludeCategory.trim() };
-    }
-    if (tag) {
-      filter.tags = { $in: [new RegExp(`^${tag.trim()}$`, 'i')] };
-    }
-
-    const skip = (parsedPage - 1) * parsedLimit;
-
-    // Show only published blogs (missing status → treat as published)
-    const publicFilter = {
-      ...filter,
-      $or: [{ status: 'published' }, { status: { $exists: false } }]
-    };
-
-    const blogs = await Blog.find(publicFilter)
-      .sort({ date: -1 })
-      .skip(skip)
-      .limit(parsedLimit)
-      .select(
-        'title title_en title_hi content content_en content_hi image date category tags slug views comments likes shareCount'
-      );
-
-    const totalBlogs = await Blog.countDocuments(publicFilter);
-    const totalPages = Math.ceil(totalBlogs / parsedLimit);
-
-    res.json({ blogs, currentPage: parsedPage, totalPages, totalBlogs });
-  } catch (err) {
-    console.error('Error in getBlogs:', err);
-    res.status(500).json({ error: err.message || 'Failed to retrieve blogs.' });
-  }
 };
 
 // ===============================
@@ -290,51 +273,69 @@ const incrementShares = async (req, res) => {
 const likePost = async (req, res) => {
   try {
     const { id } = req.params;
-    const blog = await Blog.findById(id);
+    const { visitorId } = req.body;
 
-    if (!blog) return res.status(404).json({ message: 'Blog not found.' });
+    if (!visitorId) {
+        return res.status(400).json({ message: 'Visitor ID is required.' });
+    }
 
-    blog.likes = (blog.likes || 0) + 1;
-    await blog.save();
+    const updatedBlog = await Blog.findByIdAndUpdate(
+        id,
+        { $addToSet: { likedBy: visitorId } },
+        { new: true }
+    );
 
-    res.status(200).json({ message: 'Post liked successfully!', likes: blog.likes });
+    if (!updatedBlog) return res.status(404).json({ message: 'Blog not found.' });
+
+    // ✅ CHANGED: Return the entire updated blog object
+    res.status(200).json({ message: 'Post liked successfully!', blog: updatedBlog });
   } catch (err) {
     res.status(500).json({ error: 'Failed to like the post.' });
   }
 };
 
+
 const unlikePost = async (req, res) => {
   try {
     const { id } = req.params;
-    const blog = await Blog.findById(id);
+    const { visitorId } = req.body;
 
-    if (!blog) return res.status(404).json({ message: 'Blog not found.' });
+    if (!visitorId) {
+        return res.status(400).json({ message: 'Visitor ID is required.' });
+    }
 
-    blog.likes = Math.max((blog.likes || 0) - 1, 0);
-    await blog.save();
+    const updatedBlog = await Blog.findByIdAndUpdate(
+        id,
+        { $pull: { likedBy: visitorId } },
+        { new: true }
+    );
 
-    res.status(200).json({ message: 'Post unliked successfully!', likes: blog.likes });
+    if (!updatedBlog) return res.status(404).json({ message: 'Blog not found.' });
+
+    // ✅ CHANGED: Return the entire updated blog object
+    res.status(200).json({ message: 'Post unliked successfully!', blog: updatedBlog });
   } catch (err) {
     res.status(500).json({ error: 'Failed to unlike the post.' });
   }
 };
-
 // ===============================
 // Comments
 // ===============================
 const addComment = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, comment } = req.body;
+    // We now expect a visitorId from the client
+    const { visitorId, name, comment } = req.body;
 
-    if (!name || !comment) {
-      return res.status(400).json({ message: 'Name and comment are required.' });
+    if (!visitorId || !name || !comment) {
+      return res.status(400).json({ message: 'Visitor ID, name, and comment are required.' });
     }
 
     const blog = await Blog.findById(id);
     if (!blog) return res.status(404).json({ message: 'Blog not found.' });
 
-    const newComment = { name, comment, timestamp: new Date() };
+    // The new comment object includes the visitorId
+    const newComment = { visitorId, name, comment, timestamp: new Date() };
     blog.comments.push(newComment);
     await blog.save();
 
@@ -343,6 +344,7 @@ const addComment = async (req, res) => {
     res.status(500).json({ error: 'Failed to add the comment.' });
   }
 };
+
 
 // ===============================
 // Social Media Preview Function
@@ -550,57 +552,47 @@ const generateSocialPreviewHTML = (blog, errorMessage = null, categoryName = nul
 // ===============================
 // Get single blog by category and slug (for category-based URLs)
 // ===============================
+// In server/controllers/blogController.js
+
 const getBlogByCategoryAndSlug = async (req, res) => {
-  try {
-    const { categoryName, slug } = req.params;
+    // ✅ FIX: Declare slug here to make it available in the catch block
+    const { categoryName, slug } = req.params; 
 
-    // First, find the category by its slug to get the actual category name
-    // Handle both encoded ampersands (&-) and actual ampersands (&)
-    const Category = require('../models/Category');
+    try {
+        // This category finding logic is correct and does not need changes
+        let category = await Category.findOne({ slug: categoryName });
+        if (!category) {
+            const encodedCategoryName = categoryName.replace(/&/g, '-&-');
+            category = await Category.findOne({ slug: encodedCategoryName });
+        }
+        if (!category) {
+            const decodedCategoryName = categoryName.replace(/-&-/g, '&');
+            category = await Category.findOne({ slug: decodedCategoryName });
+        }
+        if (!category) {
+            return res.status(404).json({ error: 'Category not found' });
+        }
 
-    // Try to find category with the exact slug first
-    let category = await Category.findOne({ slug: categoryName });
+        const blog = await Blog.findOne({
+            slug: slug,
+            category: category.name_en,
+            $or: [{ status: 'published' }, { status: { $exists: false } }],
+        });
+        
+        if (!blog) {
+            return res.status(404).json({ error: 'Blog not found in this category' });
+        }
 
-    // If not found, try with encoded ampersand format for backward compatibility
-    if (!category) {
-      const encodedCategoryName = categoryName.replace(/&/g, '-&-');
-      category = await Category.findOne({ slug: encodedCategoryName });
+        const responseBlog = blog.toObject();
+        responseBlog.likes = blog.likedBy ? blog.likedBy.length : 0;
+
+        res.json(responseBlog);
+    } catch (err) {
+        // ✅ FIX: The 'slug' variable is now accessible here for proper logging
+        console.error(`Error in getBlogByCategoryAndSlug for slug "${slug}":`, err);
+        res.status(500).json({ error: err.message });
     }
-
-    // If still not found, try with decoded ampersand format
-    if (!category) {
-      const decodedCategoryName = categoryName.replace(/-&-/g, '&');
-      category = await Category.findOne({ slug: decodedCategoryName });
-    }
-
-    if (!category) {
-      return res.status(404).json({ error: 'Category not found' });
-    }
-
-    const blog = await Blog.findOne({
-      // Find a blog where the slug matches...
-      slug: slug,
-      // ...and the category matches the actual category name
-      category: category.name_en,
-      // And ensure it's published
-      $or: [{ status: 'published' }, { status: { $exists: false } }],
-    })
-      .populate('comments')
-      .select(
-        'title title_en title_hi content content_en content_hi image date category tags slug views comments likes shareCount'
-      );
-
-    if (!blog) {
-      // If no blog is found with that combination, return an error
-      return res.status(404).json({ error: 'Blog not found in this category' });
-    }
-
-    res.json(blog);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
 };
-
 // ===============================
 // Export
 // ===============================

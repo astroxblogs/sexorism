@@ -1,13 +1,15 @@
 const mongoose = require('mongoose');
 
+// CHANGED: CommentSchema now includes a visitorId to track the commenter
 const CommentSchema = new mongoose.Schema({
+    visitorId: { type: String, required: true }, // ADDED: Tracks the anonymous user
     name: { type: String, required: true },
     comment: { type: String, required: true },
     timestamp: { type: Date, default: Date.now }
 });
 
 const BlogSchema = new mongoose.Schema({
-   
+    
     title: {
         type: String,
         required: true  
@@ -17,7 +19,6 @@ const BlogSchema = new mongoose.Schema({
         required: true  
     },
 
-     
     title_en: { type: String }, 
     title_hi: { type: String },
     content_en: { type: String }, 
@@ -31,7 +32,13 @@ const BlogSchema = new mongoose.Schema({
         required: true
     },
     tags: [String],
-    likes: { type: Number, default: 0 },
+
+    // CHANGED: 'likes' is now 'likedBy', an array of unique visitor IDs.
+    likedBy: { 
+        type: [String], 
+        default: [] 
+    },
+
     views: { type: Number, default: 0 },
     shareCount: { type: Number, default: 0 },
     slug: { type: String, unique: true, sparse: true },
@@ -59,4 +66,5 @@ BlogSchema.pre('save', function(next) {
     }
     next();
 });
+
 module.exports = mongoose.model('Blog', BlogSchema);

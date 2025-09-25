@@ -1,11 +1,15 @@
 import React, { useRef, useEffect } from 'react';
 import BlogCard from './BlogCard';
 import { useTranslation } from 'react-i18next';
+// ✅ STEP 1: Import the function to get the anonymous user ID
+import { getVisitorId } from '../../utils/localStorage';
 
-// --- FIX: Accept the onLikeUpdate prop from the parent (Home.js) ---
 const BlogList = ({ blogs, loadingMore, hasMore, onLoadMore, totalBlogsCount, onLikeUpdate, searchQuery }) => {
     const { t } = useTranslation();
     const observerRef = useRef(null);
+
+    // ✅ STEP 2: Get the visitorId once for the entire list
+    const visitorId = getVisitorId();
 
     useEffect(() => {
         if (!hasMore || loadingMore) return;
@@ -41,8 +45,13 @@ const BlogList = ({ blogs, loadingMore, hasMore, onLoadMore, totalBlogsCount, on
                         const isLast = index === blogs.length - 1;
                         return (
                             <div key={blog._id} ref={isLast ? observerRef : null}>
-                                {/* --- FIX: Pass the onLikeUpdate prop down to each BlogCard --- */}
-                                <BlogCard blog={blog} onLikeUpdate={onLikeUpdate} searchQuery={searchQuery} />
+                                {/* ✅ STEP 3: Pass the visitorId down to each BlogCard */}
+                                <BlogCard 
+                                    blog={blog} 
+                                    onLikeUpdate={onLikeUpdate} 
+                                    searchQuery={searchQuery} 
+                                    visitorId={visitorId} 
+                                />
                             </div>
                         );
                     })}
@@ -63,4 +72,3 @@ const BlogList = ({ blogs, loadingMore, hasMore, onLoadMore, totalBlogsCount, on
 };
 
 export default BlogList;
-

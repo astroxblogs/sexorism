@@ -1,88 +1,49 @@
 import React, { useState, useEffect } from 'react';
 import { ThumbsUp } from 'lucide-react';
-import { getSubscriberId } from '../utils/localStorage';
-// --- FIX: Import the user tracking function directly into this component ---
-import { trackUserLike } from '../services/api';
-import api from '../services/api';
+import { likePost, unlikePost } from '../services/api';
 
-const LikeButton = ({ blogId, initialLikes = 0 }) => {
+// ✅ STEP 1: Import the custom hook for our global state
+import { useBlogs } from '../context/BlogContext';
+
+const LikeButton = ({ blogId, initialLikes = 0, initialLiked = false, visitorId }) => {
+    // ✅ STEP 2: Get the global update function from the context
+    const { updateBlog } = useBlogs();
+
     const [likes, setLikes] = useState(initialLikes);
-    const [liked, setLiked] = useState(false);
+    const [liked, setLiked] = useState(initialLiked);
     const [error, setError] = useState(null);
 
+    // This useEffect ensures the button's state is in sync with the latest data from its parent
     useEffect(() => {
-        let isMounted = true;
-        const fetchCorrectLikeCount = async () => {
-            try {
-                const res = await api.get(`/api/blogs/${blogId}`);
-                if (isMounted && res.data) {
-                    setLikes(res.data.likes);
-                }
-            } catch (err) {
-                console.error("Failed to fetch fresh like count:", err);
-            }
-        };
-
-        fetchCorrectLikeCount();
-
-        const likedBlogsJSON = localStorage.getItem('likedBlogs');
-        const likedBlogs = likedBlogsJSON ? JSON.parse(likedBlogsJSON) : [];
-        if (likedBlogs.includes(blogId)) {
-            setLiked(true);
-        }
-
-        return () => { isMounted = false; };
-    }, [blogId]);
+        setLikes(initialLikes);
+        setLiked(initialLiked);
+    }, [initialLikes, initialLiked]);
 
     const handleLike = async () => {
         const newLikedState = !liked;
-        const newLikesCount = newLikedState ? likes + 1 : Math.max(0, likes - 1);
-
+        // Optimistic UI update
         setLiked(newLikedState);
-        setLikes(newLikesCount);
+        setLikes(prevLikes => newLikedState ? prevLikes + 1 : prevLikes - 1);
         setError(null);
 
         try {
-            // --- STEP 1: Update the public like count ---
-            const endpoint = newLikedState ? 'like' : 'unlike';
-            await api.post(`/api/blogs/${blogId}/${endpoint}`);
-
-            const likedBlogsJSON = localStorage.getItem('likedBlogs');
-            let likedBlogs = likedBlogsJSON ? JSON.parse(likedBlogsJSON) : [];
+            let response;
             if (newLikedState) {
-                if (!likedBlogs.includes(blogId)) likedBlogs.push(blogId);
+                response = await likePost(blogId, visitorId);
             } else {
-                likedBlogs = likedBlogs.filter(id => id !== blogId);
+                response = await unlikePost(blogId, visitorId);
             }
-            localStorage.setItem('likedBlogs', JSON.stringify(likedBlogs));
 
-            // --- STEP 2 (FIX): Trigger the personalization tracking from here ---
-            // We only track when a user LIKES the post, not when they unlike.
-            if (newLikedState) {
-                const subscriberId = getSubscriberId();
-                if (subscriberId) {
-                    try {
-                        // This will now be the ONLY place this tracking request is made.
-                        await trackUserLike(subscriberId, blogId);
-                    } catch (trackingError) {
-                        console.error('Failed to track user like (non-critical):', trackingError);
-                    }
-                }
+            // ✅ STEP 3: After a successful API call, update the global state
+            if (response && response.blog) {
+                updateBlog(response.blog);
             }
+
         } catch (err) {
             // Revert UI on error
-            setError(newLikedState ? 'Failed to like post.' : 'Failed to unlike post.');
+            setError('An error occurred.');
             setLiked(!newLikedState);
-            setLikes(newLikedState ? newLikesCount - 1 : newLikesCount + 1);
-
-            const likedBlogsJSON = localStorage.getItem('likedBlogs');
-            let likedBlogs = likedBlogsJSON ? JSON.parse(likedBlogsJSON) : [];
-            if (newLikedState) {
-                 likedBlogs = likedBlogs.filter(id => id !== blogId);
-            } else {
-                 if (!likedBlogs.includes(blogId)) likedBlogs.push(blogId);
-            }
-            localStorage.setItem('likedBlogs', JSON.stringify(likedBlogs));
+            setLikes(prevLikes => newLikedState ? prevLikes - 1 : prevLikes + 1);
         }
     };
 

@@ -1,14 +1,13 @@
-// client/src/components/CommentSection.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Trash2 } from 'lucide-react'; // An icon for the delete button
+import { Trash2 } from 'lucide-react';
 
-// NEW: Import getSubscriberId and trackUserComment
-import { getSubscriberId } from '../utils/localStorage'; // <-- ADD THIS LINE
-import { trackUserComment } from '../services/api';     // <-- ADD THIS LINE
-import api from '../services/api';
+// ✅ STEP 1: Clean up imports to use our new API function
+import { addComment } from '../services/api'; 
+import api from '../services/api'; // Keep for the delete functionality
 
-const CommentSection = ({ blogId, initialComments }) => {
+// ✅ STEP 2: Accept `visitorId` as a prop
+const CommentSection = ({ blogId, initialComments, visitorId }) => {
     const { t } = useTranslation();
     const [comments, setComments] = useState(initialComments || []);
     const [name, setName] = useState('');
@@ -18,28 +17,10 @@ const CommentSection = ({ blogId, initialComments }) => {
 
     const adminToken = localStorage.getItem('adminToken');
 
-    // NOTE: Your original file didn't have a useEffect to fetch comments.
-    // If comments are not showing initially, you might need a useEffect like this:
-    /*
+    // Sync state if initial comments from parent change
     useEffect(() => {
-        const fetchComments = async () => {
-            try {
-                setLoading(true);
-                const response = await axios.get(`/api/blogs/${blogId}/comments`);
-                setComments(response.data);
-                setError('');
-            } catch (err) {
-                console.error('Failed to fetch comments:', err);
-                setError('Failed to load comments.');
-            } finally {
-                setLoading(false);
-            }
-        };
-        if (blogId) { // Only fetch if blogId is available
-            fetchComments();
-        }
-    }, [blogId]);
-    */
+        setComments(initialComments || []);
+    }, [initialComments]);
 
 
     const handleSubmit = async (e) => {
@@ -52,24 +33,21 @@ const CommentSection = ({ blogId, initialComments }) => {
         setError('');
 
         try {
-            const res = await api.post(`/api/blogs/${blogId}/comments`, { name, comment });
+            // ✅ STEP 3: Create a data object with all required fields
+            const commentData = {
+                visitorId,
+                name,
+                comment,
+            };
 
-            // --- FIX IS HERE: Add res.data.comment, not res.data ---
-            setComments([...comments, res.data.comment]);
+            // Call our new, specific API function
+            const res = await addComment(blogId, commentData);
 
+            setComments([...comments, res.comment]);
             setName('');
             setComment('');
 
-            // NEW: Track user behavior for inferred interests
-            const subscriberId = getSubscriberId();
-            if (subscriberId) {
-                try {
-                    await trackUserComment(subscriberId, blogId);
-                    console.log(`Comment behavior for blog ${blogId} tracked for subscriber:`, subscriberId);
-                } catch (trackingError) {
-                    console.error('Failed to track comment for personalization:', trackingError);
-                }
-            }
+            // ✅ STEP 4: The old subscriber-only tracking logic is now removed.
 
         } catch (err) {
             console.error("Error posting comment:", err);
@@ -80,21 +58,17 @@ const CommentSection = ({ blogId, initialComments }) => {
     };
 
     const handleDelete = async (commentId) => {
-        // IMPORTANT: Replace window.confirm with a custom modal for better UX and consistency
-        // (as per general instructions for Canvas/Immersive documents)
         if (!window.confirm(t("Are you sure you want to delete this comment?"))) {
             return;
         }
 
         try {
-            // This is the correct URL for DELETING a comment
             await api.delete(`/api/blogs/${blogId}/comments/${commentId}`, {
                 headers: { Authorization: `Bearer ${adminToken}` }
             });
             setComments(comments.filter(c => c._id !== commentId));
         } catch (err) {
             console.error("Error deleting comment:", err);
-            // IMPORTANT: Replace alert with a custom message box
             alert(t("Failed to delete comment."));
         }
     };

@@ -12,7 +12,7 @@ const api = axios.create({
 api.interceptors.request.use(
     (config) => {
         // No authentication token is needed for the public-facing blog API
-        console.log('Request Interceptor: Sending public request for', config.url);
+        // console.log('Request Interceptor: Sending public request for', config.url);
         return config;
     },
     (error) => {
@@ -86,15 +86,9 @@ export const incrementShareCount = async (blogId) => {
     }
 };
 
-// ✅ NEW: Function to increment a blog's view count
-/**
- * Increments the view count for a specific blog post.
- * @param {string} blogId The ID of the blog post.
- * @returns {Promise<any>} A promise that resolves when the view is counted.
- */
+
 export const incrementBlogView = async (blogId) => {
     try {
-        // Using .post following the pattern of other state-changing actions in this file.
         const response = await api.patch(`/api/blogs/${blogId}/views`);
         return response.data;
     } catch (error) {
@@ -103,5 +97,55 @@ export const incrementBlogView = async (blogId) => {
     }
 };
 
+
+// --- NEW FUNCTIONS FOR ANONYMOUS LIKES AND COMMENTS ---
+
+/**
+ * Likes a post using a visitorId.
+ * @param {string} blogId The ID of the blog post.
+ * @param {string} visitorId The anonymous ID of the user.
+ * @returns {Promise<{likes: number}>} The new like count.
+ */
+export const likePost = async (blogId, visitorId) => {
+    try {
+        const response = await api.post(`/api/blogs/${blogId}/like`, { visitorId });
+        return response.data;
+    } catch (error) {
+        console.error('Error liking post:', error);
+        throw error;
+    }
+};
+
+/**
+ * Unlikes a post using a visitorId.
+ * @param {string} blogId The ID of the blog post.
+ * @param {string} visitorId The anonymous ID of the user.
+ * @returns {Promise<{likes: number}>} The new like count.
+ */
+export const unlikePost = async (blogId, visitorId) => {
+    try {
+        const response = await api.post(`/api/blogs/${blogId}/unlike`, { visitorId });
+        return response.data;
+    } catch (error) {
+        console.error('Error unliking post:', error);
+        throw error;
+    }
+};
+
+/**
+ * Adds a comment to a post using a visitorId.
+ * @param {string} blogId The ID of the blog post.
+ * @param {object} commentData - Contains visitorId, name, and comment text.
+ * @returns {Promise<any>} The new comment object.
+ */
+export const addComment = async (blogId, commentData) => {
+    try {
+        const response = await api.post(`/api/blogs/${blogId}/comments`, commentData);
+        return response.data;
+    } catch (error) {
+        console.error('Error adding comment:', error);
+        throw error;
+    }
+};
 
 export default api;
