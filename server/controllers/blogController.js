@@ -110,158 +110,68 @@ const getLatestBlogs = async (req, res) => {
 // Search blogs
 // ===============================
 const searchBlogs = async (req, res) => {
-  const { q, page = 1, limit = 10 } = req.query;
-  const parsedLimit = parseInt(limit, 10);
-  const parsedPage = parseInt(page, 10);
+    const { q, page = 1, limit = 10 } = req.query;
+    const parsedLimit = parseInt(limit, 10);
+    const parsedPage = parseInt(page, 10);
 
-  if (isNaN(parsedLimit) || parsedLimit <= 0 || isNaN(parsedPage) || parsedPage <= 0 || !q) {
-    return res.status(400).json({ error: 'Invalid parameters or missing search query.' });
-  }
+    if (isNaN(parsedLimit) || parsedLimit <= 0 || isNaN(parsedPage) || parsedPage <= 0 || !q) {
+        return res.status(400).json({ error: 'Invalid parameters or missing search query.' });
+    }
 
-  try {
-    // CORRECTED: Backticks replaced with proper backslashescls
-    
-// CORRECTED escapeRegex
-const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-const pattern = escapeRegex(q);
+    try {
+        const skip = (parsedPage - 1) * parsedLimit;
+        
+        // ✅ FIX: Revert to a more reliable regex search that does not need a text index.
+        const regex = new RegExp(q, 'i'); // Case-insensitive regex from the search query
 
-    
-    const skip = (parsedPage - 1) * parsedLimit;
-
-    // MongoDB aggregation pipeline
-    const results = await Blog.aggregate([
-      {
-        $match: {
-          $and: [
-            {
-              $or: [
-                { title: { $regex: pattern, $options: 'i' } },
-                { content: { $regex: pattern, $options: 'i' } },
-                { title_en: { $regex: pattern, $options: 'i' } },
-                { title_hi: { $regex: pattern, $options: 'i' } },
-                { content_en: { $regex: pattern, $options: 'i' } },
-                { content_hi: { $regex: pattern, $options: 'i' } },
-                { tags: { $regex: pattern, $options: 'i' } },
-                { category: { $regex: pattern, $options: 'i' } }
-              ]
-            },
-            {
-              $or: [
-                { status: 'published' },
-                { status: { $exists: false } }
-              ]
-            }
-          ]
-        }
-      },
-      {
-        $addFields: {
-          relevanceScore: {
-            $cond: [
-              { $regexMatch: { input: "$title", regex: new RegExp(pattern, 'i') } },
-              10,
-              {
-                $cond: [
-                  { $regexMatch: { input: "$category", regex: new RegExp(pattern, 'i') } },
-                  5,
-                  {
-                    $cond: [
-                      { $gt: [{ $size: { $ifNull: ["$tags", []] } }, 0] },
-                      {
-                        $cond: [
-                          { $regexMatch: { 
-                            input: { $reduce: { 
-                              input: "$tags", 
-                              initialValue: "", 
-                              in: { $concat: ["$$value", " ", "$$this"] } 
-                            }},
-                            regex: new RegExp(pattern, 'i') 
-                          }},
-                          3,
-                          1
-                        ]
-                      },
-                      1
+        const filter = {
+            $and: [
+                {
+                    // Search for the regex pattern in any of these fields
+                    $or: [
+                        { title: regex },
+                        { content: regex },
+                        { title_en: regex },
+                        { title_hi: regex },
+                        { content_en: regex },
+                        { content_hi: regex },
+                        { tags: regex },
+                        { category: regex }
                     ]
-                  }
-                ]
-              }
+                },
+                {
+                    // Ensure the blog is published
+                    $or: [{ status: 'published' }, { status: { $exists: false } }]
+                }
             ]
-          }
-        }
-      },
-      {
-        $sort: {
-          relevanceScore: -1,
-          createdAt: -1
-        }
-      },
-      {
-        $skip: skip
-      },
-      {
-        $limit: parsedLimit
-      },
-      {
-        $project: {
-          title: 1,
-          title_en: 1,
-          title_hi: 1,
-          content: 1,
-          content_en: 1,
-          content_hi: 1,
-          image: 1,
-          date: 1,
-          category: 1,
-          tags: 1,
-          slug: 1,
-          views: 1,
-          comments: 1,
-          likes: 1,
-          shareCount: 1,
-          relevanceScore: 1
-        }
-      }
-    ]);
+        };
 
-    // Count total documents
-    const totalBlogs = await Blog.countDocuments({
-      $and: [
-        {
-          $or: [
-            { title: { $regex: pattern, $options: 'i' } },
-            { content: { $regex: pattern, $options: 'i' } },
-            { title_en: { $regex: pattern, $options: 'i' } },
-            { title_hi: { $regex: pattern, $options: 'i' } },
-            { content_en: { $regex: pattern, $options: 'i' } },
-            { content_hi: { $regex: pattern, $options: 'i' } },
-            { tags: { $regex: pattern, $options: 'i' } },
-            { category: { $regex: pattern, $options: 'i' } }
-          ]
-        },
-        {
-          $or: [
-            { status: 'published' },
-            { status: { $exists: false } }
-          ]
-        }
-      ]
-    });
+        const blogs = await Blog.find(filter)
+            .sort({ date: -1 }) // Sort by newest first
+            .skip(skip)
+            .limit(parsedLimit);
 
-    const totalPages = Math.ceil(totalBlogs / parsedLimit);
+        // Consistently calculate the like count for the client
+        const blogsWithLikeCount = blogs.map(blog => {
+            const blogObject = blog.toObject();
+            blogObject.likes = blog.likedBy ? blog.likedBy.length : 0;
+            return blogObject;
+        });
 
-    res.json({
-      blogs: results,
-      currentPage: parsedPage,
-      totalPages,
-      totalBlogs
-    });
-  } catch (err) {
-    console.error('Error in searchBlogs:', err);
-    res.status(500).json({ error: 'Failed to perform search.' });
-  }
+        const totalBlogs = await Blog.countDocuments(filter);
+        const totalPages = Math.ceil(totalBlogs / parsedLimit);
+
+        res.json({
+            blogs: blogsWithLikeCount,
+            currentPage: parsedPage,
+            totalPages,
+            totalBlogs
+        });
+    } catch (err) {
+        console.error('Error in searchBlogs:', err);
+        res.status(500).json({ error: 'Failed to perform search.' });
+    }
 };
-
 // ===============================
 // Get single blog by ID
 // ===============================

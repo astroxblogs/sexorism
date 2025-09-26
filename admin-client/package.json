@@ -67,5 +67,5 @@
     "tailwind-scrollbar-hide": "^4.0.0",
     "tailwindcss-filters": "^3.0.0"
   },
-  "proxy": "http://localhost:8080"
+  "proxy": "http://localhost:8081"
 }

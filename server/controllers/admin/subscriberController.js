@@ -1,4 +1,4 @@
-const Subscriber = require('../models/Subscriber');
+const Subscriber = require('../../models/Subscriber');
 
 // Get all subscribers with email, date and time
 const getSubscribers = async (req, res) => {
