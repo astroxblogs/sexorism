@@ -67,15 +67,16 @@ const AdminRedirectComponent = () => {
 };
 
 // This is a new helper component to contain the main logic
+// Replace your entire existing AppContent component with this one
 const AppContent = () => {
     const { t } = useTranslation();
     const [categories, setCategories] = useState([]);
+    // --- CHANGE 1: Initialize state with null instead of 'all' ---
     const [activeCategory, setActiveCategory] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
-    const location = useLocation(); // <-- Get current URL location
+    const location = useLocation();
 
-    // Define the paths for the standalone pages
     const standalonePages = ['/about', '/contact', '/privacy', '/terms'];
     const isStandalonePage = standalonePages.includes(location.pathname);
 
@@ -93,10 +94,21 @@ const AppContent = () => {
         fetchCategories();
     }, [fetchCategories]);
 
+    // --- CHANGE 2: Add this useEffect to sync state with the URL ---
+    // useEffect(() => {
+    //     // If the user is on the homepage, ensure activeCategory is null
+    //     if (location.pathname === '/') {
+    //         setActiveCategory(null);
+    //     }
+    // }, [location.pathname]);
+
+
     const handleCategoryChange = (category) => {
         setActiveCategory(category);
         setSearchQuery('');
+        // --- CHANGE 3: Check for 'all' to set category to null ---
         if (category.toLowerCase() === 'all') {
+            setActiveCategory('all');
             navigate('/');
         } else {
             const categorySlug = slugify(category);
@@ -105,6 +117,7 @@ const AppContent = () => {
     };
 
     const handleLogoClick = () => {
+        // --- CHANGE 4: Set category to null instead of 'all' ---
         setActiveCategory('all');
         setSearchQuery('');
         navigate('/');
@@ -114,9 +127,7 @@ const AppContent = () => {
         <div className="min-h-screen bg-light-bg-primary dark:bg-dark-bg-primary transition-colors flex flex-col">
             <ScrollToTop />
             <GtmTracker />
-            
-            {/* --- CONDITIONAL RENDERING LOGIC --- */}
-            {/* Only show Header if it's NOT a standalone page */}
+
             {!isStandalonePage && (
                 <TopNavigation
                     activeCategory={activeCategory}
@@ -134,8 +145,7 @@ const AppContent = () => {
                         <Route path="/category/:categoryName" element={<CategoryPage />} />
                         <Route path="/category/:categoryName/:blogSlug" element={<BlogDetailPage />} />
                         <Route path="/tag/:tagName" element={<TagPage />} />
-                        
-                        {/* Add all the standalone page routes */}
+
                         <Route path="/about" element={<AboutUsPage />} />
                         <Route path="/privacy" element={<PrivacyPolicyPage />} />
                         <Route path="/terms" element={<TermsOfServicePage />} />
@@ -147,11 +157,9 @@ const AppContent = () => {
                     </Routes>
                 </Suspense>
 
-                {/* Only show Language Nudge if it's NOT a standalone page */}
                 {!isStandalonePage && <LanguageNudge />}
             </main>
-            
-            {/* Show the correct footer based on the page type */}
+
             {isStandalonePage ? <MinimalFooter /> : <Footer1 />}
         </div>
     );
