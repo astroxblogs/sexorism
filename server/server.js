@@ -1,8 +1,7 @@
 // server/server.js - AWS PRODUCTION VERSION (API-Only) - FIXED CORS
 
 require('dotenv').config();
-// Add this line at the top of server.js (after require statements)
-console.log('🚀 SERVER VERSION: AWS-PRODUCTION-2024-09-21-FIXED-CORS');
+
 
 const express = require('express');
 const mongoose = require('mongoose');
@@ -155,6 +154,6 @@ app.use((err, req, res, next) => {
     });
 });
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT} for both main and admin APIs`));
 
 module.exports = app;

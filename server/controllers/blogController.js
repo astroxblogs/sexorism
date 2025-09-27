@@ -106,6 +106,72 @@ const getLatestBlogs = async (req, res) => {
   }
 };
 
+
+
+// ===============================
+// Get Homepage Blogs (2 per category)
+// ===============================
+// ===============================
+// Get Homepage Blogs (2 per category)
+// ===============================
+// ===============================
+// Get Homepage Blogs (2 per category)
+// ===============================
+const getHomepageBlogs = async (req, res) => {
+  try {
+    const blogsByCategory = await Blog.aggregate([
+      // 1. Match only published blogs THAT HAVE A CATEGORY FIELD
+      { 
+        $match: {
+          category: { $exists: true, $ne: null, $ne: "" },
+          $or: [{ status: 'published' }, { status: { $exists: false } }]
+        }
+      },
+      // 2. Sort all blogs by date (newest first)
+      { 
+        $sort: { date: -1 } 
+      },
+      // 3. Group by category and keep the two newest blogs for each
+      {
+        $group: {
+          _id: '$category',
+          blogs: { $push: '$$ROOT' }
+        }
+      },
+      {
+        $project: {
+          blogs: { $slice: ['$blogs', 2] } 
+        }
+      },
+      // 4. Flatten the structure to get a single list of blogs
+      {
+        $unwind: '$blogs'
+      },
+      // 5. Replace the root to get the blog document structure back
+      {
+        $replaceRoot: { newRoot: '$blogs' }
+      },
+      // 6. Final sort of all collected blogs
+      {
+        $sort: { date: -1 }
+      },
+      // 7. Calculate likes count for each blog
+      {
+        $addFields: {
+          likes: { $size: { $ifNull: ['$likedBy', []] } }
+        }
+      }
+    ]);
+
+    // ✅ THIS IS THE FIX: Ensure the response is an object with a "blogs" key.
+    res.json({ blogs: blogsByCategory });
+
+  } catch (err) {
+    console.error('Error in getHomepageBlogs:', err);
+    res.status(500).json({ error: 'Failed to retrieve homepage blogs.' });
+  }
+};
+
 // ===============================
 // Search blogs
 // ===============================
@@ -613,15 +679,19 @@ const getBlogByCategoryAndSlug = async (req, res) => {
 // ===============================
 // Export
 // ===============================
+// ===============================
+// Export
+// ===============================
 module.exports = {
   getBlogs,
+  getHomepageBlogs, //  <-- ADD THIS LINE
   getLatestBlogs,
   searchBlogs,
   getBlog,
   getBlogBySlug,
-  getBlogByCategoryAndSlug, // Added back for category-based URLs
-  getBlogBySlugHelper, // NEW: Helper function for social media previews
-  getSocialMediaPreview, // NEW: Social media preview function
+  getBlogByCategoryAndSlug, 
+  getBlogBySlugHelper, 
+  getSocialMediaPreview, 
   incrementViews,
   incrementShares,
   likePost,

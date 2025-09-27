@@ -1,5 +1,3 @@
-// server/routes/blogs.js
-
 const express = require('express');
 const router = express.Router();
 const blogController = require('../controllers/blogController');
@@ -10,6 +8,7 @@ router.get('/categories', categoryController.getCategories);
  
 router.get('/search', blogController.searchBlogs);
 router.get('/latest', blogController.getLatestBlogs);
+router.get('/homepage-feed', blogController.getHomepageBlogs);
 
 // ✅ ADD THIS NEW ROUTE HERE - Keep specific routes before generic ones
 router.get('/slug/:slug', blogController.getBlogBySlug); // You can keep this or remove it
