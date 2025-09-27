@@ -3,6 +3,11 @@
     "middleware.js": {
       "maxDuration": 15
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/cms/:path*",
+      "destination": ":ADMIN_SITE_URL/:path*"
+    }
+  ]
 }
-
