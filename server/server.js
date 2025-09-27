@@ -1,8 +1,7 @@
 // server/server.js - AWS PRODUCTION VERSION (API-Only) - FIXED CORS
 
 require('dotenv').config();
-// Add this line at the top of server.js (after require statements)
-console.log('🚀 SERVER VERSION: AWS-PRODUCTION-2024-09-21-FIXED-CORS');
+
 
 const express = require('express');
 const mongoose = require('mongoose');
@@ -11,6 +10,9 @@ const cors = require('cors');
 const blogRoutes = require('./routes/blogs');
 const subscriberRoutes = require('./routes/subscribers');
 const socialPreviewRoutes = require('./routes/socialPreview');
+// <<< NEWLY ADDED START >>>
+const adminRoutes = require('./routes/admin'); // 1. Import the main admin router
+// <<< NEWLY ADDED END >>>
 const { startEmailJob } = require('./jobs/sendPersonalizedEmails');
 const app = express();
 
@@ -24,10 +26,10 @@ const normalizeOrigin = (value) => {
 
 const allowedOrigins = [
     // normalizeOrigin(process.env.CORS_ORIGIN_DEV),
-     normalizeOrigin(process.env.CORS_ORIGIN_PROD),
+    normalizeOrigin(process.env.CORS_ORIGIN_PROD),
     normalizeOrigin(process.env.CORS_ORIGIN_Main),
-     normalizeOrigin(process.env.FRONTEND_URL),
-    'http://65.1.60.27:80',  // AWS Load Balancer - DIRECT ADD
+    normalizeOrigin(process.env.FRONTEND_URL),
+    'http://65.1.60.27:80', // AWS Load Balancer - DIRECT ADD
     'http://localhost:3000',
     'http://localhost:3001'
 ].filter(Boolean);
@@ -80,6 +82,9 @@ app.use('/', socialPreviewRoutes);
 // 2. API routes only (No static file serving for AWS)
 app.use('/api/blogs', blogRoutes);
 app.use('/api/subscribers', subscriberRoutes);
+// <<< NEWLY ADDED START >>>
+app.use('/api/admin', adminRoutes); // 2. Mount the admin router under the /api/admin prefix
+// <<< NEWLY ADDED END >>>
 
 // 3. Social media preview routes (must come before React app routes)
 app.use('/', socialPreviewRoutes);
@@ -149,7 +154,6 @@ app.use((err, req, res, next) => {
     });
 });
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT} for both main and admin APIs`));
 
 module.exports = app;
-

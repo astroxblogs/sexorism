@@ -27,7 +27,10 @@ export default function BalancedMonumentFooter() {
     { labelKey: "category.lifestyle", value: "Lifestyle" },
     { labelKey: "category.trends", value: "Trends" },
     { labelKey: "category.relationship", value: "Relationship" },
+    { labelKey: "category.astrology", value: "Astrology" },
+    { labelKey: "category.vastu_shastra", value: "Vastu Shastra" },
   ];
+
 
   const categoryLinks = {
     titleKey: "footer.categories_title",

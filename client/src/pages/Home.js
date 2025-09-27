@@ -66,7 +66,7 @@ const Home = ({ activeCategory, searchQuery }) => {
             try {
                 const catRes = await api.get('/api/blogs/categories');
                 const categories = Array.isArray(catRes.data) ? catRes.data : [];
-                const preferred = ['Technology', 'Health & Wellness', 'Fashion', 'Vastu Shastra'];
+                const preferred = ['Technology', 'Health & Wellness', 'Fashion', 'Sports'];
                 const preferredPresent = preferred.map(name => categories.find(c => c.name_en === name)).filter(Boolean);
                 const others = categories.filter(c => !preferred.includes(c.name_en));
                 const chosen = (preferredPresent.length ? preferredPresent : others).slice(0, 4);
@@ -119,15 +119,28 @@ const Home = ({ activeCategory, searchQuery }) => {
         loadSidebar();
     }, [activeCategory, searchQuery]);
 
-    const fetchBlogs = useCallback(async (pageToLoad = 1, append = false) => {
-        if (pageToLoad === 1) {
-            setLoading(true);
-        } else {
-            setLoadingMore(true);
-        }
+    // REPLACE your existing fetchBlogs function with this one
+const fetchBlogs = useCallback(async (pageToLoad = 1, append = false) => {
+     console.log("Checking variables on fetch:", { activeCategory, searchQuery });
+    if (pageToLoad === 1) {
+        setLoading(true);
+    } else {
+        setLoadingMore(true);
+    }
 
-        try {
-            let url = `/api/blogs?page=${pageToLoad}&limit=${INITIAL_PAGE_SIZE}`;
+    try {
+        // If it's the homepage (no search or category), use the new endpoint
+     if (!searchQuery && (!activeCategory || activeCategory.toLowerCase() === 'all')) {
+            const res = await api.get('/api/blogs/homepage-feed');
+            const { blogs: newBlogs } = res.data;
+
+            setBlogs(newBlogs || []);
+            setCurrentPage(1);
+            setTotalPages(1); // Set to 1 to disable "Load More" on the homepage
+            setTotalBlogsCount(newBlogs?.length || 0);
+        } else {
+            // For search and category pages, use the existing paginated logic
+            let url = '';
             if (searchQuery) {
                 url = `/api/blogs/search?q=${encodeURIComponent(searchQuery)}&page=${pageToLoad}&limit=${INITIAL_PAGE_SIZE}&_t=${Date.now()}`;
             } else if (activeCategory && activeCategory.toLowerCase() !== 'all') {
@@ -138,25 +151,24 @@ const Home = ({ activeCategory, searchQuery }) => {
             const { blogs: newBlogs, currentPage: apiCurrentPage, totalPages: apiTotalPages, totalBlogs: apiTotalBlogs } = res.data;
 
             if (append) {
-                // Update global state by appending
                 setBlogs(prevBlogs => [...prevBlogs, ...newBlogs]);
             } else {
-                // Set global state
                 setBlogs(newBlogs);
             }
             setCurrentPage(apiCurrentPage);
             setTotalPages(apiTotalPages);
             setTotalBlogsCount(apiTotalBlogs);
-        } catch (err) {
-            console.error("Error fetching blogs:", err);
-            setBlogs([]);
-            setTotalPages(0);
-            setTotalBlogsCount(0);
-        } finally {
-            setLoading(false);
-            setLoadingMore(false);
         }
-    }, [activeCategory, searchQuery, setBlogs]);
+    } catch (err) {
+        console.error("Error fetching blogs:", err);
+        setBlogs([]);
+        setTotalPages(0);
+        setTotalBlogsCount(0);
+    } finally {
+        setLoading(false);
+        setLoadingMore(false);
+    }
+}, [activeCategory, searchQuery, setBlogs]);
 
     useEffect(() => {
         fetchBlogs(1, false);

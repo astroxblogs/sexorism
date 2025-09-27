@@ -1,4 +1,4 @@
-const Blog = require('../models/Blog');
+const Blog = require('../../models/Blog');
 
 // Helper function to generate slug from title
 const generateSlug = (title) => {
@@ -189,11 +189,6 @@ exports.updateBlog = async (req, res) => { /* ... unchanged ... */
 
 
 
-
-
-
-
-
 exports.updateBlogDate = async (req, res) => {
     try {
         const { date } = req.body;
@@ -216,7 +211,6 @@ exports.updateBlogDate = async (req, res) => {
         res.status(500).json({ error: 'Failed to update blog date.' });
     }
 };
-
 
 
 
