@@ -47,24 +47,6 @@ const slugify = (text) => {
         .replace(/^-+|-+$/g, '');
 };
 
-const AdminRedirectComponent = () => {
-    const navigate = useNavigate();
-    const hasRedirected = useRef(false);
-
-    useEffect(() => {
-        if (hasRedirected.current) return;
-        const adminUrl = process.env.REACT_APP_ADMIN_URL;
-        if (adminUrl) {
-            window.open(adminUrl, '_blank', 'noopener,noreferrer');
-            hasRedirected.current = true;
-        } else {
-            console.error("Admin URL not found.");
-        }
-        navigate('/', { replace: true });
-    }, [navigate]);
-
-    return null;
-};
 
 // This is a new helper component to contain the main logic
 // Replace your entire existing AppContent component with this one
@@ -152,7 +134,7 @@ const AppContent = () => {
                         <Route path="/contact" element={<ContactUsPage />} />
                         <Route path="/search" element={<SearchResultsPage />} />
 
-                        <Route path="/admin" element={<AdminRedirectComponent />} />
+                     
                         <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
                 </Suspense>
