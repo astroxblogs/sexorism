@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/cms/:path*",
-      "destination": "https://innvibs-blogs-fj6i-git-devbranch-amit-kumars-projects-2f6c5f38.vercel.app/:path*"
+      "destination": "ADMIN_SITE_URL/:path*"
     }
   ]
 }
