@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/cms/:path*",
-      "destination": "https://innvibs-blogs-fj6i.vercel.app"
+      "destination": ":ADMIN_SITE_URL/:path*"
     }
   ]
 }
