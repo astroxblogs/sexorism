@@ -2,7 +2,11 @@
   "rewrites": [
     {
       "source": "/cms/:path*",
-      "destination": ":ADMIN_SITE_URL/:path*"
+      "destination": "${ADMIN_SITE_URL}/:path*"
+    },
+    {
+      "source": "/cms",
+      "destination": "${ADMIN_SITE_URL}"
     }
   ]
 }
