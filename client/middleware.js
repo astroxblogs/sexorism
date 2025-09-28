@@ -1,7 +1,9 @@
 // This config object tells Vercel WHEN to run the middleware.
 // It matches all paths except for API routes and static files.
+// This config object tells Vercel WHEN to run the middleware.
+// It matches all paths except for API routes and static files.
 export const config = {
-  matcher: '/((?!api|_next/static|_next/image|favicon.ico|assets).*)',
+  matcher: '/((?!api|_next/static|_next/image|favicon.ico|assets|robots\\.txt).*)',
 };
 
 // A list of common bot user agents to check against.
