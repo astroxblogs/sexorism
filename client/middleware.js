@@ -1,7 +1,10 @@
+// This is the corrected middleware.js file.
+// You can replace the entire content of your file with this.
+
 // This config object tells Vercel to run this middleware ONLY on page routes,
-// ignoring all static files, images, and API calls.
+// ignoring all static files, images, API calls, AND THE ADMIN PANEL.
 export const config = {
-  matcher: '/((?!api|_next/static|_next/image|favicon.ico|assets|robots\\.txt).*)',
+  matcher: '/((?!cms|api|_next/static|_next/image|favicon.ico|assets|robots\\.txt).*)',
 };
 
 // A list of common bot user agents to check against.
