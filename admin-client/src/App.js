@@ -70,7 +70,7 @@ const PrivateRoute = ({ children, requireRole }) => {
 
 function App() {
     return (
-      <Router basename="/cms">
+      <Router >
             <Toaster position="top-right" reverseOrder={false} />
             <div className="App">
                 <Routes>
