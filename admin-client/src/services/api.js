@@ -159,16 +159,8 @@ export const apiService = {
     changeAdminPassword: (passwordData) => api.put('/api/admin/change-password', passwordData),
     changeOperatorPassword: (passwordData) => api.put('/api/admin/operator/change-password', passwordData),
     
-    // ==========================================================
-    // ============== ADDED FUNCTIONALITY START =================
-    // ==========================================================
-
-
-
-  
     // Blog Management
-
-       getBlogs: (config) => api.get('/api/admin/blogs', config),
+    getBlogs: (config) => api.get('/api/admin/blogs', config),
     searchBlogs: (query, page = 1) => api.get(`/api/admin/blogs/search?q=${query}&page=${page}`),
     createBlog: (blogData) => api.post('/api/admin/blogs', blogData),
     updateBlog: (id, blogData) => api.put(`/api/admin/blogs/${id}`, blogData),
@@ -177,13 +169,16 @@ export const apiService = {
     getPendingBlogs: (config = {}) => api.get('/api/admin/blogs/pending', config),
     approveBlog: (id) => api.post(`/api/admin/blogs/${id}/approve`),
     rejectBlog: (id) => api.post(`/api/admin/blogs/${id}/reject`),
-    // ==========================================================
-    // =============== ADDED FUNCTIONALITY END ==================
-    // ==========================================================
+    
+    // ✅ NEW: Category Management
+    getCategories: () => api.get('/api/admin/categories'),
+    createCategory: (categoryData) => api.post('/api/admin/categories', categoryData),
+    updateCategory: (id, categoryData) => api.put(`/api/admin/categories/${id}`, categoryData),
+    deleteCategory: (id) => api.delete(`/api/admin/categories/${id}`),
     
     // Subscriber Management
     getSubscribers: () => api.get('/api/admin/subscribers'),
-    getSubscriberStats: () => api.get('/api/admin/subscribers/stats'), // Optional, if you want stats later
+    getSubscriberStats: () => api.get('/api/admin/subscribers/stats'),
 };
 
 export default api;

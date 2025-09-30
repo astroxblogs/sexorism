@@ -7,21 +7,18 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import api from '../services/api';
-
-// ✅ STEP 1: Import the custom hook to use our global state
 import { useBlogs } from '../context/BlogContext';
 
+// ✅ STEP 1: Import the new SEO component
+import SEO from '../components/SEO';
 
 const INITIAL_PAGE_SIZE = 6;
 
 const Home = ({ activeCategory, searchQuery }) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
-
-    // ✅ STEP 2: Use the global state from the context instead of local state
     const { blogs, setBlogs, featuredBlogs, setFeaturedBlogs } = useBlogs();
 
-    // These states remain local to the Home component as they are not needed globally
     const [sidebarSections, setSidebarSections] = useState([]);
     const [sidebarLatest, setSidebarLatest] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -30,6 +27,36 @@ const Home = ({ activeCategory, searchQuery }) => {
     const [totalPages, setTotalPages] = useState(1);
     const [totalBlogsCount, setTotalBlogsCount] = useState(0);
     const [sidebarLoading, setSidebarLoading] = useState(true);
+
+    // ✅ STEP 2: Define the JSON-LD schemas for the Homepage
+    const organizationSchema = {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Innvibs",
+      "url": "https://www.innvibs.com",
+      "logo": "https://www.innvibs.com/logo512.png", // IMPORTANT: Update with the full URL to your logo
+      "sameAs": [
+        // IMPORTANT: Update these with your actual social media URLs
+        "https://www.facebook.com/your-profile",
+        "https://www.twitter.com/your-profile",
+        "https://www.instagram.com/your-profile",
+        "https://www.linkedin.com/company/your-company"
+      ]
+    };
+
+    const websiteSchema = {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "url": "https://www.innvibs.com",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://www.innvibs.com/search?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    };
 
     const textVariants = {
         hidden: { opacity: 0, y: 20 },
@@ -41,21 +68,16 @@ const Home = ({ activeCategory, searchQuery }) => {
         visible: { opacity: 1, y: 0, transition: { delay: 0.3, duration: 0.8, ease: "easeOut" } },
     };
 
-    // ✅ STEP 3: The local `handleLikeUpdate` function is no longer needed and has been removed.
-    // The `updateBlog` function from our context will handle this globally.
-
     useEffect(() => {
         const fetchFeaturedBlogs = async () => {
             try {
                 const res = await api.get('/api/blogs/latest');
-                // Update the global state
                 setFeaturedBlogs(res.data);
             } catch (err) {
                 console.error("Error fetching featured blogs:", err);
             }
         };
 
-        // Only fetch featured blogs if they aren't already in the global state
         if (featuredBlogs.length === 0) {
             fetchFeaturedBlogs();
         }
@@ -64,15 +86,18 @@ const Home = ({ activeCategory, searchQuery }) => {
     useEffect(() => {
         const buildHomeSidebar = async () => {
             try {
-                const catRes = await api.get('/api/blogs/categories');
+                const catRes = await api.get('/api/blogs/categories');  
                 const categories = Array.isArray(catRes.data) ? catRes.data : [];
-                const preferred = ['Technology', 'Health & Wellness', 'Fashion', 'Sports'];
+                const preferred = ['Technology', 'Health & Wellness', 'Trends',
+                    'Fashion', 'Relationship', 'Travel',
+                    'Astrology', 'Vastu Shastra', 'Business & Finance',
+                    'Sports', 'Lifestyle', 'Food & Cooking'];
                 const preferredPresent = preferred.map(name => categories.find(c => c.name_en === name)).filter(Boolean);
                 const others = categories.filter(c => !preferred.includes(c.name_en));
-                const chosen = (preferredPresent.length ? preferredPresent : others).slice(0, 4);
+                const chosen = (preferredPresent.length ? preferredPresent : others).slice(0, 12)
                 const sections = await Promise.all(
                     chosen.map(async (cat) => {
-                        const res = await api.get(`/api/blogs?category=${encodeURIComponent(cat.name_en)}&page=1&limit=3`);
+                        const res = await api.get(`/api/blogs?category=${encodeURIComponent(cat.name_en)}&page=1&limit=2`);
                         return { title: cat.name_en, items: res.data?.blogs || [] };
                     })
                 );
@@ -119,56 +144,53 @@ const Home = ({ activeCategory, searchQuery }) => {
         loadSidebar();
     }, [activeCategory, searchQuery]);
 
-    // REPLACE your existing fetchBlogs function with this one
-const fetchBlogs = useCallback(async (pageToLoad = 1, append = false) => {
-     console.log("Checking variables on fetch:", { activeCategory, searchQuery });
-    if (pageToLoad === 1) {
-        setLoading(true);
-    } else {
-        setLoadingMore(true);
-    }
+    const fetchBlogs = useCallback(async (pageToLoad = 1, append = false) => {
+       console.log("Checking variables on fetch:", { activeCategory, searchQuery });
+       if (pageToLoad === 1) {
+           setLoading(true);
+       } else {
+           setLoadingMore(true);
+       }
 
-    try {
-        // If it's the homepage (no search or category), use the new endpoint
-     if (!searchQuery && (!activeCategory || activeCategory.toLowerCase() === 'all')) {
-            const res = await api.get('/api/blogs/homepage-feed');
-            const { blogs: newBlogs } = res.data;
+       try {
+        if (!searchQuery && (!activeCategory || activeCategory.toLowerCase() === 'all')) {
+               const res = await api.get('/api/blogs/homepage-feed');
+               const { blogs: newBlogs } = res.data;
 
-            setBlogs(newBlogs || []);
-            setCurrentPage(1);
-            setTotalPages(1); // Set to 1 to disable "Load More" on the homepage
-            setTotalBlogsCount(newBlogs?.length || 0);
-        } else {
-            // For search and category pages, use the existing paginated logic
-            let url = '';
-            if (searchQuery) {
-                url = `/api/blogs/search?q=${encodeURIComponent(searchQuery)}&page=${pageToLoad}&limit=${INITIAL_PAGE_SIZE}&_t=${Date.now()}`;
-            } else if (activeCategory && activeCategory.toLowerCase() !== 'all') {
-                url = `/api/blogs?category=${encodeURIComponent(activeCategory)}&page=${pageToLoad}&limit=${INITIAL_PAGE_SIZE}`;
-            }
+               setBlogs(newBlogs || []);
+               setCurrentPage(1);
+               setTotalPages(1); 
+               setTotalBlogsCount(newBlogs?.length || 0);
+           } else {
+               let url = '';
+               if (searchQuery) {
+                   url = `/api/blogs/search?q=${encodeURIComponent(searchQuery)}&page=${pageToLoad}&limit=${INITIAL_PAGE_SIZE}&_t=${Date.now()}`;
+               } else if (activeCategory && activeCategory.toLowerCase() !== 'all') {
+                   url = `/api/blogs?category=${encodeURIComponent(activeCategory)}&page=${pageToLoad}&limit=${INITIAL_PAGE_SIZE}`;
+               }
 
-            const res = await api.get(url);
-            const { blogs: newBlogs, currentPage: apiCurrentPage, totalPages: apiTotalPages, totalBlogs: apiTotalBlogs } = res.data;
+               const res = await api.get(url);
+               const { blogs: newBlogs, currentPage: apiCurrentPage, totalPages: apiTotalPages, totalBlogs: apiTotalBlogs } = res.data;
 
-            if (append) {
-                setBlogs(prevBlogs => [...prevBlogs, ...newBlogs]);
-            } else {
-                setBlogs(newBlogs);
-            }
-            setCurrentPage(apiCurrentPage);
-            setTotalPages(apiTotalPages);
-            setTotalBlogsCount(apiTotalBlogs);
-        }
-    } catch (err) {
-        console.error("Error fetching blogs:", err);
-        setBlogs([]);
-        setTotalPages(0);
-        setTotalBlogsCount(0);
-    } finally {
-        setLoading(false);
-        setLoadingMore(false);
-    }
-}, [activeCategory, searchQuery, setBlogs]);
+               if (append) {
+                   setBlogs(prevBlogs => [...prevBlogs, ...newBlogs]);
+               } else {
+                   setBlogs(newBlogs);
+               }
+               setCurrentPage(apiCurrentPage);
+               setTotalPages(apiTotalPages);
+               setTotalBlogsCount(apiTotalBlogs);
+           }
+       } catch (err) {
+           console.error("Error fetching blogs:", err);
+           setBlogs([]);
+           setTotalPages(0);
+           setTotalBlogsCount(0);
+       } finally {
+           setLoading(false);
+           setLoadingMore(false);
+       }
+    }, [activeCategory, searchQuery, setBlogs]);
 
     useEffect(() => {
         fetchBlogs(1, false);
@@ -198,6 +220,14 @@ const fetchBlogs = useCallback(async (pageToLoad = 1, append = false) => {
 
     return (
         <div className="min-h-screen">
+            {/* ✅ STEP 3: Add the SEO component with props for the homepage */}
+            <SEO
+              title="Innvibs - Innovation & Ideas Hub"
+              description="Discover innovative ideas, cutting-edge technology insights, and breakthrough concepts. Join thousands of innovators exploring the future of tech, business, and creativity."
+              canonicalUrl="/"
+              schema={[organizationSchema, websiteSchema]}
+            />
+            
             <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
                     <div className="lg:col-span-2 space-y-8">
@@ -235,8 +265,6 @@ const fetchBlogs = useCallback(async (pageToLoad = 1, append = false) => {
                             onLoadMore={loadMoreBlogs}
                             totalBlogsCount={totalBlogsCount}
                             searchQuery={searchQuery}
-                            // ✅ STEP 4: Remove the `onLikeUpdate` prop.
-                            // Components will now use the context directly.
                         />
 
                         {!hasBlogsToDisplay && !loading && (

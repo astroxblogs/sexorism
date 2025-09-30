@@ -56,7 +56,6 @@ const getBlogBySlugHelper = async (slug) => {
 // ===============================
 const getBlogs = async (req, res) => {
     try {
-        // ... (all your existing query and filter logic remains the same) ...
         const { category, tag, page = 1, limit = 10, excludeCategory } = req.query;
         const parsedLimit = parseInt(limit, 10);
         const parsedPage = parseInt(page, 10);
@@ -67,9 +66,13 @@ const getBlogs = async (req, res) => {
         const skip = (parsedPage - 1) * parsedLimit;
         const publicFilter = { ...filter, $or: [{ status: 'published' }, { status: { $exists: false } }] };
         
-        const blogs = await Blog.find(publicFilter).sort({ date: -1 }).skip(skip).limit(parsedLimit);
+        // ✅ FIX: Added .select() to ensure excerpt fields are fetched efficiently
+        const blogs = await Blog.find(publicFilter)
+            .sort({ date: -1 })
+            .skip(skip)
+            .limit(parsedLimit)
+            .select('title_en title_hi content_en content_hi image date category tags slug views likedBy shareCount comments excerpt_en excerpt_hi');
 
-        // ✅ FIX: Safely transform the data after fetching
         const blogsWithLikeCount = blogs.map(blog => {
             const blogObject = blog.toObject();
             blogObject.likes = blog.likedBy ? blog.likedBy.length : 0;
@@ -96,8 +99,9 @@ const getLatestBlogs = async (req, res) => {
     })
       .sort({ date: -1 })
       .limit(5)
+      // ✅ FIX: Added excerpt_en and excerpt_hi to the selection
       .select(
-        'title title_en title_hi content content_en content_hi image date category tags slug views comments likes shareCount'
+        'title title_en title_hi content content_en content_hi image date category tags slug views comments likes shareCount excerpt_en excerpt_hi'
       );
 
     res.json(blogs);
@@ -106,56 +110,29 @@ const getLatestBlogs = async (req, res) => {
   }
 };
 
-
-
-// ===============================
-// Get Homepage Blogs (2 per category)
-// ===============================
-// ===============================
-// Get Homepage Blogs (2 per category)
-// ===============================
 // ===============================
 // Get Homepage Blogs (2 per category)
 // ===============================
 const getHomepageBlogs = async (req, res) => {
   try {
-    const blogsByCategory = await Blog.aggregate([
-      // 1. Match only published blogs THAT HAVE A CATEGORY FIELD
-      { 
+    // The new logic is simpler: Match -> Sort -> Limit
+    const latestBlogs = await Blog.aggregate([
+      // Stage 1: Match only published blogs (same as before)
+      {
         $match: {
           category: { $exists: true, $ne: null, $ne: "" },
           $or: [{ status: 'published' }, { status: { $exists: false } }]
         }
       },
-      // 2. Sort all blogs by date (newest first)
-      { 
-        $sort: { date: -1 } 
-      },
-      // 3. Group by category and keep the two newest blogs for each
-      {
-        $group: {
-          _id: '$category',
-          blogs: { $push: '$$ROOT' }
-        }
-      },
-      {
-        $project: {
-          blogs: { $slice: ['$blogs', 2] } 
-        }
-      },
-      // 4. Flatten the structure to get a single list of blogs
-      {
-        $unwind: '$blogs'
-      },
-      // 5. Replace the root to get the blog document structure back
-      {
-        $replaceRoot: { newRoot: '$blogs' }
-      },
-      // 6. Final sort of all collected blogs
+      // Stage 2: Sort by date to get the newest first (same as before)
       {
         $sort: { date: -1 }
       },
-      // 7. Calculate likes count for each blog
+      // Stage 3: Limit the results to the top 20 blogs
+      {
+        $limit: 20
+      },
+      // Stage 4: Add a 'likes' count field (same as before)
       {
         $addFields: {
           likes: { $size: { $ifNull: ['$likedBy', []] } }
@@ -163,15 +140,14 @@ const getHomepageBlogs = async (req, res) => {
       }
     ]);
 
-    // ✅ THIS IS THE FIX: Ensure the response is an object with a "blogs" key.
-    res.json({ blogs: blogsByCategory });
+    // Send the list of 20 blogs as the response
+    res.json({ blogs: latestBlogs });
 
   } catch (err) {
     console.error('Error in getHomepageBlogs:', err);
     res.status(500).json({ error: 'Failed to retrieve homepage blogs.' });
   }
 };
-
 // ===============================
 // Search blogs
 // ===============================
@@ -187,37 +163,30 @@ const searchBlogs = async (req, res) => {
     try {
         const skip = (parsedPage - 1) * parsedLimit;
         
-        // ✅ FIX: Revert to a more reliable regex search that does not need a text index.
-        const regex = new RegExp(q, 'i'); // Case-insensitive regex from the search query
+        const regex = new RegExp(q, 'i'); 
 
         const filter = {
             $and: [
                 {
-                    // Search for the regex pattern in any of these fields
                     $or: [
-                        { title: regex },
-                        { content: regex },
-                        { title_en: regex },
-                        { title_hi: regex },
-                        { content_en: regex },
-                        { content_hi: regex },
-                        { tags: regex },
-                        { category: regex }
+                        { title: regex }, { content: regex }, { title_en: regex },
+                        { title_hi: regex }, { content_en: regex }, { content_hi: regex },
+                        { tags: regex }, { category: regex }
                     ]
                 },
                 {
-                    // Ensure the blog is published
                     $or: [{ status: 'published' }, { status: { $exists: false } }]
                 }
             ]
         };
 
         const blogs = await Blog.find(filter)
-            .sort({ date: -1 }) // Sort by newest first
+            .sort({ date: -1 })
             .skip(skip)
-            .limit(parsedLimit);
+            .limit(parsedLimit)
+             // ✅ FIX: Added .select() to ensure excerpt fields are fetched efficiently
+            .select('title_en title_hi content_en content_hi image date category tags slug views likedBy shareCount comments excerpt_en excerpt_hi');
 
-        // Consistently calculate the like count for the client
         const blogsWithLikeCount = blogs.map(blog => {
             const blogObject = blog.toObject();
             blogObject.likes = blog.likedBy ? blog.likedBy.length : 0;
@@ -443,12 +412,9 @@ const getSocialMediaPreview = async (req, res) => {
     let blog;
 
     if (categoryName) {
-      // New category-based URL structure
-      // First, find the category by its slug to get the actual category name
-      // Handle both encoded ampersands (&-) and actual ampersands (&)
+    
       const Category = require('../models/Category');
-
-      // Try to find category with the exact slug first
+      
       let category = await Category.findOne({ slug: categoryName });
 
       // If not found, try with encoded ampersand format for backward compatibility
