@@ -94,7 +94,7 @@ const Home = ({ activeCategory, searchQuery }) => {
                     'Sports', 'Lifestyle', 'Food & Cooking'];
                 const preferredPresent = preferred.map(name => categories.find(c => c.name_en === name)).filter(Boolean);
                 const others = categories.filter(c => !preferred.includes(c.name_en));
-                const chosen = (preferredPresent.length ? preferredPresent : others).slice(0, 4);
+                const chosen = (preferredPresent.length ? preferredPresent : others).slice(0, 12);
                 const sections = await Promise.all(
                     chosen.map(async (cat) => {
                         const res = await api.get(`/api/blogs?category=${encodeURIComponent(cat.name_en)}&page=1&limit=2`);
