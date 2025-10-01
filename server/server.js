@@ -1,159 +1,131 @@
-// server/server.js - AWS PRODUCTION VERSION (API-Only) - FIXED CORS
-
-require('dotenv').config();
-
-
+const dotenv = require('dotenv');
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const cron = require('node-cron');
+const path = require('path');
 
-const blogRoutes = require('./routes/blogs');
-const subscriberRoutes = require('./routes/subscribers');
-const socialPreviewRoutes = require('./routes/socialPreview');
-// <<< NEWLY ADDED START >>>
-const adminRoutes = require('./routes/admin'); // 1. Import the main admin router
-// <<< NEWLY ADDED END >>>
-const { startEmailJob } = require('./jobs/sendPersonalizedEmails');
-const app = express();
 
-// --- CORS and Body Parser Setup ---
-const normalizeOrigin = (value) => {
-    if (!value) return null;
-    const trimmed = String(value).trim();
-    if (!trimmed) return null;
-    return trimmed.endsWith('/') ? trimmed.slice(0, -1) : trimmed;
-};
-
-const allowedOrigins = [
-    // normalizeOrigin(process.env.CORS_ORIGIN_DEV),
-    normalizeOrigin(process.env.CORS_ORIGIN_PROD),
-    normalizeOrigin(process.env.CORS_ORIGIN_Main),
-    normalizeOrigin(process.env.FRONTEND_URL),
-    'http://65.1.60.27:80', // AWS Load Balancer - DIRECT ADD
-    'http://localhost:3000',
-    'http://localhost:3001'
-].filter(Boolean);
-
-if (process.env.NODE_ENV !== 'production') {
-    const devOrigins = [
-        'http://localhost:3000',
-        'http://localhost:3001',
-        'http://localhost:8081'
-    ];
-    for (const o of devOrigins) {
-        if (!allowedOrigins.includes(o)) allowedOrigins.push(o);
-    }
+// --- Dynamic Environment Variable Loading ---
+if (process.env.NODE_ENV === 'development') {
+    dotenv.config({ path: './.env.testing' });
+    console.log('✅ Server is starting in TESTING mode, loaded .env.testing');
+} else {
+    dotenv.config(); // Loads .env by default for production
+    console.log('✅ Server is starting in PRODUCTION mode, loaded .env');
 }
 
-// AWS load balancer origin already added above
+// --- Route Imports ---
+const blogRoutes = require('./routes/blogs');
+const categoryRoutes = require('./routes/categories');
+const subscriberRoutes = require('./routes/subscribers');
+const socialPreviewRoutes = require('./routes/socialPreview');
+const adminRoutes = require('./routes/admin'); // ✅ ADDED: Admin routes from your old file
 
-app.use(cors({
-    origin: function (origin, callback) {
-        if (!origin) return callback(null, true);
+const app = express();
 
-        const normalizedOrigin = normalizeOrigin(origin);
-        const isAllowed = allowedOrigins.includes(normalizedOrigin);
+// --- CORS Configuration ---
+const allowedOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : [];
 
-        if (isAllowed) {
+const corsOptions = {
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
             callback(null, true);
         } else {
-            // Log for debugging
-            console.log('CORS Debug:');
-            console.log('- Request Origin:', origin);
-            console.log('- Normalized Origin:', normalizedOrigin);
-            console.log('- Allowed Origins:', allowedOrigins);
-            console.log('- Is Allowed:', isAllowed);
-
-            const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
-            callback(new Error(msg), false);
+            console.log(`CORS Blocked Origin: ${origin}`);
+            callback(new Error('Not allowed by CORS'));
         }
     },
-    credentials: true
-}));
+    credentials: true,
+};
 
+app.use(cors(corsOptions));
+
+// --- Middleware ---
+// ✅ ADDED: Increased body parser limits from your old file for larger uploads
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// --- ROUTING LOGIC ---
+// Serve static files from the 'uploads' directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// 1. Social media preview routes (Should come before API routes)
-app.use('/', socialPreviewRoutes);
 
-// 2. API routes only (No static file serving for AWS)
+// --- API Routes ---
+app.use('/', socialPreviewRoutes); // Must come before API routes to catch root-level slugs
 app.use('/api/blogs', blogRoutes);
+app.use('/api/categories', categoryRoutes);
 app.use('/api/subscribers', subscriberRoutes);
-// <<< NEWLY ADDED START >>>
-app.use('/api/admin', adminRoutes); // 2. Mount the admin router under the /api/admin prefix
-// <<< NEWLY ADDED END >>>
+app.use('/api/admin', adminRoutes); // ✅ ADDED: Admin routes are now active
 
-// 3. Social media preview routes (must come before React app routes)
-app.use('/', socialPreviewRoutes);
 
-// 3. Root endpoint for AWS load balancer
-app.get('/', (req, res) => {
-    res.status(200).json({
-        message: 'InnVibs Blog API Server',
-        version: 'AWS-PRODUCTION-2024-09-21',
-        endpoints: {
-            health: '/health',
-            api: '/api/blogs',
-            socialPreview: '/blog/:slug'
-        },
-        timestamp: new Date().toISOString()
-    });
-});
-
-// 4. Health check endpoint for AWS load balancer
+// --- Health & Root Endpoints ---
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-// --- Database and Server Start ---
-mongoose.connect(process.env.MONGO_URI)
+app.get('/', (req, res) => {
+    const isProduction = process.env.NODE_ENV !== 'development';
+    const version = isProduction ? `AWS-PRODUCTION-${new Date().toISOString().split('T')[0]}` : `AWS-TESTING-${new Date().toISOString().split('T')[0]}`;
+    const message = isProduction ? 'InnVibs Blog API Server (Production)' : 'InnVibs Blog API Server (TESTING)';
+
+    res.status(200).json({
+        message: message,
+        version: version,
+        environment: isProduction ? 'production' : 'testing',
+        timestamp: new Date().toISOString(),
+    });
+});
+
+
+// --- Database Connection ---
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => {
-        console.log('MongoDB connected successfully');
-        startEmailJob();
+        console.log('✅ MongoDB connected...');
+        // ✅ ADDED: Confirmation message that the job is scheduled on startup
+        console.log('🗓️  Daily personalized email job is scheduled to run at 8:00 AM IST.');
     })
-    .catch(err => console.error('MongoDB connection error:', err));
+    .catch(err => console.log('❌ MongoDB connection error:', err));
 
-const PORT = process.env.PORT || 8081;
 
-// 404 handler for unmatched routes (using a more compatible pattern)
+// --- Scheduled Jobs ---
+// Schedule the email job to run every day at 8:00 AM India Standard Time (IST)
+// The cron string '30 2 * * *' in UTC is 8:00 AM in IST (UTC+5:30)
+cron.schedule('30 2 * * *', () => {
+    console.log('🏃 Running daily personalized email job...');
+    // Note: The function to call should be imported if it's not defined in this file.
+    // Assuming sendPersonalizedEmails is the correct function from your jobs directory.
+    const { sendPersonalizedEmails } = require('./jobs/sendPersonalizedEmails');
+    sendPersonalizedEmails();
+}, {
+    scheduled: true,
+    timezone: "UTC"
+});
+
+
+// ✅ ADDED: 404 Handler from your old file
 app.use((req, res) => {
     console.log(`Route not found: ${req.method} ${req.originalUrl}`);
-
-    // If it's an API route, return JSON error
     if (req.path.startsWith('/api/')) {
-        return res.status(404).json({
-            error: 'API endpoint not found',
-            message: `Cannot ${req.method} ${req.originalUrl}`,
-            availableEndpoints: {
-                root: '/',
-                health: '/health',
-                api: '/api/blogs',
-                socialPreview: '/blog/:slug'
-            }
-        });
+        return res.status(404).json({ error: `API endpoint not found: ${req.originalUrl}` });
     }
-
-    // For all other routes, return a simple message
-    // (Frontend is on different domain, so no need to serve React app)
-    res.status(404).json({
-        error: 'Page not found',
-        message: 'This endpoint is not available on the API server',
-        note: 'Visit https://www.innvibs.com for the main website'
-    });
+    res.status(404).json({ error: 'Page not found' });
 });
 
-// Global error handler
+// ✅ ADDED: Global Error Handler from your old file
 app.use((err, req, res, next) => {
-    console.error('Unhandled error:', err);
+    console.error('💥 Unhandled error:', err);
     res.status(500).json({
-        msg: 'Internal Server Error',
-        error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+        message: 'Internal Server Error',
+        error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong on our end.'
     });
 });
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT} for both main and admin APIs`));
 
+// --- Server Start ---
+const PORT = process.env.PORT || 8081;
+app.listen(PORT, () => {
+    console.log(`🚀 Server is running on port ${PORT}`);
+});
+
+// ✅ ADDED: Export app for testing purposes
 module.exports = app;

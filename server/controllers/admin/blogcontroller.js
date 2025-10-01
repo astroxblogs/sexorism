@@ -1,4 +1,15 @@
+const cloudinary = require('cloudinary').v2;
+const streamifier = require('streamifier');
+
 const Blog = require('../../models/Blog');
+
+// ✅ ADDED: Configure Cloudinary at the top of the file
+// IMPORTANT: Make sure you have these values in your .env file
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 // Helper function to generate slug from title
 const generateSlug = (title) => {
@@ -45,6 +56,45 @@ exports.getLatestBlogs = async (req, res) => {
 
  
  
+// ✅ ADD THIS ENTIRE FUNCTION TO YOUR CONTROLLER
+exports.uploadImage = async (req, res) => {
+    try {
+        // Check if a file was provided in the request
+        if (!req.file) {
+            return res.status(400).json({ error: 'No image file provided.' });
+        }
+
+        // A helper function to upload a buffer to Cloudinary
+        const uploadFromBuffer = (buffer) => {
+            return new Promise((resolve, reject) => {
+                const cld_upload_stream = cloudinary.uploader.upload_stream(
+                    { folder: "astroxblogs" }, // Optional: you can name a folder in Cloudinary
+                    (error, result) => {
+                        if (result) {
+                            resolve(result);
+                        } else {
+                            reject(error);
+                        }
+                    }
+                );
+                // Use streamifier to pipe the buffer to the upload stream
+                streamifier.createReadStream(buffer).pipe(cld_upload_stream);
+            });
+        };
+
+        // Call the helper function with the file's buffer
+        const result = await uploadFromBuffer(req.file.buffer);
+
+        // Send back the secure URL of the uploaded image
+        res.status(200).json({ imageUrl: result.secure_url });
+
+    } catch (error) {
+        console.error('Error uploading to Cloudinary:', error);
+        res.status(500).json({ error: 'Failed to upload image.' });
+    }
+};
+
+
 exports.getBlogs = async (req, res) => {
     try {
         const { category, tag, page = 1, limit = 10 } = req.query;

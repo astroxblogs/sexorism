@@ -1,18 +1,18 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Helmet } from 'react-helmet-async';
+import SEO from '../SEO'; // Make sure this path is correct
 
 import { useBlogs } from '../../context/BlogContext';
 import { useShare } from '../../context/ShareContext';
 import api from '../../services/api';
-
 import { hasSubscriberId } from '../../utils/localStorage';
 import { incrementBlogView } from '../../services/api';
 import BlogArticle from './BlogArticle';
 
 const slugify = (text) => {
-    return text.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-&]/g, '').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+    if (!text) return '';
+    return text.toString().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-&]/g, '').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
 };
 
 const POPUP_DELAY_SECONDS = 15;
@@ -20,7 +20,6 @@ const POPUP_DELAY_SECONDS = 15;
 const BlogDetail = () => {
     const { categoryName, blogSlug } = useParams();
     const { i18n } = useTranslation();
-
     const { blogs, updateBlog } = useBlogs();
     const { getShareCount, setInitialShareCount } = useShare();
 
@@ -36,6 +35,8 @@ const BlogDetail = () => {
     useEffect(() => {
         const loadBlog = async () => {
             setLoading(true);
+            setError(null);
+            setBlog(null);
             const blogFromContext = blogs.find(b => b.slug === blogSlug);
 
             if (blogFromContext) {
@@ -56,15 +57,11 @@ const BlogDetail = () => {
             }
         };
         loadBlog();
-    // ✅ THIS IS THE FIX: We are telling the linter to ignore this line
-    // because we are intentionally omitting dependencies to prevent an infinite loop.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [blogSlug, categoryName]);
 
-    // --- All your other hooks and logic are restored below ---
-
-    // View Count Logic
-    useEffect(() => {
+    // ... (All other useEffect hooks for View Count, Timed Popup, etc. remain the same) ...
+     useEffect(() => {
         if (!blog || !blog._id || processedBlogId.current === blog._id) return;
         const COOLDOWN_PERIOD = 60 * 60 * 1000;
         const now = Date.now();
@@ -80,7 +77,6 @@ const BlogDetail = () => {
         } catch (e) { console.error('Error handling blog view logic:', e); }
     }, [blog]);
 
-    // Timed Popup Logic
     useEffect(() => {
         if (!isSubscribed && blog && !showTimedPopup) {
             timerRef.current = setTimeout(() => {
@@ -95,7 +91,6 @@ const BlogDetail = () => {
         };
     }, [blog, isSubscribed, showTimedPopup]);
     
-    // Share Count Logic
     useEffect(() => {
         if (blog?._id && blog.shareCount !== undefined) {
             setInitialShareCount(blog._id, blog.shareCount);
@@ -111,26 +106,79 @@ const BlogDetail = () => {
         }
     }, []);
 
-    const generateCanonicalUrl = () => {
-        if (!blog) return '';
-        const categorySlug = blog.category ? slugify(blog.category) : 'uncategorized';
-        const blogSlugFromData = blog.slug || blog._id;
-        return `https://www.innvibs.com/category/${categorySlug}/${blogSlugFromData}`;
-    };
+    const stripHtml = (html) => {
+        if (!html) return "";
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        return doc.body.textContent || "";
+    }
 
+    // --- Loading and Error states ---
+    // These must come BEFORE any code that tries to use the 'blog' object.
     if (loading) return <div className="text-center mt-20 p-4 dark:text-gray-300">Loading post...</div>;
     if (error) return <div className="text-center mt-20 p-4 text-red-500">{error}</div>;
     if (!blog) return <div className="text-center mt-20 p-4 dark:text-gray-300">Blog not found.</div>;
 
-    const canonicalUrl = generateCanonicalUrl();
+    // ✅ FIX: Moved all logic that depends on the 'blog' object to *AFTER* the loading and error checks.
+    // This ensures 'blog' is not null when this code runs.
+    
+    const getLocalizedField = (field) => {
+        const lang = i18n.language;
+        return blog[`${field}_${lang}`] || blog[`${field}_en`] || blog[field] || "";
+    };
 
+    const metaDescription = getLocalizedField('metaDescription') || stripHtml(getLocalizedField('content')).substring(0, 160);
+    const categoryNameCurrentLang = blog.category ? (i18n.language === 'hi' ? blog.category.name_hi : blog.category.name_en) : 'Uncategorized';
+    
+    const blogPostingSchema = {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": `https://www.innvibs.com/category/${categoryName}/${blogSlug}`
+        },
+        "headline": getLocalizedField('title'),
+        "description": metaDescription,
+        "image": blog.image,
+        "author": { "@type": "Person", "name": blog.author || "Innvibs Team" },
+        "publisher": {
+            "@type": "Organization",
+            "name": "Innvibs",
+            "logo": { "@type": "ImageObject", "url": "https://www.innvibs.com/logo512.png" }
+        },
+        "datePublished": blog.createdAt,
+        "dateModified": blog.updatedAt || blog.createdAt
+    };
+
+    const breadcrumbSchema = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [{
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://www.innvibs.com"
+        }, {
+            "@type": "ListItem",
+            "position": 2,
+            "name": categoryNameCurrentLang,
+            "item": `https://www.innvibs.com/category/${slugify(categoryName)}`
+        }, {
+            "@type": "ListItem",
+            "position": 3,
+            "name": getLocalizedField('title'),
+            "item": `https://www.innvibs.com/category/${categoryName}/${blogSlug}`
+        }]
+    };
+    
     return (
         <>
-            <Helmet>
-                <title>{blog.title} - Innvibs</title>
-                <meta name="description" content={blog.content?.slice(0, 150)} />
-                <link rel="canonical" href={canonicalUrl} />
-            </Helmet>
+            <SEO
+                title={`${getLocalizedField('title')} - Innvibs`}
+                description={metaDescription}
+                canonicalUrl={`/category/${categoryName}/${blogSlug}`}
+                schema={[blogPostingSchema, breadcrumbSchema]}
+            />
+
             <BlogArticle
                 blog={blog}
                 isSubscribed={isSubscribed}
@@ -146,4 +194,3 @@ const BlogDetail = () => {
 };
 
 export default BlogDetail;
-

@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js",
+    "dev": "cross-env NODE_ENV=development nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "create-user": "node scripts/createUser.js",
     "generate-slugs": "node seed/generateSlugs.js",
@@ -33,9 +33,12 @@
     "node-cron": "^4.2.1",
     "prerender-node": "^3.8.3",
     "react-helmet-async": "^2.0.5",
-    "sharp": "^0.34.3"
+    "sharp": "^0.34.3",
+    "streamifier": "^0.1.1"
   },
   "devDependencies": {
+    "cross-env": "^10.1.0",
     "nodemon": "^3.1.10"
-  }
+  },
+  "proxy": "http://localhost:8081"
 }

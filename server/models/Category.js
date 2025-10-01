@@ -17,7 +17,26 @@ const CategorySchema = new mongoose.Schema({
         unique: true,
         lowercase: true,
         trim: true
+    },
+    
+    // ✅ NEW SEO FIELDS
+    metaTitle_en: {
+        type: String,
+        trim: true
+    },
+    metaTitle_hi: {
+        type: String,
+        trim: true
+    },
+    metaDescription_en: {
+        type: String,
+        trim: true
+    },
+    metaDescription_hi: {
+        type: String,
+        trim: true
     }
+
 }, { timestamps: true });
 
 module.exports = mongoose.model('Category', CategorySchema);

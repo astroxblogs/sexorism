@@ -55,6 +55,11 @@ const AdminBlogForm = ({ blog, onSave, onCancel }) => {
             LANGUAGES.forEach(lang => {
                 setValue(`title_${lang.code}`, blog[`title_${lang.code}`] || '');
                 newContents[lang.code] = blog[`content_${lang.code}`] || '';
+                
+                // ✅ STEP 1: Populate the new SEO and Excerpt fields when editing a blog
+                setValue(`excerpt_${lang.code}`, blog[`excerpt_${lang.code}`] || '');
+                setValue(`metaTitle_${lang.code}`, blog[`metaTitle_${lang.code}`] || '');
+                setValue(`metaDescription_${lang.code}`, blog[`metaDescription_${lang.code}`] || '');
             });
             setValue('title', blog.title || '');
             newContents['en'] = newContents['en'] || blog.content || '';
@@ -148,7 +153,6 @@ const AdminBlogForm = ({ blog, onSave, onCancel }) => {
         setLinkDialogOpen(false);
     }, [linkDialogRange]);
 
-
     const onSubmit = async (data) => {
         const tags = typeof data.tags === 'string' ? data.tags.split(',').map(tag => tag.trim()).filter(Boolean) : [];
         let finalImageUrl = data.image;
@@ -168,6 +172,11 @@ const AdminBlogForm = ({ blog, onSave, onCancel }) => {
         LANGUAGES.forEach(lang => {
             payload[`title_${lang.code}`] = data[`title_${lang.code}`];
             payload[`content_${lang.code}`] = contents[lang.code];
+            
+            // ✅ STEP 2: Add the new SEO and Excerpt data to the payload on submit
+            payload[`excerpt_${lang.code}`] = data[`excerpt_${lang.code}`];
+            payload[`metaTitle_${lang.code}`] = data[`metaTitle_${lang.code}`];
+            payload[`metaDescription_${lang.code}`] = data[`metaDescription_${lang.code}`];
         });
         
         try {
@@ -184,6 +193,10 @@ const AdminBlogForm = ({ blog, onSave, onCancel }) => {
         }
     };
 
+    // Watch for changes in meta fields to show character count
+    const watchedMetaTitle = watch(`metaTitle_${activeLang}`);
+    const watchedMetaDescription = watch(`metaDescription_${activeLang}`);
+
     return (
         <>
             <form
@@ -191,7 +204,7 @@ const AdminBlogForm = ({ blog, onSave, onCancel }) => {
                 className="mb-8 bg-gray-50 dark:bg-gray-800 p-6 rounded-lg shadow flex flex-col gap-4 max-w-4xl mx-auto"
             >
                 {/* Language Selection Tabs */}
-                <div className="flex justify-center border-b border-gray-200 dark:border-gray-700"> {/* ✅ REDUCED bottom margin */}
+                <div className="flex justify-center border-b border-gray-200 dark:border-gray-700">
                     {LANGUAGES.map(lang => (
                         <button
                             key={lang.code} type="button" onClick={() => setActiveLang(lang.code)}
@@ -234,9 +247,7 @@ const AdminBlogForm = ({ blog, onSave, onCancel }) => {
 
                 {LANGUAGES.map(lang => (
                     activeLang === lang.code && (
-                        // ✅ REMOVED the extra div and spacing around the content section
-                        <div key={lang.code} className="space-y-2"> {/* ✅ ADDED space-y-2 for consistent spacing */}
-                            {/* ✅ REMOVED the h3 heading for "English Content" etc. */}
+                        <div key={lang.code} className="space-y-2">
                             <input className="border border-gray-300 dark:border-gray-700 p-2 rounded w-full text-gray-900 dark:text-white bg-white dark:bg-gray-700" placeholder={`Title (${lang.name})`} {...register(`title_${lang.code}`, { required: lang.code === 'en' })} />
                             <div>
                                 <label className="block font-medium text-sm mb-1 text-gray-700 dark:text-gray-300">Content ({lang.name})</label>
@@ -251,21 +262,67 @@ const AdminBlogForm = ({ blog, onSave, onCancel }) => {
                     )
                 ))}
 
-                 <div className="flex justify-end items-center space-x-4 pt-4 mt-4 border-t"> {/* ✅ REDUCED top margin/padding */}
-                <button
-                    type="button"
-                    onClick={onCancel}
-                    className="px-6 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-                >
-                    Cancel
-                </button>
-                <button
-                    type="submit"
-                    className="px-6 py-3 border border-transparent rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
-                >
-                    {blog ? 'Update Blog' : 'Submit Blog'}
-                </button>
-            </div>
+                {/* ✅ STEP 3: Add the new form section for SEO and Excerpt fields */}
+                <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                    <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">SEO & Excerpt ({LANGUAGES.find(l => l.code === activeLang).name})</h3>
+                    {LANGUAGES.map(lang => (
+                        activeLang === lang.code && (
+                            <div key={lang.code} className="space-y-4">
+                                <div>
+                                    <label htmlFor={`excerpt_${lang.code}`} className="block font-medium text-sm text-gray-700 dark:text-gray-300">Excerpt</label>
+                                    <textarea
+                                        id={`excerpt_${lang.code}`}
+                                        {...register(`excerpt_${lang.code}`)}
+                                        placeholder="A short summary of the post for blog listing pages."
+                                        rows="3"
+                                        className="mt-1 border border-gray-300 dark:border-gray-700 p-2 rounded w-full text-gray-900 dark:text-white bg-white dark:bg-gray-700"
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor={`metaTitle_${lang.code}`} className="block font-medium text-sm text-gray-700 dark:text-gray-300">Meta Title</label>
+                                    <input
+                                        id={`metaTitle_${lang.code}`}
+                                        {...register(`metaTitle_${lang.code}`)}
+                                        placeholder="An SEO-friendly title for search engine results (around 60 characters)."
+                                        className="mt-1 border border-gray-300 dark:border-gray-700 p-2 rounded w-full text-gray-900 dark:text-white bg-white dark:bg-gray-700"
+                                    />
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                        Character count: {watchedMetaTitle?.length || 0} / 60
+                                    </p>
+                                </div>
+                                <div>
+                                    <label htmlFor={`metaDescription_${lang.code}`} className="block font-medium text-sm text-gray-700 dark:text-gray-300">Meta Description</label>
+                                    <textarea
+                                        id={`metaDescription_${lang.code}`}
+                                        {...register(`metaDescription_${lang.code}`)}
+                                        placeholder="A compelling description for search engine results (around 160 characters)."
+                                        rows="4"
+                                        className="mt-1 border border-gray-300 dark:border-gray-700 p-2 rounded w-full text-gray-900 dark:text-white bg-white dark:bg-gray-700"
+                                    />
+                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                        Character count: {watchedMetaDescription?.length || 0} / 160
+                                    </p>
+                                </div>
+                            </div>
+                        )
+                    ))}
+                </div>
+
+                <div className="flex justify-end items-center space-x-4 pt-4 mt-4 border-t">
+                    <button
+                        type="button"
+                        onClick={onCancel}
+                        className="px-6 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="submit"
+                        className="px-6 py-3 border border-transparent rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
+                    >
+                        {blog ? 'Update Blog' : 'Submit Blog'}
+                    </button>
+                </div>
             </form>
 
             <LinkDialog

@@ -2,58 +2,72 @@ const express = require('express');
 const router = express.Router();
 const { body } = require('express-validator');
 const rateLimit = require('express-rate-limit');
-const Admin = require('../../models/Admin'); // Path updated for new structure
+const Admin = require('../../models/Admin');
+const multer = require('multer'); // ✅ ADDED: For handling file uploads
+
+// ----------------- MULTER SETUP FOR FILE UPLOADS -----------------
+// Using memory storage to handle the file as a buffer. You can configure disk storage if you prefer.
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 // ----------------- CONTROLLERS -----------------
-// Paths updated to point to the new 'admin' sub-directory in controllers
 const {
-    login,
-    refreshAdminToken,
-    logout,
-    createOperator,
-    getOperators,
-    deleteOperator,
-    toggleOperatorStatus,
-    updateAdminCredentials,
-    updateOperatorCredentials,
-    changePassword
-} = require('../../controllers/admin/adminController'); 
+    login,
+    refreshAdminToken,
+    logout,
+    createOperator,
+    getOperators,
+    deleteOperator,
+    toggleOperatorStatus,
+    updateAdminCredentials,
+    updateOperatorCredentials,
+    changePassword
+} = require('../../controllers/admin/adminController');
 
-const blogController = require('../../controllers/admin/blogcontroller'); 
-const categoryController = require('../../controllers/admin/categoryController'); 
-const subscriberController = require('../../controllers/admin/subscriberController'); 
+const blogController = require('../../controllers/admin/blogcontroller');
+const categoryController = require('../../controllers/admin/categoryController');
+const subscriberController = require('../../controllers/admin/subscriberController');
+
 // ----------------- MIDDLEWARE -----------------
-const { adminAuth, requireRole } = require('../../middleware/auth'); // Path updated
+const { adminAuth, requireRole } = require('../../middleware/auth');
 
 // ----------------- VALIDATORS -----------------
-const { updateOperatorValidators } = require('../../validators/operatorValidators'); // Path updated
+const { updateOperatorValidators } = require('../../validators/operatorValidators');
 
 // ----------------- RATE LIMITER -----------------
 const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 min
-    max: 10, // max 10 attempts per IP
-    message: { message: 'Too many attempts, please try again later' }
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    message: { message: 'Too many attempts, please try again later' }
 });
 
 // ----------------- AUTH ROUTES -----------------
 router.post(
-    '/login',
-    [
-        body('username').notEmpty().withMessage('Username is required'),
-        body('password').notEmpty().withMessage('Password is required')
-    ],
-    login
+    '/login',
+    [
+        body('username').notEmpty().withMessage('Username is required'),
+        body('password').notEmpty().withMessage('Password is required')
+    ],
+    login
 );
 
 router.post('/refresh-token', refreshAdminToken);
 router.post('/logout', logout);
 
-// This route is essential and is now correctly in place.
 router.get('/verify-token', adminAuth, (req, res) => {
-    res.status(200).json({ message: 'Token is valid', role: req.user.role });
+    res.status(200).json({ message: 'Token is valid', role: req.user.role });
 });
 
 // ----------------- BLOG ROUTES -----------------
+
+// ✅ ADDED: Route for handling main cover image uploads
+router.post(
+    '/blogs/upload-image',
+    adminAuth,
+    upload.single('image'), // 'image' must match the field name in the form data
+    blogController.uploadImage
+);
+
 router.get('/blogs/search', adminAuth, blogController.searchBlogs);
 router.post('/blogs', adminAuth, blogController.createBlog);
 router.put('/blogs/:id', adminAuth, blogController.updateBlog);
@@ -68,12 +82,12 @@ router.post('/blogs/:id/reject', adminAuth, requireRole('admin'), blogController
 
 // ----------------- OPERATOR MANAGEMENT (Admin Only) -----------------
 router.post(
-    '/operators',
-    adminAuth,
-    requireRole('admin'),
-    body('username').notEmpty().withMessage('Username required'),
-    body('password').notEmpty().withMessage('Password required'),
-    createOperator
+    '/operators',
+    adminAuth,
+    requireRole('admin'),
+    body('username').notEmpty().withMessage('Username required'),
+    body('password').notEmpty().withMessage('Password required'),
+    createOperator
 );
 
 router.get('/operators', adminAuth, requireRole('admin'), getOperators);
@@ -81,75 +95,65 @@ router.put('/operators/:id/toggle', adminAuth, requireRole('admin'), toggleOpera
 router.delete('/operators/:id', adminAuth, requireRole('admin'), deleteOperator);
 
 // ----------------- ADMIN SETTINGS (Admin Only) -----------------
-
-// This is your old validation logic
 const updateAdminValidators = [
-    body('newPassword').optional().isLength({ min: 6 }).withMessage('New password must be at least 6 characters long'),
-    body('newUsername').optional().notEmpty().withMessage('New username cannot be empty')
+    body('newPassword').optional().isLength({ min: 6 }).withMessage('New password must be at least 6 characters long'),
+    body('newUsername').optional().notEmpty().withMessage('New username cannot be empty')
 ];
 
-// ✅ ADDED: Validation for the new password change route
 const changePasswordValidation = [
-    body('currentPassword').notEmpty().withMessage('Current password is required'),
-    body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters')
+    body('currentPassword').notEmpty().withMessage('Current password is required'),
+    body('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters')
 ];
 
-// This is your old route
 router.put(
-    '/credentials',
-    adminAuth,
-    requireRole('admin'),
-    ...updateAdminValidators,
-    updateAdminCredentials
+    '/credentials',
+    adminAuth,
+    requireRole('admin'),
+    ...updateAdminValidators,
+    updateAdminCredentials
 );
 
-// ✅ ADDED: The new route for the settings page UI
 router.put(
-    '/change-password', 
-    adminAuth, 
-    requireRole('admin'), // Assuming only admins can change their password this way
-    changePasswordValidation, 
-    changePassword
+    '/change-password',
+    adminAuth,
+    requireRole('admin'),
+    changePasswordValidation,
+    changePassword
 );
-
 
 // ----------------- OPERATOR SETTINGS (Operator Only) -----------------
 router.put(
-    '/operator/credentials',
-    adminAuth,
-    requireRole('operator'),
-    ...updateOperatorValidators,
-    updateOperatorCredentials
+    '/operator/credentials',
+    adminAuth,
+    requireRole('operator'),
+    ...updateOperatorValidators,
+    updateOperatorCredentials
 );
 
-// ✅ ADD THIS NEW ROUTE FOR OPERATOR PASSWORD CHANGE
 router.put(
-    '/operator/change-password',
-    adminAuth,
-    requireRole('operator'),
-    changePasswordValidation,
-    // We will create this controller function in the next step
-    updateOperatorCredentials // Re-using the same controller function name for simplicity
+    '/operator/change-password',
+    adminAuth,
+    requireRole('operator'),
+    changePasswordValidation,
+    updateOperatorCredentials
 );
-
-
 
 // ----------------- PROFILE ROUTE -----------------
 router.get('/profile', adminAuth, async (req, res) => {
-    try {
-        const user = await Admin.findById(req.user.id).select('-password');
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        res.json({
-            username: user.username,
-            role: user.role,
-            isActive: user.isActive
-        });
-    } catch (error) {
-        console.error('Error fetching profile:', error);
-        res.status(500).json({ message: 'Server error' });
-    }
+    try {
+        const user = await Admin.findById(req.user.id).select('-password');
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.json({
+            username: user.username,
+            role: user.role,
+            isActive: user.isActive
+        });
+    } catch (error) {
+        console.error('Error fetching profile:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
 });
 
 // ----------------- CATEGORY ROUTES -----------------
@@ -157,10 +161,7 @@ router.post('/categories', adminAuth, categoryController.createCategory);
 router.get('/categories', adminAuth, categoryController.getCategories);
 router.delete('/categories/:id', adminAuth, categoryController.deleteCategory);
 
-
 // ----------------- SUBSCRIBER MANAGEMENT (Admin Only) -----------------
 router.get('/subscribers', adminAuth, requireRole('admin'), subscriberController.getSubscribers);
 
 module.exports = router;
-
-

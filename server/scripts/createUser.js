@@ -28,7 +28,7 @@ async function main() {
     console.log('🚀 Starting admin creation script...');
     
     // --- Step 1: Connect to the database ---
-    if (!process.env.MONGODB_URI) {
+    if (!process.env.MONGO_URI) {
         throw new Error('MONGO_URI is not defined in your .env file.');
     }
     await mongoose.connect(process.env.MONGODB_URI, {

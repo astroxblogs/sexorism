@@ -16,7 +16,6 @@ const tagSlugify = (tag) => {
     return tag.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
 };
 
-// ✅ STEP 1: Accept `visitorId` as a prop
 const BlogCard = ({ blog, onLikeUpdate, searchQuery, visitorId }) => {
     const { i18n, t } = useTranslation();
     const currentLang = i18n.language;
@@ -28,27 +27,40 @@ const BlogCard = ({ blog, onLikeUpdate, searchQuery, visitorId }) => {
         }
     }, [blog, setInitialShareCount]);
 
-    const getLocalizedContent = (field) => {
+    const getLocalizedField = (field) => {
         const localizedField = blog[`${field}_${currentLang}`];
-        if (localizedField) return localizedField;
-        if (blog[`${field}_en`]) return blog[`${field}_en`];
+        // Check for non-empty string for content fields
+        if (localizedField && localizedField.trim() !== '') return localizedField;
+
+        const englishField = blog[`${field}_en`];
+        if (englishField && englishField.trim() !== '') return englishField;
+        
+        // Fallback for older single-language fields
         return blog[field] || "";
     };
 
-    const displayTitle = getLocalizedContent("title");
-    const displayContent = getLocalizedContent("content");
+    const displayTitle = getLocalizedField("title");
+    
+    // ✅ --- START OF THE FIX ---
 
-    const getPlainTextExcerpt = (markdownContent) => {
-        if (!markdownContent) return "";
-        const html = marked.parse(markdownContent);
-        const tempDiv = document.createElement("div");
-        tempDiv.innerHTML = html;
-        let text = tempDiv.textContent || tempDiv.innerText || "";
-        text = text.replace(/\s\s+/g, " ").trim();
-        return text.slice(0, 150) + (text.length > 150 ? "..." : "");
+    // 1. Get the localized excerpt first.
+    const displayExcerpt = getLocalizedField("excerpt");
+    
+    // 2. Fallback to main content only if the excerpt is missing.
+    const displayContent = getLocalizedField("content");
+    
+    const getPlainTextSummary = (content) => {
+        if (!content) return "";
+        // Simple HTML tag removal regex for the fallback content
+        const plainText = content.replace(/<[^>]+>/g, ''); 
+        return plainText.slice(0, 150) + (plainText.length > 150 ? "..." : "");
     };
 
-    const excerpt = getPlainTextExcerpt(displayContent);
+    // 3. Decide which text to show: the excerpt if it exists, otherwise a snippet of the content.
+    const summary = displayExcerpt ? displayExcerpt : getPlainTextSummary(displayContent);
+
+    // ✅ --- END OF THE FIX ---
+
 
     const highlightSearchTerms = (text, searchQuery) => {
         if (!searchQuery || !text) return text;
@@ -131,23 +143,20 @@ const BlogCard = ({ blog, onLikeUpdate, searchQuery, visitorId }) => {
                         </div>
                     )}
                     
+                    {/* ✅ FIX: Use the new 'summary' variable here */}
                     <p
                         className="mt-1.5 text-sm text-gray-600 dark:text-gray-400 line-clamp-2 break-words"
                         dangerouslySetInnerHTML={{
-                            __html: searchQuery ? highlightSearchTerms(excerpt, searchQuery) : excerpt
+                            __html: searchQuery ? highlightSearchTerms(summary, searchQuery) : summary
                         }}
                     />
                 </div>
 
                 <div className="mt-auto pt-2 flex items-center gap-4 sm:gap-5 text-gray-500 dark:text-gray-400 text-[11px] sm:text-xs">
-                    {/* ✅ STEP 2: Update the props passed to the LikeButton */}
                     <LikeButton
                         blogId={blog._id}
-                        // Use the length of the new `likedBy` array for the count
                         initialLikes={blog.likedBy?.length || 0}
-                        // Check if the current user's ID is in the array
                         initialLiked={blog.likedBy?.includes(visitorId)}
-                        // Pass the visitorId to the button
                         visitorId={visitorId}
                     />
                     <Link
