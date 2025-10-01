@@ -414,12 +414,9 @@ const getSocialMediaPreview = async (req, res) => {
     let blog;
 
     if (categoryName) {
-      // New category-based URL structure
-      // First, find the category by its slug to get the actual category name
-      // Handle both encoded ampersands (&-) and actual ampersands (&)
+    
       const Category = require('../models/Category');
-
-      // Try to find category with the exact slug first
+      
       let category = await Category.findOne({ slug: categoryName });
 
       // If not found, try with encoded ampersand format for backward compatibility

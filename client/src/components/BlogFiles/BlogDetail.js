@@ -60,7 +60,7 @@ const BlogDetail = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [blogSlug, categoryName]);
 
-    // ... (All other useEffect hooks for View Count, Timed Popup, etc. remain the same) ...
+    // ... (All other useEffect hooks remain the same) ...
      useEffect(() => {
         if (!blog || !blog._id || processedBlogId.current === blog._id) return;
         const COOLDOWN_PERIOD = 60 * 60 * 1000;
@@ -118,7 +118,7 @@ const BlogDetail = () => {
     if (error) return <div className="text-center mt-20 p-4 text-red-500">{error}</div>;
     if (!blog) return <div className="text-center mt-20 p-4 dark:text-gray-300">Blog not found.</div>;
 
-    // ✅ FIX: Moved all logic that depends on the 'blog' object to *AFTER* the loading and error checks.
+    // ✅ FIX: All logic that depends on the 'blog' object has been moved to AFTER the loading and error checks.
     // This ensures 'blog' is not null when this code runs.
     
     const getLocalizedField = (field) => {

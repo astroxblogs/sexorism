@@ -31,9 +31,6 @@ const MinimalFooter = () => {
 };
 
 
-// This layout component is for the standalone pages (About, Contact, etc.).
-// It does NOT include the main site header.
-// It includes the new, simpler footer.
 const LegalLayout = () => {
     return (
         <div className="min-h-screen flex flex-col bg-light-bg-primary dark:bg-dark-bg-primary">

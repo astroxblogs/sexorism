@@ -1,10 +1,9 @@
-const dotenv = require('dotenv');
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const cron = require('node-cron');
 const path = require('path');
-
+const dotenv = require('dotenv');
 
 // --- Dynamic Environment Variable Loading ---
 if (process.env.NODE_ENV === 'development') {

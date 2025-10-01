@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "cross-env NODE_ENV=development nodemon server.js",
+   "dev": "cross-env NODE_ENV=development nodemon server.js",
+     
     "test": "echo \"Error: no test specified\" && exit 1",
     "create-user": "node scripts/createUser.js",
     "generate-slugs": "node seed/generateSlugs.js",
@@ -23,6 +24,7 @@
     "cloudinary": "^2.7.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "cross-env": "^10.0.0",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
     "express-rate-limit": "^8.1.0",
@@ -42,3 +44,4 @@
   },
   "proxy": "http://localhost:8081"
 }
+
