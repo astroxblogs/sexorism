@@ -160,6 +160,7 @@ router.get('/profile', adminAuth, async (req, res) => {
 router.post('/categories', adminAuth, categoryController.createCategory);
 router.get('/categories', adminAuth, categoryController.getCategories);
 router.delete('/categories/:id', adminAuth, categoryController.deleteCategory);
+router.put('/categories/:id', adminAuth, categoryController.updateCategory);
 
 // ----------------- SUBSCRIBER MANAGEMENT (Admin Only) -----------------
 router.get('/subscribers', adminAuth, requireRole('admin'), subscriberController.getSubscribers);
