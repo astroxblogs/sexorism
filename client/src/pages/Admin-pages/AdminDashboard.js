@@ -89,7 +89,7 @@ const AdminDashboard = () => {
 
     const handleViewChange = (view) => {
     if (view === 'subscriberManagement') {
-        navigate('/admin/subscribers');
+        navigate('/cms/admin/subscribers');
     } else {
         setActiveView(view);
     }
