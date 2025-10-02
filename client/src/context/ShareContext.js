@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
-import { incrementShareCount as apiIncrementShare } from "../services/api";
+import { incrementShareCount as apiIncrementShare } from "../services/Public-service/api";
 
 const ShareContext = createContext();
 
