@@ -102,6 +102,57 @@ export const clearVisitorId = () => {
     }
 };
 
+// Subscriber ID management for subscription features
+const SUBSCRIBER_ID_KEY = 'astrox_subscriber_id';
+
+/**
+ * Gets the subscriber ID from localStorage.
+ * @returns {string | null} The subscriber ID if found, otherwise null.
+ */
+export const getSubscriberId = () => {
+    try {
+        return localStorage.getItem(SUBSCRIBER_ID_KEY);
+    } catch (error) {
+        console.error('Error retrieving subscriber ID:', error);
+        return null;
+    }
+};
+
+/**
+ * Sets the subscriber ID in localStorage.
+ * @param {string} subscriberId - The subscriber ID to store.
+ */
+export const setSubscriberId = (subscriberId) => {
+    try {
+        if (subscriberId) {
+            localStorage.setItem(SUBSCRIBER_ID_KEY, subscriberId);
+        } else {
+            console.warn('Attempted to set a null or undefined subscriber ID.');
+        }
+    } catch (error) {
+        console.error('Error saving subscriber ID:', error);
+    }
+};
+
+/**
+ * Checks if a subscriber ID exists in localStorage.
+ * @returns {boolean} True if a subscriber ID exists, false otherwise.
+ */
+export const hasSubscriberId = () => {
+    return !!getSubscriberId();
+};
+
+/**
+ * Removes the subscriber ID from localStorage.
+ */
+export const removeSubscriberId = () => {
+    try {
+        localStorage.removeItem(SUBSCRIBER_ID_KEY);
+    } catch (error) {
+        console.error('Error removing subscriber ID:', error);
+    }
+};
+
 // Export helpers in case other modules need them
 export const getCurrentRoleForTab = getCurrentRole;
 export const ROLE_KEYS = { ROLE_SESSION_KEY };

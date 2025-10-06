@@ -1,16 +1,17 @@
-import dynamic from 'next/dynamic';
-import { Metadata } from 'next';
+'use client'
 
-const SubscriberManagement = dynamic(() => import('../../../src/pages/Admin-pages/SubscriberManagement'), {
-  ssr: false,
-  loading: () => <div className="text-center py-20">Loading subscriber management...</div>
-});
-
-export const metadata: Metadata = {
-  title: "Subscriber Management - Innvibs",
-  description: "Manage subscribers in admin panel",
-};
+import { AdminBlogTable } from '../../components/AdminBlogTable';
 
 export default function AdminSubscribersPage() {
-  return <SubscriberManagement />;
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-6">Subscriber Management</h1>
+      <AdminBlogTable
+        blogs={[]}
+        onEdit={(item) => console.log('Edit subscriber:', item)}
+        onDelete={(id) => console.log('Delete subscriber:', id)}
+        onUpdateDate={(id, date) => console.log('Update subscriber date:', id, date)}
+      />
+    </div>
+  );
 }

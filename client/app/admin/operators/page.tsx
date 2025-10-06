@@ -1,16 +1,17 @@
-import dynamic from 'next/dynamic';
-import { Metadata } from 'next';
+'use client'
 
-const OperatorManagement = dynamic(() => import('../../../src/pages/Admin-pages/Operatormanagement'), {
-  ssr: false,
-  loading: () => <div className="text-center py-20">Loading operator management...</div>
-});
-
-export const metadata: Metadata = {
-  title: "Operator Management - Innvibs",
-  description: "Manage operators in admin panel",
-};
+import { AdminBlogTable } from '../../components/AdminBlogTable';
 
 export default function AdminOperatorsPage() {
-  return <OperatorManagement />;
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-6">Operator Management</h1>
+      <AdminBlogTable
+        blogs={[]}
+        onEdit={(item) => console.log('Edit operator:', item)}
+        onDelete={(id) => console.log('Delete operator:', id)}
+        onUpdateDate={(id, date) => console.log('Update operator date:', id, date)}
+      />
+    </div>
+  );
 }

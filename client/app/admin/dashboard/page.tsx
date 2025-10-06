@@ -1,16 +1,17 @@
-import dynamic from 'next/dynamic';
-import { Metadata } from 'next';
+'use client'
 
-const AdminDashboard = dynamic(() => import('../../../src/pages/Admin-pages/AdminDashboard'), {
-  ssr: false,
-  loading: () => <div className="text-center py-20">Loading admin dashboard...</div>
-});
-
-export const metadata: Metadata = {
-  title: "Admin Dashboard - Innvibs",
-  description: "Admin dashboard for Innvibs",
-};
+import { AdminBlogTable } from '../../components/AdminBlogTable';
 
 export default function AdminDashboardPage() {
-  return <AdminDashboard />;
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
+      <AdminBlogTable
+        blogs={[]}
+        onEdit={(item) => console.log('Edit item:', item)}
+        onDelete={(id) => console.log('Delete item:', id)}
+        onUpdateDate={(id, date) => console.log('Update item date:', id, date)}
+      />
+    </div>
+  );
 }

@@ -1,0 +1,1 @@
+"use strict";exports.id=38,exports.ids=[38],exports.modules={8331:(e,s,r)=>{r.r(s),r.d(s,{default:()=>t});let t=(0,r(8570).createProxy)(String.raw`C:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\app\components\CategoryPage.js#default`)}};

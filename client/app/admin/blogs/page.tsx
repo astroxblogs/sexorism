@@ -1,16 +1,17 @@
-import dynamic from 'next/dynamic';
-import { Metadata } from 'next';
+'use client'
 
-const AdminBlogList = dynamic(() => import('../../../src/pages/Admin-pages/AdminBlogList'), {
-  ssr: false,
-  loading: () => <div className="text-center py-20">Loading admin blogs...</div>
-});
-
-export const metadata: Metadata = {
-  title: "Admin Blogs - Innvibs",
-  description: "Manage blogs in admin panel",
-};
+import { AdminBlogTable } from '../../components/AdminBlogTable';
 
 export default function AdminBlogsPage() {
-  return <AdminBlogList />;
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-6">Admin Blogs</h1>
+      <AdminBlogTable
+        blogs={[]}
+        onEdit={(item) => console.log('Edit blog:', item)}
+        onDelete={(id) => console.log('Delete blog:', id)}
+        onUpdateDate={(id, date) => console.log('Update blog date:', id, date)}
+      />
+    </div>
+  );
 }

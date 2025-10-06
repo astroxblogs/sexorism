@@ -1,16 +1,17 @@
-import dynamic from 'next/dynamic';
-import { Metadata } from 'next';
+'use client'
 
-const CategoryManager = dynamic(() => import('../../../src/pages/Admin-pages/CategoryManager'), {
-  ssr: false,
-  loading: () => <div className="text-center py-20">Loading category manager...</div>
-});
-
-export const metadata: Metadata = {
-  title: "Category Manager - Innvibs",
-  description: "Manage categories in admin panel",
-};
+import { AdminBlogTable } from '../../components/AdminBlogTable';
 
 export default function AdminCategoriesPage() {
-  return <CategoryManager />;
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-6">Category Manager</h1>
+      <AdminBlogTable
+        blogs={[]}
+        onEdit={(item) => console.log('Edit category:', item)}
+        onDelete={(id) => console.log('Delete category:', id)}
+        onUpdateDate={(id, date) => console.log('Update category date:', id, date)}
+      />
+    </div>
+  );
 }

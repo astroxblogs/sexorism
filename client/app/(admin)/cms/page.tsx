@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import api from '../../../src/services/Admin-service/api.js'
+import { apiService } from '../../lib/api'
 
 const AdminLogin = () => {
   const [formData, setFormData] = useState({ username: '', password: '' })
@@ -20,7 +20,7 @@ const AdminLogin = () => {
     setError('')
 
     try {
-      const response = await api.post('/admin/login', formData)
+      const response = await apiService.login(formData)
       if (response.data.accessToken) {
         // Store token in cookie (server-side equivalent of localStorage)
         document.cookie = `token=${response.data.accessToken}; path=/; max-age=86400` // 24 hours

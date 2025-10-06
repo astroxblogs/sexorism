@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useBlogs } from '../context/BlogContext';
 import { useShare } from '../context/ShareContext';
-import { hasSubscriberId } from '../../src/utils/Public-utils/localStorage';
+import { hasSubscriberId } from '../utils/localStorage';
 import { incrementBlogView } from '../lib/api';
 import BlogArticle from './BlogArticle';
 
