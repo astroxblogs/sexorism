@@ -7,7 +7,7 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:8081/api/:path*', // Proxy to local backend for development
+        destination: 'https://api.innvibs.in/api/:path*', // Proxy to deployed backend
       },
     ];
   },
