@@ -5,7 +5,7 @@ import BlogDetailClient from './BlogDetailClient';
 export async function generateMetadata({ params }: { params: { categoryName: string; blogSlug: string } }): Promise<Metadata> {
   try {
     // Fetch blog data from your API
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081'}/api/blogs/slug/${params.blogSlug}`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081'}/api/blogs/${params.categoryName}/${params.blogSlug}`, {
       cache: 'no-store'
     });
 
