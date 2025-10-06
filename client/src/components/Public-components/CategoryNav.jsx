@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
  
 
-export default function CategoryNav({ activeCategory, onCategoryChange }) {
+export default function CategoryNav({ activeCategory, onCategoryChange, categories = [] }) {
   const { t } = useTranslation();
   const scrollRef = useRef(null);
   const itemRefs = useRef([]);

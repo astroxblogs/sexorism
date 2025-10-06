@@ -130,7 +130,7 @@ const OperatorDashboard = () => {
     const fetchMyBlogs = useCallback(async () => { /* ... No changes here ... */
         setLoading(true);
         try {
-            const url = `/api/admin/blogs?page=${currentPage}&limit=10${searchQuery ? `&q=${searchQuery}` : ''}`;
+            const url = `/admin/blogs?page=${currentPage}&limit=10${searchQuery ? `&q=${searchQuery}` : ''}`;
             const res = await api.get(url);
             const blogs = res.data.blogs || [];
             setMyBlogs(blogs);
@@ -163,7 +163,7 @@ const OperatorDashboard = () => {
     useEffect(() => { /* ... No changes here ... */
         const fetchOperatorProfile = async () => {
             try {
-                const response = await api.get('/api/admin/profile');
+                const response = await api.get('/admin/profile');
                 setOperatorInfo(response.data);
             } catch (error) { console.error('Failed to fetch operator profile:', error.response?.data || error.message); }
         };
@@ -172,7 +172,7 @@ const OperatorDashboard = () => {
 
     const handleLogout = async () => { /* ... No changes here ... */
         try {
-            await api.post('/api/admin/logout');
+            await api.post('/admin/logout');
             setAccessToken(null);
             navigate('/login');
         } catch (err) {

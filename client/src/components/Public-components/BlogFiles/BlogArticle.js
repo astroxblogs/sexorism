@@ -1,5 +1,7 @@
+'use client'
+
 import React, { Suspense } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 import DOMPurify from 'dompurify';
 import { marked } from 'marked';
@@ -21,9 +23,15 @@ const createSafeAltText = (text) => {
     return text.replace(/\b(image|photo|picture)\b/gi, '').replace(/\s\s+/g, ' ').trim();
 };
 const getLocalizedContent = (field, blogData, currentLang) => {
+    // Always prioritize English fields first for consistent display
+    const englishField = blogData[`${field}_en`];
+    if (englishField && englishField.trim() !== '') return englishField;
+
+    // Then check current language (for non-English content)
     const localizedField = blogData[`${field}_${currentLang}`];
-    if (localizedField) return localizedField;
-    if (blogData[`${field}_en`]) return blogData[`${field}_en`];
+    if (localizedField && localizedField.trim() !== '') return localizedField;
+
+    // Fallback for older single-language fields
     return blogData[field] || '';
 };
 
@@ -94,7 +102,7 @@ const BlogArticle = ({
 
                 <div className="flex flex-wrap gap-2 mb-6 md:mb-8">
                     {blog.tags?.map((tag) => (
-                        <Link key={tag} to={`/tag/${encodeURIComponent(tag.toLowerCase())}`} className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 text-sm font-medium rounded-full hover:bg-blue-200 dark:hover:bg-blue-600 hover:text-blue-700 dark:hover:text-blue-100 transition-colors cursor-pointer">
+                        <Link key={tag} href={`/tag/${encodeURIComponent(tag.toLowerCase())}`} className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 text-sm font-medium rounded-full hover:bg-blue-200 dark:hover:bg-blue-600 hover:text-blue-700 dark:hover:text-blue-100 transition-colors cursor-pointer">
                             #{tag}
                         </Link>
                     ))}

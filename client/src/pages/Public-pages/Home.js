@@ -1,22 +1,57 @@
+'use client';
+
 import React, { useEffect, useState, useCallback } from 'react';
-import BlogList from '../../components/Public-components/BlogFiles/BlogList.js';
-import HeroCarousel from '../../components/Public-components/HeroCarousel.jsx';
-// --- FIX 1: Corrected the import to point to the correct component file ---
-import SidebarSection from '../../components/Public-components/SidebarSection.jsx';
-import SidebarLatest from '../../components/Public-components/SidebarLatest.jsx';
-import { useNavigate } from 'react-router-dom';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
+import BlogList from '../../components/Public-components/BlogFiles/BlogList.js';
+import HeroCarousel from '../../components/Public-components/HeroCarousel.jsx';
+import SidebarSection from '../../components/Public-components/SidebarSection.jsx';
+import SidebarLatest from '../../components/Public-components/SidebarLatest.jsx';
+import SEO from '../../components/Public-components/SEO.js';
 import api from '../../services/Public-service/api.js';
 import { useBlogs } from '../../context/BlogContext.js';
-import SEO from '../../components/Public-components/SEO.js';
 
 const INITIAL_PAGE_SIZE = 6;
 
-const Home = ({ activeCategory, searchQuery }) => {
+const Home = () => {
     const { t } = useTranslation();
-    const navigate = useNavigate();
-    const { blogs, setBlogs, featuredBlogs, setFeaturedBlogs } = useBlogs();
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const blogContext = useBlogs();
+    const blogs = blogContext?.blogs || [];
+    const setBlogs = blogContext?.setBlogs || (() => {});
+    const featuredBlogs = blogContext?.featuredBlogs || [];
+    const setFeaturedBlogs = blogContext?.setFeaturedBlogs || (() => {});
+
+    // Check if we're on a category page
+    const isCategoryPage = pathname.startsWith('/category/');
+    const categoryFromUrl = isCategoryPage ? pathname.split('/category/')[1] : null;
+
+    // Convert slug back to category name format (e.g., "vastu-shastra" -> "Vastu Shastra")
+    const convertSlugToCategoryName = (slug) => {
+        if (!slug || slug === 'all') return slug;
+
+        // Handle special case: convert slug format to category name format
+        if (slug.includes('-&-')) {
+            return slug
+                .split('-&-')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                .join(' & ');
+        }
+
+        // Convert hyphenated slug to title case
+        return slug
+            .split('-')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
+    };
+
+    const activeCategory = searchParams.get('category') ||
+        (categoryFromUrl ? convertSlugToCategoryName(categoryFromUrl) : null) ||
+        'all';
+    const searchQuery = searchParams.get('q') || '';
 
     const [sidebarSections, setSidebarSections] = useState([]);
     const [sidebarLatest, setSidebarLatest] = useState([]);
@@ -68,7 +103,7 @@ const Home = ({ activeCategory, searchQuery }) => {
     useEffect(() => {
         const fetchFeaturedBlogs = async () => {
             try {
-                const res = await api.get('/api/blogs/latest');
+                const res = await api.get('/blogs/latest');
                 setFeaturedBlogs(res.data);
             } catch (err) {
                 console.error("Error fetching featured blogs:", err);
@@ -83,7 +118,7 @@ const Home = ({ activeCategory, searchQuery }) => {
     useEffect(() => {
         const buildHomeSidebar = async () => {
             try {
-                const catRes = await api.get('/api/blogs/categories');
+                const catRes = await api.get('/blogs/categories');
                 const categories = Array.isArray(catRes.data) ? catRes.data : [];
                 const preferred = ['Technology', 'Health & Wellness', 'Trends',
                     'Fashion', 'Relationship', 'Travel',
@@ -94,7 +129,7 @@ const Home = ({ activeCategory, searchQuery }) => {
                 const chosen = (preferredPresent.length ? preferredPresent : others).slice(0, 12);
                 const sections = await Promise.all(
                     chosen.map(async (cat) => {
-                        const res = await api.get(`/api/blogs?category=${encodeURIComponent(cat.name_en)}&page=1&limit=2`);
+                        const res = await api.get(`/blogs?category=${encodeURIComponent(cat.name_en)}&page=1&limit=2`);
                         return { title: cat.name_en, items: res.data?.blogs || [] };
                     })
                 );
@@ -107,9 +142,9 @@ const Home = ({ activeCategory, searchQuery }) => {
 
         const buildLatestSidebar = async () => {
             try {
-                let url = '/api/blogs/latest';
+                let url = '/blogs/latest';
                 if (activeCategory && activeCategory.toLowerCase() !== 'all') {
-                    url = `/api/blogs?page=1&limit=5&excludeCategory=${encodeURIComponent(activeCategory)}`;
+                    url = `/blogs?page=1&limit=5&excludeCategory=${encodeURIComponent(activeCategory)}`;
                 }
                 const res = await api.get(url);
                 setSidebarLatest(res.data?.blogs || res.data || []);
@@ -150,7 +185,7 @@ const Home = ({ activeCategory, searchQuery }) => {
 
         try {
             if (!searchQuery && (!activeCategory || activeCategory.toLowerCase() === 'all')) {
-                const res = await api.get('/api/blogs/homepage-feed');
+                const res = await api.get('/blogs/homepage-feed');
                 const { blogs: newBlogs } = res.data;
 
                 setBlogs(newBlogs || []);
@@ -160,9 +195,9 @@ const Home = ({ activeCategory, searchQuery }) => {
             } else {
                 let url = '';
                 if (searchQuery) {
-                    url = `/api/blogs/search?q=${encodeURIComponent(searchQuery)}&page=${pageToLoad}&limit=${INITIAL_PAGE_SIZE}&_t=${Date.now()}`;
+                    url = `/blogs/search?q=${encodeURIComponent(searchQuery)}&page=${pageToLoad}&limit=${INITIAL_PAGE_SIZE}&_t=${Date.now()}`;
                 } else if (activeCategory && activeCategory.toLowerCase() !== 'all') {
-                    url = `/api/blogs?category=${encodeURIComponent(activeCategory)}&page=${pageToLoad}&limit=${INITIAL_PAGE_SIZE}`;
+                    url = `/blogs?category=${encodeURIComponent(activeCategory)}&page=${pageToLoad}&limit=${INITIAL_PAGE_SIZE}`;
                 }
 
                 const res = await api.get(url);
@@ -222,7 +257,7 @@ const Home = ({ activeCategory, searchQuery }) => {
                 canonicalUrl="/"
                 schema={[organizationSchema, websiteSchema]}
             />
-            
+
             <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
                     <div className="lg:col-span-2 space-y-8">
@@ -281,7 +316,7 @@ const Home = ({ activeCategory, searchQuery }) => {
                                         items={sec.items}
                                         onViewMore={() => {
                                             const slug = sec.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-&]/g, '').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
-                                            navigate(`/category/${slug}`);
+                                            router.push(`/category/${slug}`);
                                         }}
                                     />
                                 ))}

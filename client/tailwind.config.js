@@ -5,27 +5,28 @@ const defaultTheme = require('tailwindcss/defaultTheme');
 module.exports = {
     content: [
         "./src/**/*.{js,jsx,ts,tsx}",
+        "./app/**/*.{js,jsx,ts,tsx}",
         "./public/index.html"
     ],
     darkMode: 'class',
     theme: {
         extend: {
             colors: {
-                'light-bg-primary': '#F7F8F9',
-                'light-bg-secondary': '#FFFFFF',
-                'dark-bg-primary': '#1A202C',
-                'dark-bg-secondary': '#2D3748',
-                'text-dark': '#1F2937',
-                'text-light': '#F3F4F6',
-                'text-muted': '#6B7280',
-                'accent': {
-                    DEFAULT: '#10B981',
-                    light: '#34D399',
-                    dark: '#059669',
-                },
-                'border-light': '#E5E7EB',
-                'border-dark': '#4A5568',
-            },
+                 'light-bg-primary': '#ffffff',
+                 'light-bg-secondary': '#f8fafc',
+                 'dark-bg-primary': '#0f0f23',
+                 'dark-bg-secondary': '#1a1a2e',
+                 'text-dark': '#1f2937',
+                 'text-light': '#f8fafc',
+                 'text-muted': '#6b7280',
+                 'accent': {
+                     DEFAULT: '#7c3aed',
+                     light: '#a855f7',
+                     dark: '#5b21b6',
+                 },
+                 'border-light': '#e5e7eb',
+                 'border-dark': '#374151',
+             },
 
             fontFamily: {
                 sans: ['ui-sans-serif', 'system-ui', 'Helvetica', 'Arial', 'sans-serif'],
@@ -49,11 +50,10 @@ module.exports = {
     },
 
     plugins: [
-        require('@tailwindcss/line-clamp'),
         require('tailwind-scrollbar-hide'),
         require('@tailwindcss/typography'),
-        require('@tailwindcss/forms'),     // You might have this
-        require('@tailwindcss/aspect-ratio'), // You might have this
+        require('@tailwindcss/forms'),
+        require('@tailwindcss/aspect-ratio'),
         require('tailwindcss-filters')
     ],
 };

@@ -9,34 +9,36 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.error('MongoDB connection error:', err)); // Added error logging for connection
 
 const seedBlogs = [
-  {
-    title: "Hello World (English)", // Original title field
-    content: "This is the first blog post in English.", // Original content field
-    title_en: "Hello World (English)", // <-- ADDED: English title
-    content_en: "This is the first blog post in English. This content is in English.", // <-- ADDED: English content
-    category: "Technology", // <-- ADDED: A default category
-    image: "https://placehold.co/600x300/666/fff?text=Hello+World+EN", // Updated placeholder for clarity
-    tags: ["welcome", "english", "tutorial"],
-    likes: 0,
-    comments: [],
-    // language: "en", // Removed this, as we now use specific language fields
-  },
-  {
-    title: "नमस्ते दुनिया (Hindi)", // Original title field
-    content: "यह हिंदी में पहला ब्लॉग पोस्ट है।", // Original content field
-    title_hi: "नमस्ते दुनिया (Hindi)", // <-- ADDED: Hindi title
-    content_hi: "यह हिंदी में पहला ब्लॉग पोस्ट है। यह सामग्री हिंदी में है।", // <-- ADDED: Hindi content
-    title_en: "Hello World (Hindi - English Fallback)", // <-- ADDED: English fallback for Hindi blog
-    content_en: "This is the first blog post in Hindi. This content is in Hindi, with an English fallback.", // <-- ADDED: English fallback for Hindi blog
-    category: "Lifestyle", // <-- ADDED: A default category
-    image: "https://placehold.co/600x300/666/fff?text=Hello+World+HI", // Updated placeholder for clarity
-    tags: ["welcome", "hindi", "culture"],
-    likes: 0,
-    comments: [],
-    // language: "hi", // Removed this
-  }
+   {
+     title: "Hello World (English)", // Original title field
+     content: "This is the first blog post in English.", // Original content field
+     title_en: "Hello World (English)", // <-- ADDED: English title
+     content_en: "This is the first blog post in English. This content is in English.", // <-- ADDED: English content
+     category: "Technology", // <-- ADDED: A default category
+     image: "https://placehold.co/600x300/666/fff?text=Hello+World+EN", // Updated placeholder for clarity
+     tags: ["welcome", "english", "tutorial"],
+     likes: 0,
+     comments: [],
+     slug: "hello-world-english",
+     // language: "en", // Removed this, as we now use specific language fields
+   },
+   {
+     title: "नमस्ते दुनिया (Hindi)", // Original title field
+     content: "यह हिंदी में पहला ब्लॉग पोस्ट है।", // Original content field
+     title_hi: "नमस्ते दुनिया (Hindi)", // <-- ADDED: Hindi title
+     content_hi: "यह हिंदी में पहला ब्लॉग पोस्ट है। यह सामग्री हिंदी में है।", // <-- ADDED: Hindi content
+     title_en: "Hello World (Hindi - English Fallback)", // <-- ADDED: English fallback for Hindi blog
+     content_en: "This is the first blog post in Hindi. This content is in Hindi, with an English fallback.", // <-- ADDED: English fallback for Hindi blog
+     category: "Lifestyle", // <-- ADDED: A default category
+     image: "https://placehold.co/600x300/666/fff?text=Hello+World+HI", // Updated placeholder for clarity
+     tags: ["welcome", "hindi", "culture"],
+     likes: 0,
+     comments: [],
+     slug: "namaste-duniya-hindi",
+     // language: "hi", // Removed this
+   }
 
-];
+ ];
  
 const seedAdmin = async () => {
   const hash = await bcrypt.hash('Innvibs@123', 10);
@@ -48,20 +50,32 @@ const seedAdmin = async () => {
 };
 
 async function seed() {
-  try {
+   try {
+     // First find existing admin user or create new one
+     let adminUser = await Admin.findOne({ username: 'Astrox' });
+     if (!adminUser) {
+       adminUser = await Admin.create(await seedAdmin());
+       console.log('Admin user seeded successfully!');
+     } else {
+       console.log('Admin user already exists, using existing admin');
+     }
 
-    await Blog.insertMany(seedBlogs);
-    console.log('Blogs seeded successfully!');
+     // Clear existing blogs and create new ones with the admin's ID
+     await Blog.deleteMany({});
+     const blogsWithAdmin = seedBlogs.map(blog => ({
+       ...blog,
+       createdBy: adminUser._id
+     }));
 
-    await Admin.create(await seedAdmin());  
-    console.log('Admin user seeded successfully!');
+     await Blog.insertMany(blogsWithAdmin);
+     console.log('Blogs seeded successfully!');
 
-    console.log('Seeding complete: blogs and admin are in the database!');
-  } catch (error) {
-    console.error('Error during seeding process:', error);
-  } finally {
-    mongoose.disconnect();
-  }
+     console.log('Seeding complete: blogs and admin are in the database!');
+   } catch (error) {
+     console.error('Error during seeding process:', error);
+   } finally {
+     mongoose.disconnect();
+   }
 }
 
 seed();

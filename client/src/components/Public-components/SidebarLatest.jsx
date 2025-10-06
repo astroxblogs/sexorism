@@ -1,5 +1,7 @@
+'use client'
+
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { getCategoryClasses } from '../../utils/Public-utils/categoryColors';
 import { useTranslation } from 'react-i18next';
 
@@ -52,14 +54,14 @@ const SidebarLatest = ({ title = 'Latest Updates', items = [] }) => {
             <ul>
                 {items.map((blog, idx) => {
                     const categorySlug = blog.category ? slugify(blog.category) : 'uncategorized';
-                    const blogSlug = blog.slug || blog._id;
+                    const blogSlug = blog.slug || blog._id || 'unknown';
                     const blogUrl = `/category/${categorySlug}/${blogSlug}`;
 
                     console.log('DEBUG (SidebarLatest): Rendering blog item:', blog);
 
                     return (
                         <li key={blog._id} className="mb-6 last:mb-0">
-                            <Link to={blogUrl} className="block">
+                            <Link href={blogUrl} className="block">
                                 {blog.image && (
                                     <img
                                         src={blog.image}
@@ -70,7 +72,7 @@ const SidebarLatest = ({ title = 'Latest Updates', items = [] }) => {
                                 )}
                             </Link>
                             <Link
-                                to={blogUrl}
+                                href={blogUrl}
                                 className="mt-3 block font-sans text-[15px] sm:text-base md:text-[17px] leading-relaxed font-medium text-gray-900 dark:text-gray-100 hover:underline line-clamp-3"
                             >
                                 {getLocalized(blog, 'title')}

@@ -1,8 +1,27 @@
-Allow all web crawlers to access all content.
-Using an empty "Disallow" is the most compatible way to say "allow all".
 User-agent: *
-Disallow:
+Allow: /
 
-Specifically and explicitly allow the Facebook crawler to ensure it is not blocked.
+# Block admin and API routes
+Disallow: /admin/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /cms/
+
+# Allow all major search engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
 User-agent: facebookexternalhit
-Disallow:
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+# Sitemap location
+Sitemap: https://innvibs.com/sitemap.xml
+
+# Crawl delay for respectful crawling
+Crawl-delay: 1

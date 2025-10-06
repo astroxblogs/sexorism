@@ -1,0 +1,624 @@
+
+> client@0.1.0 build
+> next build && npm run generate-sitemap
+
+  ▲ Next.js 14.2.33
+  - Environments: .env.production
+  - Experiments (use with caution):
+    · optimizeCss
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/30) ...
+react-i18next:: You will need to pass in an i18next instance by using initReactI18next
+
+Error occurred prerendering page "/Admin-pages/AdminBlogList". Read more: https://nextjs.org/docs/messages/prerender-error
+
+Error: Cannot find module 'critters'
+Require stack:
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\pages.runtime.prod.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\pages\_document.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\load-components.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\build\utils.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\build\worker.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1365:15)
+    at c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1021:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1026:22)
+    at Function._load (node:internal/modules/cjs/loader:1175:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1445:12)
+    at mod.require (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+TypeError: Cannot read properties of undefined (reading 'get')
+    at f (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\pages\Public-pages\SearchResultsPage.js:1:1423)
+    at Wc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:44)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:253)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Xc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:409)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:210)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:481)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at $c (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:78:98)
+
+Error occurred prerendering page "/Public-pages/SearchResultsPage". Read more: https://nextjs.org/docs/messages/prerender-error
+
+TypeError: Cannot read properties of undefined (reading 'get')
+    at f (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\pages\Public-pages\SearchResultsPage.js:1:1423)
+    at Wc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:44)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:253)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Xc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:409)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:210)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:481)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at $c (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:78:98)
+TypeError: Cannot destructure property 'tagName' of '(0 , n.useParams)(...)' as it is null.
+    at u (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\pages\Public-pages\TagPage.js:1:1394)
+    at Wc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:44)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:253)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Xc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:409)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:210)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:481)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at $c (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:78:98)
+
+Error occurred prerendering page "/Public-pages/TagPage". Read more: https://nextjs.org/docs/messages/prerender-error
+
+TypeError: Cannot destructure property 'tagName' of '(0 , n.useParams)(...)' as it is null.
+    at u (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\pages\Public-pages\TagPage.js:1:1394)
+    at Wc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:44)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:253)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Xc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:409)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:210)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:481)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at $c (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:78:98)
+
+Error occurred prerendering page "/Public-pages/ContactUsPage". Read more: https://nextjs.org/docs/messages/prerender-error
+
+Error: Cannot find module 'critters'
+Require stack:
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\pages.runtime.prod.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\pages\_document.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\load-components.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\build\utils.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\build\worker.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1365:15)
+    at c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1021:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1026:22)
+    at Function._load (node:internal/modules/cjs/loader:1175:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1445:12)
+    at mod.require (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+
+Error occurred prerendering page "/Public-pages/NotFound". Read more: https://nextjs.org/docs/messages/prerender-error
+
+Error: Cannot find module 'critters'
+Require stack:
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\pages.runtime.prod.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\pages\_document.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\load-components.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\build\utils.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\build\worker.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1365:15)
+    at c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1021:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1026:22)
+    at Function._load (node:internal/modules/cjs/loader:1175:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1445:12)
+    at mod.require (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+
+Error occurred prerendering page "/Admin-pages/SubscriberManagement". Read more: https://nextjs.org/docs/messages/prerender-error
+
+Error: Cannot find module 'critters'
+Require stack:
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\pages.runtime.prod.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\pages\_document.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\load-components.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\build\utils.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\build\worker.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1365:15)
+    at c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1021:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1026:22)
+    at Function._load (node:internal/modules/cjs/loader:1175:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1445:12)
+    at mod.require (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+
+Error occurred prerendering page "/Public-pages/AboutUsPage". Read more: https://nextjs.org/docs/messages/prerender-error
+
+Error: Cannot find module 'critters'
+Require stack:
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\pages.runtime.prod.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\pages\_document.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\load-components.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\build\utils.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\build\worker.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1365:15)
+    at c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1021:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1026:22)
+    at Function._load (node:internal/modules/cjs/loader:1175:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1445:12)
+    at mod.require (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/terms". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at r (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\7130.js:1:56266)
+    at u (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\7130.js:1:67249)
+    at s (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\503.js:1:1416)
+    at nj (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/terms". Read more: https://nextjs.org/docs/messages/prerender-error
+
+   Generating static pages (7/30) 
+
+Error occurred prerendering page "/Public-pages/BlogDetailPage". Read more: https://nextjs.org/docs/messages/prerender-error
+
+Error: Cannot find module 'critters'
+Require stack:
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\pages.runtime.prod.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\pages\_document.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\load-components.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\build\utils.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\build\worker.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1365:15)
+    at c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1021:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1026:22)
+    at Function._load (node:internal/modules/cjs/loader:1175:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1445:12)
+    at mod.require (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/contact". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at r (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\7130.js:1:56266)
+    at u (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\7130.js:1:67249)
+    at s (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\503.js:1:1416)
+    at nj (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/contact". Read more: https://nextjs.org/docs/messages/prerender-error
+
+
+Error occurred prerendering page "/Public-pages/PrivacyPolicyPage". Read more: https://nextjs.org/docs/messages/prerender-error
+
+Error: Cannot find module 'critters'
+Require stack:
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\pages.runtime.prod.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\pages\_document.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\load-components.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\build\utils.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\build\worker.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1365:15)
+    at c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1021:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1026:22)
+    at Function._load (node:internal/modules/cjs/loader:1175:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1445:12)
+    at mod.require (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+
+Error occurred prerendering page "/Public-pages/TermsOfServicePage". Read more: https://nextjs.org/docs/messages/prerender-error
+
+Error: Cannot find module 'critters'
+Require stack:
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\pages.runtime.prod.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\pages\_document.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\load-components.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\build\utils.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\build\worker.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1365:15)
+    at c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1021:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1026:22)
+    at Function._load (node:internal/modules/cjs/loader:1175:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1445:12)
+    at mod.require (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+react-i18next:: You will need to pass in an i18next instance by using initReactI18next
+
+Error occurred prerendering page "/Admin-pages/Adminsetting". Read more: https://nextjs.org/docs/messages/prerender-error
+
+Error: Cannot find module 'critters'
+Require stack:
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\pages.runtime.prod.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\pages\_document.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\load-components.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\build\utils.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\build\worker.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1365:15)
+    at c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1021:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1026:22)
+    at Function._load (node:internal/modules/cjs/loader:1175:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1445:12)
+    at mod.require (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/cms/admin-dashboard". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at r (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\7130.js:1:56266)
+    at u (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\7130.js:1:67249)
+    at s (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\503.js:1:1416)
+    at nj (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/cms/admin-dashboard". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at r (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\7130.js:1:56266)
+    at u (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\7130.js:1:67249)
+    at s (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\503.js:1:1416)
+    at nj (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/". Read more: https://nextjs.org/docs/messages/prerender-error
+
+   Generating static pages (14/30) 
+
+Error occurred prerendering page "/404". Read more: https://nextjs.org/docs/messages/prerender-error
+
+TypeError: r(...) is not a constructor
+    at c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\pages.runtime.prod.js:14:13131
+    at u (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\pages.runtime.prod.js:14:13382)
+    at async e3 (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\pages.runtime.prod.js:31:7193)
+    at async exportPages (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\export\routes\pages.js:84:28)
+    at async exportPageImpl (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\export\worker.js:206:16)
+    at async Span.traceAsyncFn (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\trace\trace.js:154:20)
+    at async Object.exportPage (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\export\worker.js:237:20)
+react-i18next:: You will need to pass in an i18next instance by using initReactI18next
+
+Error occurred prerendering page "/Admin-pages/Operatormanagement". Read more: https://nextjs.org/docs/messages/prerender-error
+
+Error: Cannot find module 'critters'
+Require stack:
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\pages.runtime.prod.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\pages\_document.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\load-components.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\build\utils.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\build\worker.js
+- c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at Function.<anonymous> (node:internal/modules/cjs/loader:1365:15)
+    at c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1021:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1026:22)
+    at Function._load (node:internal/modules/cjs/loader:1175:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1445:12)
+    at mod.require (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:135:16)
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/cms". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at r (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\7130.js:1:56266)
+    at u (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\7130.js:1:67249)
+    at s (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\503.js:1:1416)
+    at nj (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/cms". Read more: https://nextjs.org/docs/messages/prerender-error
+
+react-i18next:: You will need to pass in an i18next instance by using initReactI18next
+Error: useNavigate() may be used only in the context of a <Router> component.
+    at invariant (file:///c:/Users/Priyanshu/Downloads/Project%20folders/innvibs-blogs/client/node_modules/react-router/dist/development/chunk-NISHYRIK.mjs:188:11)
+    at useNavigateUnstable (file:///c:/Users/Priyanshu/Downloads/Project%20folders/innvibs-blogs/client/node_modules/react-router/dist/development/chunk-NISHYRIK.mjs:5024:3)
+    at useNavigate (file:///c:/Users/Priyanshu/Downloads/Project%20folders/innvibs-blogs/client/node_modules/react-router/dist/development/chunk-NISHYRIK.mjs:5021:46)
+    at c (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\pages\Admin-pages\AdminLogin.js:1:2322)
+    at Wc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:44)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:253)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Xc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:409)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:210)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+
+Error occurred prerendering page "/Admin-pages/AdminLogin". Read more: https://nextjs.org/docs/messages/prerender-error
+
+Error: useNavigate() may be used only in the context of a <Router> component.
+    at invariant (file:///c:/Users/Priyanshu/Downloads/Project%20folders/innvibs-blogs/client/node_modules/react-router/dist/development/chunk-NISHYRIK.mjs:188:11)
+    at useNavigateUnstable (file:///c:/Users/Priyanshu/Downloads/Project%20folders/innvibs-blogs/client/node_modules/react-router/dist/development/chunk-NISHYRIK.mjs:5024:3)
+    at useNavigate (file:///c:/Users/Priyanshu/Downloads/Project%20folders/innvibs-blogs/client/node_modules/react-router/dist/development/chunk-NISHYRIK.mjs:5021:46)
+    at c (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\pages\Admin-pages\AdminLogin.js:1:2322)
+    at Wc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:44)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:253)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Xc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:409)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:210)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/privacy". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at r (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\7130.js:1:56266)
+    at u (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\7130.js:1:67249)
+    at s (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\503.js:1:1416)
+    at nj (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/privacy". Read more: https://nextjs.org/docs/messages/prerender-error
+
+
+Error occurred prerendering page "/Admin-pages/CategoryManager". Read more: https://nextjs.org/docs/messages/prerender-error
+
+TypeError: r(...) is not a constructor
+    at c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\pages.runtime.prod.js:14:13131
+    at u (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\pages.runtime.prod.js:14:13382)
+    at async e3 (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\pages.runtime.prod.js:31:7193)
+    at async exportPages (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\export\routes\pages.js:84:28)
+    at async exportPageImpl (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\export\worker.js:206:16)
+    at async Span.traceAsyncFn (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\trace\trace.js:154:20)
+    at async Object.exportPage (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\export\worker.js:237:20)
+
+Error occurred prerendering page "/500". Read more: https://nextjs.org/docs/messages/prerender-error
+
+TypeError: r(...) is not a constructor
+    at c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\pages.runtime.prod.js:14:13131
+    at u (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\pages.runtime.prod.js:14:13382)
+    at async e3 (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\pages.runtime.prod.js:31:7193)
+    at async exportPages (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\export\routes\pages.js:84:28)
+    at async exportPageImpl (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\export\worker.js:206:16)
+    at async Span.traceAsyncFn (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\trace\trace.js:154:20)
+    at async Object.exportPage (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\export\worker.js:237:20)
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/about". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at r (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\7130.js:1:56266)
+    at u (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\7130.js:1:67249)
+    at s (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\503.js:1:1416)
+    at nj (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/about". Read more: https://nextjs.org/docs/messages/prerender-error
+
+   Generating static pages (22/30) 
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/search". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at r (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\7130.js:1:56266)
+    at u (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\7130.js:1:67249)
+    at s (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\503.js:1:1416)
+    at nj (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/search". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/404". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at r (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\7130.js:1:56266)
+    at u (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\7130.js:1:67249)
+    at s (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\503.js:1:1416)
+    at nj (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/_not-found". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/cms/login". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at r (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\7130.js:1:56266)
+    at u (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\7130.js:1:67249)
+    at s (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\503.js:1:1416)
+    at nj (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nN (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nN (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/cms/login". Read more: https://nextjs.org/docs/messages/prerender-error
+
+Error: useNavigate() may be used only in the context of a <Router> component.
+    at invariant (file:///c:/Users/Priyanshu/Downloads/Project%20folders/innvibs-blogs/client/node_modules/react-router/dist/development/chunk-NISHYRIK.mjs:188:11)
+    at useNavigateUnstable (file:///c:/Users/Priyanshu/Downloads/Project%20folders/innvibs-blogs/client/node_modules/react-router/dist/development/chunk-NISHYRIK.mjs:5024:3)
+    at useNavigate (file:///c:/Users/Priyanshu/Downloads/Project%20folders/innvibs-blogs/client/node_modules/react-router/dist/development/chunk-NISHYRIK.mjs:5021:46)
+    at N (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\pages\Admin-pages\OperatorDashboard.js:1:28067)
+    at Wc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:44)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:253)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Xc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:409)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:210)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+
+Error occurred prerendering page "/Admin-pages/OperatorDashboard". Read more: https://nextjs.org/docs/messages/prerender-error
+
+Error: useNavigate() may be used only in the context of a <Router> component.
+    at invariant (file:///c:/Users/Priyanshu/Downloads/Project%20folders/innvibs-blogs/client/node_modules/react-router/dist/development/chunk-NISHYRIK.mjs:188:11)
+    at useNavigateUnstable (file:///c:/Users/Priyanshu/Downloads/Project%20folders/innvibs-blogs/client/node_modules/react-router/dist/development/chunk-NISHYRIK.mjs:5024:3)
+    at useNavigate (file:///c:/Users/Priyanshu/Downloads/Project%20folders/innvibs-blogs/client/node_modules/react-router/dist/development/chunk-NISHYRIK.mjs:5021:46)
+    at N (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\pages\Admin-pages\OperatorDashboard.js:1:28067)
+    at Wc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:44)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:253)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Xc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:409)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:210)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+react-i18next:: You will need to pass in an i18next instance by using initReactI18next
+Error: useNavigate() may be used only in the context of a <Router> component.
+    at invariant (file:///c:/Users/Priyanshu/Downloads/Project%20folders/innvibs-blogs/client/node_modules/react-router/dist/development/chunk-NISHYRIK.mjs:188:11)
+    at useNavigateUnstable (file:///c:/Users/Priyanshu/Downloads/Project%20folders/innvibs-blogs/client/node_modules/react-router/dist/development/chunk-NISHYRIK.mjs:5024:3)
+    at useNavigate (file:///c:/Users/Priyanshu/Downloads/Project%20folders/innvibs-blogs/client/node_modules/react-router/dist/development/chunk-NISHYRIK.mjs:5021:46)
+    at u (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\pages\Admin-pages\AdminDashboard.js:1:5423)
+    at Wc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:44)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:253)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Xc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:409)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:210)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+
+Error occurred prerendering page "/Admin-pages/AdminDashboard". Read more: https://nextjs.org/docs/messages/prerender-error
+
+Error: useNavigate() may be used only in the context of a <Router> component.
+    at invariant (file:///c:/Users/Priyanshu/Downloads/Project%20folders/innvibs-blogs/client/node_modules/react-router/dist/development/chunk-NISHYRIK.mjs:188:11)
+    at useNavigateUnstable (file:///c:/Users/Priyanshu/Downloads/Project%20folders/innvibs-blogs/client/node_modules/react-router/dist/development/chunk-NISHYRIK.mjs:5024:3)
+    at useNavigate (file:///c:/Users/Priyanshu/Downloads/Project%20folders/innvibs-blogs/client/node_modules/react-router/dist/development/chunk-NISHYRIK.mjs:5021:46)
+    at u (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\pages\Admin-pages\AdminDashboard.js:1:5423)
+    at Wc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:44)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:253)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Xc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:409)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:210)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+react-i18next:: You will need to pass in an i18next instance by using initReactI18next
+TypeError: Cannot destructure property 'blogs' of '(0 , p.U)(...)' as it is undefined.
+    at y (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\5663.js:1:13299)
+    at Wc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:44)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:253)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Xc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:409)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:210)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:481)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at $c (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:78:98)
+
+Error occurred prerendering page "/Public-pages/Home". Read more: https://nextjs.org/docs/messages/prerender-error
+
+TypeError: Cannot destructure property 'blogs' of '(0 , p.U)(...)' as it is undefined.
+    at y (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\chunks\5663.js:1:13299)
+    at Wc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:44)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:253)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Xc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:409)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:210)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:481)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at $c (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:78:98)
+TypeError: Cannot destructure property 'categoryName' of '(0 , i.useParams)(...)' as it is null.
+    at g (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\pages\Public-pages\CategoryPage.js:1:1349)
+    at Wc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:44)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:253)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Xc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:409)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:210)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:481)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at $c (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:78:98)
+
+Error occurred prerendering page "/Public-pages/CategoryPage". Read more: https://nextjs.org/docs/messages/prerender-error
+
+TypeError: Cannot destructure property 'categoryName' of '(0 , i.useParams)(...)' as it is null.
+    at g (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\.next\server\pages\Public-pages\CategoryPage.js:1:1349)
+    at Wc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:44)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:253)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Xc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:68:409)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:210)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at Zc (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:70:481)
+    at Z (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:76:89)
+    at $c (c:\Users\Priyanshu\Downloads\Project folders\innvibs-blogs\client\node_modules\react-dom\cjs\react-dom-server.browser.production.min.js:78:98)
+ ✓ Generating static pages (30/30)
+
+> Export encountered errors on following paths:
+	/(admin)/cms/admin-dashboard/page: /cms/admin-dashboard
+	/(admin)/cms/login/page: /cms/login
+	/(admin)/cms/page: /cms
+	/Admin-pages/AdminBlogList
+	/Admin-pages/AdminDashboard
+	/Admin-pages/AdminLogin
+	/Admin-pages/Adminsetting
+	/Admin-pages/CategoryManager
+	/Admin-pages/OperatorDashboard
+	/Admin-pages/Operatormanagement
+	/Admin-pages/SubscriberManagement
+	/Public-pages/AboutUsPage
+	/Public-pages/BlogDetailPage
+	/Public-pages/CategoryPage
+	/Public-pages/ContactUsPage
+	/Public-pages/Home
+	/Public-pages/NotFound
+	/Public-pages/PrivacyPolicyPage
+	/Public-pages/SearchResultsPage
+	/Public-pages/TagPage
+	/Public-pages/TermsOfServicePage
+	/_error: /404
+	/_error: /500
+	/_not-found/page: /_not-found
+	/about/page: /about
+	/contact/page: /contact
+	/page: /
+	/privacy/page: /privacy
+	/search/page: /search
+	/terms/page: /terms

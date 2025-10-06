@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import api from '../../services/Admin-service/api';
 import { setAuthToken } from '../../utils/Admin-utils/localStorage';
@@ -9,13 +9,13 @@ const AdminLogin = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const navigate = useNavigate();
+    const router = useRouter();
 
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
         try {
-            const res = await api.post('/api/admin/login', { username, password });
+            const res = await api.post('/admin/login', { username, password });
 
             // --- THE FIX ---
             // Changed from res.data?.token to res.data?.accessToken to match the server response
@@ -39,9 +39,9 @@ const AdminLogin = () => {
 
             const resolvedRole = res.data?.role;
             if (resolvedRole === 'operator') {
-                navigate('/cms/operator-dashboard');
+                router.push('/cms/admin-dashboard'); // Use Next.js admin dashboard for now
             } else if (resolvedRole === 'admin') {
-                navigate('/cms/admin-dashboard');
+                router.push('/cms/admin-dashboard');
             } else {
                 setError(t('loginSuccessfulButNoRole'));
             }

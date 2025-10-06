@@ -1,5 +1,7 @@
+'use client'
+
 import React from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 
 const slugify = (text) => {
@@ -45,13 +47,13 @@ const SidebarSection = ({ title, items = [], onViewMore }) => {
             <ul className="space-y-4">
                 {items.map((blog) => {
                     const categorySlug = blog.category ? slugify(blog.category) : 'uncategorized';
-                    const blogSlug = blog.slug || blog._id;
+                    const blogSlug = blog.slug || blog._id || 'unknown';
                     const blogUrl = `/category/${categorySlug}/${blogSlug}`;
 
                     return (
                         <li key={blog._id} className="flex gap-3 items-start">
                             {blog.image && (
-                                <Link to={blogUrl} className="flex-shrink-0">
+                                <Link href={blogUrl} className="flex-shrink-0">
                                     <img
                                         src={blog.image}
                                         alt={getLocalized(blog, 'title')}
@@ -61,7 +63,7 @@ const SidebarSection = ({ title, items = [], onViewMore }) => {
                                 </Link>
                             )}
                             <Link
-                                to={blogUrl}
+                                href={blogUrl}
                                 className="text-sm text-gray-800 dark:text-gray-200 leading-snug line-clamp-2 hover:underline"
                             >
                                 {getLocalized(blog, 'title')}

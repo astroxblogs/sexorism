@@ -46,11 +46,11 @@ const BlogList = ({ blogs, loadingMore, hasMore, onLoadMore, totalBlogsCount, on
                         return (
                             <div key={blog._id} ref={isLast ? observerRef : null}>
                                 {/* ✅ STEP 3: Pass the visitorId down to each BlogCard */}
-                                <BlogCard 
-                                    blog={blog} 
-                                    onLikeUpdate={onLikeUpdate} 
-                                    searchQuery={searchQuery} 
-                                    visitorId={visitorId} 
+                                <BlogCard
+                                    blog={blog}
+                                    onLikeUpdate={onLikeUpdate}
+                                    searchQuery={searchQuery}
+                                    visitorId={visitorId}
                                 />
                             </div>
                         );
@@ -58,7 +58,7 @@ const BlogList = ({ blogs, loadingMore, hasMore, onLoadMore, totalBlogsCount, on
                 </div>
             ) : (
                 <p className="text-center text-gray-500 mt-10">
-                    {loadingMore ? t('loading blogs....') : t('Sorry no blogs found')}
+                    {loadingMore ? t('general.loading_blogs') : t('general.no_blogs')}
                 </p>
             )}
 

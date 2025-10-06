@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useShare } from "../../context/ShareContext";
 import { Copy } from "lucide-react";

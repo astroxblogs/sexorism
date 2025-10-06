@@ -1,9 +1,17 @@
+'use client'
+
 import React, { useEffect, useState, useRef, useCallback } from 'react';
+import dynamic from 'next/dynamic';
+
+// Dynamically import QuillEditor to avoid SSR issues
+const QuillEditor = dynamic(() => import('./QuillEditor').then(mod => ({ default: mod.QuillEditor })), {
+    ssr: false,
+    loading: () => <div className="h-96 bg-gray-100 animate-pulse rounded-md"></div>
+});
 import { useForm } from 'react-hook-form';
 import api from '../../services/Admin-service/api';
 import 'react-quill/dist/quill.snow.css';
 
-import { QuillEditor } from './QuillEditor';
 import { LinkDialog } from './LinkDialog';
 
 const LANGUAGES = [
@@ -36,7 +44,7 @@ const AdminBlogForm = ({ blog, onSave, onCancel }) => {
         const fetchCategories = async () => {
             try {
                 setLoadingCategories(true);
-                const response = await api.get('/api/admin/categories');
+                const response = await api.get('/admin/categories');
                 setCategories(response.data);
                 setLoadingCategories(false);
             } catch (error) {
@@ -115,7 +123,7 @@ const AdminBlogForm = ({ blog, onSave, onCancel }) => {
         const formData = new FormData();
         formData.append('image', selectedFile);
         try {
-            const res = await api.post('/api/admin/blogs/upload-image', formData, {
+            const res = await api.post('/admin/blogs/upload-image', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
             setValue('image', res.data.imageUrl);
@@ -181,8 +189,8 @@ const AdminBlogForm = ({ blog, onSave, onCancel }) => {
         
         try {
             const res = blog
-                ? await api.put(`/api/admin/blogs/${blog._id}`, payload)
-                : await api.post('/api/admin/blogs', payload);
+                ? await api.put(`/admin/blogs/${blog._id}`, payload)
+                : await api.post('/admin/blogs', payload);
             onSave(res.data);
             reset();
             const clearedContents = {};
@@ -283,11 +291,11 @@ const AdminBlogForm = ({ blog, onSave, onCancel }) => {
                                     <input
                                         id={`metaTitle_${lang.code}`}
                                         {...register(`metaTitle_${lang.code}`)}
-                                        placeholder="An SEO-friendly title for search engine results (around 60 characters)."
+                                        placeholder="An SEO-friendly title for search engine results (around 120 characters)."
                                         className="mt-1 border border-gray-300 dark:border-gray-700 p-2 rounded w-full text-gray-900 dark:text-white bg-white dark:bg-gray-700"
                                     />
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                        Character count: {watchedMetaTitle?.length || 0} / 60
+                                        Character count: {watchedMetaTitle?.length || 0} / 120
                                     </p>
                                 </div>
                                 <div>
@@ -295,12 +303,12 @@ const AdminBlogForm = ({ blog, onSave, onCancel }) => {
                                     <textarea
                                         id={`metaDescription_${lang.code}`}
                                         {...register(`metaDescription_${lang.code}`)}
-                                        placeholder="A compelling description for search engine results (around 160 characters)."
+                                        placeholder="A compelling description for search engine results (around 500 characters)."
                                         rows="4"
                                         className="mt-1 border border-gray-300 dark:border-gray-700 p-2 rounded w-full text-gray-900 dark:text-white bg-white dark:bg-gray-700"
                                     />
                                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                        Character count: {watchedMetaDescription?.length || 0} / 160
+                                        Character count: {watchedMetaDescription?.length || 0} / 500
                                     </p>
                                 </div>
                             </div>

@@ -1,11 +1,27 @@
+'use client';
+
 import React from 'react';
-// Make sure this path is correct based on your file structure
+import { useParams } from 'next/navigation';
 import BlogDetail from '../../components/Public-components/BlogFiles/BlogDetail';
+import useBlogData from '../../hooks/useBlogData';
 
 const BlogDetailPage = () => {
-    // This page component's only job is to render the BlogDetail container.
-    // BlogDetail will now handle everything else itself.
-    return <BlogDetail />;
+    const params = useParams();
+    const categoryName = params?.categoryName;
+    const blogSlug = params?.blogSlug;
+
+    // Use the hook to fetch blog data based on URL params
+    const { blog, loading, error } = useBlogData(categoryName, blogSlug);
+
+    if (loading) {
+        return <div className="text-center py-20 dark:text-gray-200">Loading blog...</div>;
+    }
+
+    if (error) {
+        return <div className="text-center py-20 text-red-500">{error}</div>;
+    }
+
+    return <BlogDetail blog={blog} />;
 };
 
 export default BlogDetailPage;

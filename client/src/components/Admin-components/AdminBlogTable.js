@@ -10,7 +10,9 @@ const AdminBlogTable = ({ blogs, onEdit, onDelete, onUpdateDate, startIndex = 0 
   const validBlogs = blogs ? blogs.filter((blog) => blog) : [];
 
   const handleConfirmDelete = (id) => {
-    onDelete(id);
+    if (onDelete) {
+      onDelete(id);
+    }
     setDeleteId(null);
   };
 
@@ -25,7 +27,7 @@ const AdminBlogTable = ({ blogs, onEdit, onDelete, onUpdateDate, startIndex = 0 
       return;
     }
 
-    if (newDate) {
+    if (newDate && onUpdateDate) {
       onUpdateDate(blogId, newDate);
     }
     setEditingDateId(null);

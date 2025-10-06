@@ -95,7 +95,7 @@ const FeaturedBlogCarousel = ({ blogs }) => {
                             {currentBlog.tags.map(tag => (
                                 <Link
                                     key={tag}
-                                    to={`/tag/${encodeURIComponent(tag.toLowerCase())}`}
+                                    href={`/tag/${encodeURIComponent(tag.toLowerCase())}`}
                                     className="bg-gray-700 px-2 py-0.5 rounded-full text-xs hover:bg-blue-600 hover:text-white transition-colors cursor-pointer"
                                 >
                                     #{tag}

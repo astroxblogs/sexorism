@@ -1,5 +1,4 @@
-// FILE: client/src/Admin-App/App.js
-// console.log("Admin App Loaded");
+
 import React, { useState, useEffect, useCallback } from 'react';
 // BrowserRouter is REMOVED. The main index.js now provides the router.
 import { Routes, Route, useNavigate } from 'react-router-dom';
@@ -30,7 +29,7 @@ const PrivateRoute = ({ children, requireRole }) => {
         }
 
         try {
-            const response = await api.get('/api/admin/verify-token');
+            const response = await api.get('/admin/verify-token');
             if (response.status === 200) {
                 const userRole = response.data?.role;
                 if (!requireRole || userRole === 'admin' || userRole === requireRole) {

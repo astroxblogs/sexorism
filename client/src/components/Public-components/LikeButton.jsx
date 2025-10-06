@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState, useEffect } from 'react';
 import { ThumbsUp } from 'lucide-react';
 import { likePost, unlikePost } from '../../services/Public-service/api';

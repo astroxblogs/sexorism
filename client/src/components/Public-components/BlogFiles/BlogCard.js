@@ -1,5 +1,7 @@
+'use client'
+
 import React, { useEffect } from "react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 // import { marked } from "marked";
 import LikeButton from '../LikeButton.jsx';
 import { MessageSquare, Eye } from "lucide-react";
@@ -28,13 +30,14 @@ const BlogCard = ({ blog, onLikeUpdate, searchQuery, visitorId }) => {
     }, [blog, setInitialShareCount]);
 
     const getLocalizedField = (field) => {
-        const localizedField = blog[`${field}_${currentLang}`];
-        // Check for non-empty string for content fields
-        if (localizedField && localizedField.trim() !== '') return localizedField;
-
+        // Always prioritize English fields first for consistent display
         const englishField = blog[`${field}_en`];
         if (englishField && englishField.trim() !== '') return englishField;
-        
+
+        // Then check current language (for non-English content)
+        const localizedField = blog[`${field}_${currentLang}`];
+        if (localizedField && localizedField.trim() !== '') return localizedField;
+
         // Fallback for older single-language fields
         return blog[field] || "";
     };
@@ -85,22 +88,23 @@ const BlogCard = ({ blog, onLikeUpdate, searchQuery, visitorId }) => {
 
     return (
         <div className="flex flex-col sm:flex-row items-stretch bg-white dark:bg-gray-900 rounded-xl shadow-sm hover:shadow transition overflow-visible w-full">
-            {blog.image && (
-                <Link
-                    to={blogUrl}
-                    className="w-full aspect-[16/9] sm:w-40 md:w-48 sm:aspect-auto sm:self-stretch flex-shrink-0 overflow-hidden group"
-                >
-                    <img
-                        src={blog.image}
-                        alt={displayTitle}
-                        className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110"
-                        loading="lazy"
-                    />
-                </Link>
-            )}
-            
+            <Link
+                href={blogUrl}
+                className="w-full aspect-[16/9] sm:w-40 md:w-48 sm:aspect-auto sm:self-stretch flex-shrink-0 overflow-hidden group"
+            >
+                <img
+                    src={blog.image || "https://res.cloudinary.com/dsoeem7bp/image/upload/v1757753276/astroxhub_blog_images/default.webp"}
+                    alt={displayTitle}
+                    className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110"
+                    loading="lazy"
+                    onError={(e) => {
+                        e.target.src = "https://res.cloudinary.com/dsoeem7bp/image/upload/v1757753276/astroxhub_blog_images/default.webp";
+                    }}
+                />
+            </Link>
+
             <div className="flex-1 p-3 sm:p-4 flex flex-col min-w-0">
-                
+
                 <div className="flex-1 overflow-hidden">
                     <div className="flex items-center gap-2 flex-wrap text-[11px] text-gray-500 mb-1">
                         {blog.category && (
@@ -120,7 +124,7 @@ const BlogCard = ({ blog, onLikeUpdate, searchQuery, visitorId }) => {
                         </span>
                     </div>
 
-                    <Link to={blogUrl} className="block">
+                    <Link href={blogUrl} className="block">
                         <h2
                             className="text-sm sm:text-lg md:text-xl font-semibold leading-snug text-gray-900 dark:text-gray-100 hover:underline line-clamp-2"
                             dangerouslySetInnerHTML={{
@@ -134,7 +138,7 @@ const BlogCard = ({ blog, onLikeUpdate, searchQuery, visitorId }) => {
                             {blog.tags.slice(0, 3).map((tag) => (
                                 <Link
                                     key={tag}
-                                    to={`/tag/${tagSlugify(tag)}`}
+                                    href={`/tag/${tagSlugify(tag)}`}
                                     className="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
                                 >
                                     #{tag}
@@ -142,7 +146,7 @@ const BlogCard = ({ blog, onLikeUpdate, searchQuery, visitorId }) => {
                             ))}
                         </div>
                     )}
-                    
+
                     {/* ✅ FIX: Use the new 'summary' variable here */}
                     <p
                         className="mt-1.5 text-sm text-gray-600 dark:text-gray-400 line-clamp-2 break-words"
@@ -160,7 +164,7 @@ const BlogCard = ({ blog, onLikeUpdate, searchQuery, visitorId }) => {
                         visitorId={visitorId}
                     />
                     <Link
-                        to={`${blogUrl}#comments`}
+                        href={`${blogUrl}#comments`}
                         className="flex items-center gap-1.5 hover:text-gray-900 dark:hover:text-white"
                     >
                         <MessageSquare size={14} />

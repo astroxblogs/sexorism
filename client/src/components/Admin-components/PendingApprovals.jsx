@@ -12,7 +12,7 @@ const PendingApprovals = ({ onApprovedOrRejected, onEdit }) => { // ✅ 1. Accep
     const fetchPending = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await api.get('/api/admin/blogs/pending?limit=100');
+            const res = await api.get('/admin/blogs/pending?limit=100');
             setBlogs(res.data?.blogs || []);
             setError('');
         } catch (e) {
@@ -28,10 +28,10 @@ const PendingApprovals = ({ onApprovedOrRejected, onEdit }) => { // ✅ 1. Accep
     const handleAction = async (id, action) => {
         try {
             if (action === 'approve') {
-                await api.post(`/api/admin/blogs/${id}/approve`);
+                await api.post(`/admin/blogs/${id}/approve`);
                 toast.success('Blog has been approved!');
             } else {
-                await api.post(`/api/admin/blogs/${id}/reject`);
+                await api.post(`/admin/blogs/${id}/reject`);
                 toast.error('Blog has been rejected.');
             }
             // Update the UI optimistically and notify the dashboard to refresh the count

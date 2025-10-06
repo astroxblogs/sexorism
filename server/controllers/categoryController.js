@@ -14,7 +14,35 @@ exports.getCategories = async (req, res) => {
 // ✅ NEW FUNCTION: Get a single category by its slug
 exports.getCategoryBySlug = async (req, res) => {
     try {
-        const category = await Category.findOne({ slug: req.params.slug });
+        // URL decode the slug parameter (robust decoding for multiple levels)
+        let decodedSlug = req.params.slug;
+        try {
+            // Keep decoding until no % characters remain
+            while (decodedSlug && decodedSlug.includes('%')) {
+                decodedSlug = decodeURIComponent(decodedSlug);
+            }
+        } catch (e) {
+            decodedSlug = req.params.slug;
+        }
+
+        // Find category by slug with flexible matching
+        let category = await Category.findOne({ slug: decodedSlug });
+
+        // If not found by slug, try case-insensitive name matching
+        if (!category) {
+            // Handle special case: convert slug format to category name format
+            let categoryNameToMatch = decodedSlug;
+            if (decodedSlug.includes('-&-')) {
+                categoryNameToMatch = decodedSlug
+                    .split('-&-')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                    .join(' & ');
+            }
+
+            category = await Category.findOne({
+                name_en: { $regex: new RegExp(`^${categoryNameToMatch}$`, 'i') }
+            });
+        }
         if (!category) {
             return res.status(404).json({ message: 'Category not found' });
         }

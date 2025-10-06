@@ -1,9 +1,8 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 // --- THE FINAL FIX: Reverted to a default import for AdminBlogTable ---
 import { AdminBlogTable } from '../../components/Admin-components/AdminBlogTable';
 
-import api from '../../services/Admin-service/api'; 
+import api from '../../services/Admin-service/api';
 
 import { useTranslation } from 'react-i18next';
 
@@ -17,7 +16,6 @@ const AdminBlogList = ({ onEdit }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [userRole, setUserRole] = useState('');
-    const navigate = useNavigate();
 
     useEffect(() => {
         let role = '';
@@ -30,15 +28,15 @@ const AdminBlogList = ({ onEdit }) => {
             console.error('Could not retrieve user role from session storage:', e);
         }
 
+        // Role-based access control (no navigation needed in Next.js)
         if (role === 'operator') {
-            navigate('/admin-dashboard');
-            return;
+            return; // Component will show redirect message
         }
 
         const controller = new AbortController();
         setLoading(true);
-        
-        api.get('/api/blogs', { params: { limit: 500 }, signal: controller.signal })
+
+        api.get('/admin/blogs', { params: { limit: 500 }, signal: controller.signal })
             .then(res => {
                 const sortedBlogs = res.data.blogs.sort((a, b) => new Date(b.date) - new Date(a.date));
                 setAllBlogs(sortedBlogs || []);
@@ -55,7 +53,7 @@ const AdminBlogList = ({ onEdit }) => {
             });
 
         return () => controller.abort();
-    }, [navigate]);
+    }, []);
 
     const filteredBlogs = useMemo(() => {
         if (!searchQuery) {
@@ -80,7 +78,7 @@ const AdminBlogList = ({ onEdit }) => {
         const originalBlogs = [...allBlogs];
         setAllBlogs(currentBlogs => currentBlogs.filter(b => b._id !== id));
         try {
-            await api.delete(`/api/admin/blogs/${id}`);
+            await api.delete(`/admin/blogs/${id}`);
         } catch (err) {
             console.error('Error deleting blog:', err.response?.data || err.message);
             alert(`${t('admin_panel.delete_error_message')}: ${err.response?.data?.error || err.message}`);
@@ -90,7 +88,7 @@ const AdminBlogList = ({ onEdit }) => {
 
     const handleUpdateDate = async (blogId, newDate) => {
         try {
-            const response = await api.put(`/api/admin/blogs/${blogId}/date`, { date: newDate });
+            const response = await api.put(`/admin/blogs/${blogId}/date`, { date: newDate });
             const updatedBlog = response.data.blog;
 
             setAllBlogs(currentBlogs => {

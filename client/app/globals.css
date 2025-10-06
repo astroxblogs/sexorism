@@ -1,0 +1,245 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light mode colors */
+    --color-bg-primary: #ffffff;
+    --color-bg-secondary: #f8fafc;
+    --color-text-primary: #1f2937;
+    --color-text-secondary: #6b7280;
+    --color-accent: #7c3aed;
+    --color-border: #e5e7eb;
+  }
+
+  .dark {
+    /* Dark mode colors */
+    --color-bg-primary: #0f0f23;
+    --color-bg-secondary: #1a1a2e;
+    --color-text-primary: #f8fafc;
+    --color-text-secondary: #cbd5e1;
+    --color-accent: #a855f7;
+    --color-border: #374151;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-gray-200 dark:border-gray-700;
+  }
+
+  body {
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  .dark body {
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+  }
+}
+
+@layer utilities {
+  .bg-light-bg-primary { background-color: var(--color-bg-primary); }
+  .bg-light-bg-secondary { background-color: var(--color-bg-secondary); }
+  .bg-dark-bg-primary { background-color: var(--color-bg-primary); }
+  .bg-dark-bg-secondary { background-color: var(--color-bg-secondary); }
+
+  .text-light-text-primary { color: var(--color-text-primary); }
+  .text-light-text-secondary { color: var(--color-text-secondary); }
+  .text-dark-text-primary { color: var(--color-text-primary); }
+  .text-dark-text-secondary { color: var(--color-text-secondary); }
+
+  .border-light-border { border-color: var(--color-border); }
+  .border-dark-border { border-color: var(--color-border); }
+
+  /* Dark mode utilities */
+  .dark .bg-light-bg-primary { background-color: var(--color-bg-primary); }
+  .dark .bg-light-bg-secondary { background-color: var(--color-bg-secondary); }
+  .dark .bg-dark-bg-primary { background-color: var(--color-bg-primary); }
+  .dark .bg-dark-bg-secondary { background-color: var(--color-bg-secondary); }
+
+  .dark .text-light-text-primary { color: var(--color-text-primary); }
+  .dark .text-light-text-secondary { color: var(--color-text-secondary); }
+  .dark .text-dark-text-primary { color: var(--color-text-primary); }
+  .dark .text-dark-text-secondary { color: var(--color-text-secondary); }
+
+  .dark .border-light-border { border-color: var(--color-border); }
+  .dark .border-dark-border { border-color: var(--color-border); }
+}
+
+.goog-te-banner-frame.skiptranslate,
+.goog-te-balloon-frame,
+.goog-logo-link,
+.goog-te-gadget span {
+    display: none !important;
+}
+
+body {
+    top: 0px !important;
+
+}
+
+#google_translate_element {
+    display: none !important;
+}
+
+#language_selector {
+    display: none;
+    position: fixed;
+    top: 58px;
+    right: 16px;
+    z-index: 1000;
+    padding: 0.4rem;
+    border-radius: 6px;
+    background: white;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+#main-outer-component {
+    display: flex;
+    padding-left: 50px;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* === FIX FOR REACT-DRAFT-WYSIWYG EDITOR TOOLBAR === */
+/* === FORCEFUL FIX FOR REACT-DRAFT-WYSIWYG TOOLBAR === */
+.rdw-editor-wrapper .rdw-dropdown-wrapper {
+    /* This ensures the dropdown can position its children absolutely */
+    position: relative;
+}
+
+.rdw-editor-wrapper .rdw-dropdown-optionwrapper {
+    position: absolute !important;
+    /* Force absolute positioning */
+    background: white !important;
+    border: 1px solid #ccc !important;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2) !important;
+    z-index: 100 !important;
+    /* Force it to be on top of everything */
+    display: block !important;
+    /* Force it to be visible */
+    padding: 5px;
+}
+
+.rdw-image-modal {
+    position: absolute !important;
+    background: white !important;
+    border: 1px solid #ccc !important;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2) !important;
+    z-index: 100 !important;
+    display: block !important;
+    padding: 20px;
+}
+
+.rdw-fontfamily-dropdown,
+.rdw-fontsize-dropdown {
+    color: #333 !important;
+}
+/* Custom styles for Admin Blog Form Quill Editor */
+.admin-quill-editor {
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.admin-quill-editor .ql-container {
+    border: 1px solid #d1d5db;
+    border-top: none;
+    border-bottom-left-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+    min-height: 200px;
+    max-height: 400px;
+    /* Keeping max-height for container at 400px, adjust if content still doesn't scroll */
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-quill-editor .ql-editor {
+    flex-grow: 1;
+    min-height: 150px;
+    /* NEW: Aggressively set max-height to force overflow and ensure padding for scrollbar */
+    max-height: 350px;
+    /* Forcing a smaller max-height to ensure content overflows, adjust later if needed */
+    overflow-y: auto;
+    padding-bottom: 50px;
+    /* Ensure padding on all sides within the editor */
+    padding-left: 15px;
+    /* Default Quill padding */
+    padding-right: 15px;
+    /* Default Quill padding */
+    padding-top: 10px;
+    /* Default Quill padding */
+}
+
+/* NEW: Make scrollbar extremely visible for debugging */
+.admin-quill-editor .ql-editor::-webkit-scrollbar {
+    width: 15px;
+    /* Make it very wide */
+    background: gray;
+    /* Make track yellow */
+}
+
+.admin-quill-editor .ql-editor::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+    border: 1px solid gray;
+    /* Add a red border to the track */
+}
+
+.dark .admin-quill-editor .ql-editor::-webkit-scrollbar-track {
+    background: #374151;
+    border: 1px solid gray;
+    /* Add a red border to the track in dark mode */
+}
+
+.admin-quill-editor .ql-editor::-webkit-scrollbar-thumb {
+    background:gray;
+    /* Make thumb bright red */
+    border-radius: 10px;
+    border: 2px solid black;
+    /* Add yellow border to thumb */
+}
+
+.dark .admin-quill-editor .ql-editor::-webkit-scrollbar-thumb {
+    background: #ff0000;
+    /* Make thumb brigh
+    t red in dark mode */
+    border: 2px solid gray;
+    /* Add yellow border to thumb in dark mode */
+}
+
+
+
+
+/* Ensure the toolbar doesn't scroll with content */
+.admin-quill-editor .ql-toolbar {
+    z-index: 1;
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+}
+
+
+
+.blog-post-content a {
+  color: #2563eb; /* A standard, catchy blue */
+  text-decoration: underline;
+  font-weight: 500; /* Makes the link text slightly bolder */
+}
+
+
+
+
+
+
+
+

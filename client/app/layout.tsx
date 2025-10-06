@@ -1,0 +1,187 @@
+import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import { headers } from 'next/headers'
+import './globals.css'
+import { Providers } from './providers'
+import NavigationWrapper from './navigation-wrapper'
+import Breadcrumbs from './components/Breadcrumbs'
+import Analytics from './components/Analytics'
+import { HeaderAd, FooterAd } from './components/AdSense'
+import I18nProvider from './components/I18nProvider'
+import React from 'react'
+
+const inter = Inter({ subsets: ['latin'] })
+
+// Function to detect if we're on testing domain
+function isTestingDomain(): boolean {
+  if (typeof window !== 'undefined') {
+    // Client-side detection
+    return window.location.hostname === 'innvibs.in' ||
+           window.location.hostname.includes('localhost') ||
+           window.location.hostname.includes('127.0.0.1')
+  }
+
+  // Server-side detection using headers
+  const headersList = headers()
+  const host = headersList.get('host') || ''
+
+  return host === 'innvibs.in' ||
+         host.includes('localhost') ||
+         host.includes('127.0.0.1')
+}
+
+// Global metadata for the entire site
+export const metadata: Metadata = {
+  metadataBase: new URL('https://innvibs.com'),
+  title: {
+    default: 'Innvibs Blog - Your Daily Source for Insightful Articles',
+    template: '%s | Innvibs Blog'
+  },
+  description: 'Discover insightful articles on lifestyle, fashion, technology, travel, sports, astrology, and Vastu Shastra. Your trusted source for daily inspiration and knowledge.',
+  keywords: ['blog', 'lifestyle', 'fashion', 'technology', 'travel', 'sports', 'astrology', 'vastu shastra', 'articles', 'insights'],
+  authors: [{ name: 'Innvibs Team' }],
+  creator: 'Astrox Softech Pvt Ltd',
+  publisher: 'Innvibs',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://innvibs.com',
+    siteName: 'Innvibs Blog',
+    title: 'Innvibs Blog - Your Daily Source for Insightful Articles',
+    description: 'Discover insightful articles on lifestyle, fashion, technology, travel, sports, astrology, and Vastu Shastra.',
+    images: [
+      {
+        url: '/logo.png',
+        width: 1200,
+        height: 630,
+        alt: 'Innvibs Blog',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Innvibs Blog - Your Daily Source for Insightful Articles',
+    description: 'Discover insightful articles on lifestyle, fashion, technology, travel, sports, astrology, and Vastu Shastra.',
+    images: ['/logo.png'],
+    creator: '@innvibs',
+  },
+  robots: isTestingDomain() ? {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  } : {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    google: 'your-google-verification-code', // Add your Google verification code
+  },
+}
+
+// Organization schema for the entire site
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Innvibs",
+  "alternateName": "Innvibs Blog",
+  "url": "https://innvibs.com",
+  "logo": "https://innvibs.com/logo.png",
+  "description": "Your daily source for insightful articles on lifestyle, fashion, technology, travel, sports, astrology, and Vastu Shastra.",
+  "foundingDate": "2023",
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "contactType": "customer service",
+    "email": "contact@astroxsoftech.com",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Spaze I-Tech Park, Sector 49, Gurgaon-Sohna Road",
+      "addressLocality": "Gurugram",
+      "postalCode": "122018",
+      "addressCountry": "IN"
+    }
+  },
+  "sameAs": [
+    "https://www.facebook.com/innvibs"
+  ],
+  "knowsAbout": [
+    "Lifestyle",
+    "Fashion",
+    "Technology",
+    "Travel",
+    "Sports",
+    "Astrology",
+    "Vastu Shastra"
+  ]
+}
+
+// Website schema
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Innvibs Blog",
+  "url": "https://innvibs.com",
+  "description": "Your daily source for insightful articles on lifestyle, fashion, technology, travel, sports, astrology, and Vastu Shastra.",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Innvibs",
+    "url": "https://innvibs.com"
+  },
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://innvibs.com/search?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(organizationSchema),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(websiteSchema),
+          }}
+        />
+      </head>
+      <body className={inter.className}>
+        <Providers>
+          <I18nProvider>
+            <Analytics />
+            <NavigationWrapper>
+              <HeaderAd />
+              <Breadcrumbs />
+              {children}
+              <FooterAd />
+            </NavigationWrapper>
+          </I18nProvider>
+        </Providers>
+      </body>
+    </html>
+  )
+}

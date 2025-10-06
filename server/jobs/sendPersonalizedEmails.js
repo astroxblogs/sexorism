@@ -145,16 +145,6 @@ const sendPersonalizedEmails = async () => {
     }
 };
 
-// Schedule the job (unchanged, will run every minute for testing)
-const startEmailJob = () => {
- cron.schedule('0 * * * *',  async () => {
-        console.log('Cron job triggered: Checking for new personalized emails to send...');
-        await sendPersonalizedEmails();
-    }, {
-        scheduled: true,
-        timezone: "Asia/Kolkata" // Adjust to your server's timezone or 'UTC'
-    });
-    console.log('Personalized email job scheduled.');
-};
-
-module.exports = { startEmailJob };
+// Export the function to be called by server.js
+// Removed the cron schedule here to avoid duplicate jobs
+module.exports = { sendPersonalizedEmails };

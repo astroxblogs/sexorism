@@ -25,7 +25,7 @@ const SubscriberManagement = () => {
             }
         } catch (error) {
             console.error('Error fetching subscribers:', error);
-            setError(error.response?.data?.message || 'Failed to fetch subscribers');
+            setError(error.response?.data?.message || error.message || 'Failed to fetch subscribers');
         } finally {
             setLoading(false);
         }

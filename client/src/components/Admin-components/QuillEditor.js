@@ -1,11 +1,13 @@
-import React, { useMemo, useCallback, forwardRef } from 'react';
+'use client'
+
+import React, { useMemo, useCallback, forwardRef, useRef, useEffect } from 'react';
 import ReactQuill, { Quill } from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import ImageResize from 'quill-image-resize-module-react';
 import api from '../../services/Admin-service/api';
 
-// Register the module only once to prevent errors
-if (typeof window !== 'undefined' && Quill && !Quill.imports['modules/imageResize']) {
+// Register the module only once to prevent errors - only on client side
+if (typeof window !== 'undefined' && typeof document !== 'undefined' && typeof Quill !== 'undefined' && Quill && !Quill.imports['modules/imageResize']) {
     Quill.register('modules/imageResize', ImageResize);
 }
 
@@ -47,8 +49,24 @@ const quillEditorStyles = `
 `;
 
 export const QuillEditor = forwardRef(({ value, onChange, onLinkClick }, ref) => {
+    const internalRef = useRef(null);
+
+    // Use internal ref if external ref is not provided
+    const editorRef = ref || internalRef;
 
     const quillImageUploadHandler = useCallback(async () => {
+        // Check if we're on the client side
+        if (typeof window === 'undefined' || typeof document === 'undefined') {
+            return;
+        }
+
+        // Check if internal ref is available before proceeding
+        if (!editorRef || !editorRef.current) {
+            console.error('QuillEditor ref not available for image upload');
+            alert('Editor not ready. Please try again.');
+            return;
+        }
+
         const input = document.createElement('input');
         input.setAttribute('type', 'file');
         input.setAttribute('accept', 'image/*');
@@ -57,15 +75,53 @@ export const QuillEditor = forwardRef(({ value, onChange, onLinkClick }, ref) =>
         input.onchange = async () => {
             if (!input.files || !input.files[0]) return;
             const file = input.files[0];
-            const editor = ref.current?.getEditor();
-            if (!editor) { return; }
+
+            // Wait for ref to be available and get editor
+            let retries = 0;
+            const maxRetries = 10;
+            const retryDelay = 100;
+
+            const getEditor = () => {
+                return new Promise((resolve) => {
+                    const checkEditor = () => {
+                        // More comprehensive null checks using editorRef
+                        if (editorRef && editorRef.current && typeof editorRef.current.getEditor === 'function') {
+                            try {
+                                const editor = editorRef.current.getEditor();
+                                if (editor && typeof editor.getSelection === 'function') {
+                                    resolve(editor);
+                                    return;
+                                }
+                            } catch (error) {
+                                console.warn('Error accessing editor:', error);
+                            }
+                        }
+
+                        if (retries < maxRetries) {
+                            retries++;
+                            setTimeout(checkEditor, retryDelay);
+                        } else {
+                            console.error('Editor ref not available after retries - editorRef:', editorRef, 'editorRef.current:', editorRef?.current);
+                            resolve(null);
+                        }
+                    };
+                    checkEditor();
+                });
+            };
+
+            const editor = await getEditor();
+            if (!editor) {
+                console.error('Failed to get editor instance');
+                return;
+            }
+
             const range = editor.getSelection(true);
             const cursorIndex = range ? range.index : editor.getLength();
             editor.insertText(cursorIndex, ' [Uploading image...] ', 'user');
             const formData = new FormData();
             formData.append('image', file);
             try {
-                const res = await api.post('/api/admin/blogs/upload-image', formData, {
+                const res = await api.post('/admin/blogs/upload-image', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
                 const imageUrl = res.data.imageUrl;
@@ -80,28 +136,35 @@ export const QuillEditor = forwardRef(({ value, onChange, onLinkClick }, ref) =>
         };
     }, [ref]);
 
-    const modules = useMemo(() => ({
-        imageResize: {
-            parchment: Quill.import('parchment'),
-            modules: ['Resize', 'DisplaySize', 'Toolbar']
-        },
-        toolbar: {
-            container: [
-                [{ 'header': [1, 2, 3, false] }],
-                [{ 'font': [] }],
-                [{ 'size': ['small', false, 'large', 'huge'] }],
-                ['bold', 'italic', 'underline', 'strike'],
-                [{ 'align': [] }],
-                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                ['link', 'image'],
-                ['clean']
-            ],
-            handlers: {
-                image: quillImageUploadHandler,
-                link: onLinkClick,
+    const modules = useMemo(() => {
+        // Only create modules if we're on the client side and Quill is available
+        if (typeof window === 'undefined' || typeof document === 'undefined' || typeof Quill === 'undefined' || !Quill) {
+            return {};
+        }
+
+        return {
+            imageResize: {
+                parchment: Quill.import('parchment'),
+                modules: ['Resize', 'DisplaySize', 'Toolbar']
             },
-        },
-    }), [quillImageUploadHandler, onLinkClick]);
+            toolbar: {
+                container: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    [{ 'font': [] }],
+                    [{ 'size': ['small', false, 'large', 'huge'] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'align': [] }],
+                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                    ['link', 'image'],
+                    ['clean']
+                ],
+                handlers: {
+                    image: quillImageUploadHandler,
+                    link: onLinkClick,
+                },
+            },
+        };
+    }, [quillImageUploadHandler, onLinkClick]);
 
     const formats = useMemo(() => ([
         'header', 'font', 'size',
@@ -111,11 +174,22 @@ export const QuillEditor = forwardRef(({ value, onChange, onLinkClick }, ref) =>
         'width', 'height', 'style' 
     ]), []);
 
+    // Handle ref forwarding
+    useEffect(() => {
+        if (ref && editorRef.current) {
+            if (typeof ref === 'function') {
+                ref(editorRef.current);
+            } else {
+                ref.current = editorRef.current;
+            }
+        }
+    }, [ref, editorRef.current]);
+
     return (
         <>
             <style>{quillEditorStyles}</style>
             <ReactQuill
-                ref={ref}
+                ref={editorRef}
                 theme="snow"
                 value={value}
                 onChange={onChange}

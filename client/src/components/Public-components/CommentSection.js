@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Trash2 } from 'lucide-react';
@@ -63,7 +65,7 @@ const CommentSection = ({ blogId, initialComments, visitorId }) => {
         }
 
         try {
-            await api.delete(`/api/blogs/${blogId}/comments/${commentId}`, {
+            await api.delete(`/blogs/${blogId}/comments/${commentId}`, {
                 headers: { Authorization: `Bearer ${adminToken}` }
             });
             setComments(comments.filter(c => c._id !== commentId));

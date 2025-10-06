@@ -11,11 +11,11 @@ i18n
   .use(initReactI18next)
   .init({
     resources: {
-      en: { translation: en },  
-      hi: { translation: hi }  
-       
+      en: { translation: en },
+      hi: { translation: hi }
+
     },
-    lng: localStorage.getItem('lang') || 'en', 
+    lng: typeof window !== 'undefined' ? localStorage.getItem('lang') || 'en' : 'en',
     fallbackLng: 'en',
     interpolation: {
       escapeValue: false

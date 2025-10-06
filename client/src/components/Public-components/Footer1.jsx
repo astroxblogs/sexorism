@@ -1,5 +1,7 @@
+'use client'
+
 import React from "react";
-import { Link } from "react-router-dom";
+import Link from "next/link";
 import { useTranslation } from 'react-i18next';
 import { useTheme } from './ThemeContext';
 import {
@@ -36,7 +38,7 @@ export default function BalancedMonumentFooter() {
     titleKey: "footer.categories_title",
     links: blogCategories.map(cat => ({
       nameKey: cat.labelKey,
-      path: `/category/${cat.value.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`
+      path: `/category/${cat.value.toLowerCase().replace(/ & /g, '-&-').replace(/ /g, '-')}`
     }))
   };
 
@@ -103,7 +105,7 @@ export default function BalancedMonumentFooter() {
                 {section.links.map((link) => (
                   <li key={link.nameKey || link.name}>
                     <Link
-                      to={link.path}
+                      href={link.path}
                       className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors duration-200">
                       {t(link.nameKey || link.name)}
                     </Link>
@@ -139,7 +141,7 @@ export default function BalancedMonumentFooter() {
         {/* --- Bottom Bar --- */}
         <div className="mt-6 pt-4 md:mt-8 md:pt-5 border-t border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row justify-between items-center text-center sm:text-left gap-3">
           <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-0">
-            © {new Date().getFullYear()} {t('innvibs Blogs')}.<br />
+            © {new Date().getFullYear()} {t('application_name')}.<br />
             Copyright 2025 innvibs Media Group. All rights reserved.
           </p>
           <div className="flex items-center gap-3">

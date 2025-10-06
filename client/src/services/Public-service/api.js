@@ -1,12 +1,21 @@
 import axios from 'axios';
-//  console.log('API Base URL:', process.env.REACT_APP_API_BASE_URL);
-// The base URL for the main blog's server API
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://api.innvibs.com';
-
+// Use relative URLs so Next.js rewrites can proxy to the backend
 const api = axios.create({
-    baseURL: API_BASE_URL,
+    baseURL: '/api', // Use /api as baseURL for Next.js proxy
     withCredentials: true,
 });
+
+// Add request interceptor to log URLs for debugging
+api.interceptors.request.use(
+    (config) => {
+        console.log('🚀 API Request:', config.method?.toUpperCase(), config.baseURL + config.url);
+        return config;
+    },
+    (error) => {
+        console.error('❌ API Request Error:', error);
+        return Promise.reject(error);
+    }
+);
 
 // This interceptor is now only for the main blog's public API
 api.interceptors.request.use(
@@ -33,7 +42,7 @@ api.interceptors.response.use(
 // Functions for public-facing blog actions
 export const subscribeUser = async (email) => {
     try {
-        const response = await api.post('/api/subscribers', { email });
+        const response = await api.post('/subscribers', { email });
         return response.data;
     } catch (error) {
         console.error('Error during subscription API call:', error);
@@ -43,7 +52,7 @@ export const subscribeUser = async (email) => {
 
 export const trackUserLike = async (subscriberId, blogId) => {
     try {
-        const response = await api.post('/api/subscribers/track/like', { subscriberId, blogId });
+        const response = await api.post('/subscribers/track/like', { subscriberId, blogId });
         return response.data;
     } catch (error) {
         console.error('Error tracking user like:', error);
@@ -53,7 +62,7 @@ export const trackUserLike = async (subscriberId, blogId) => {
 
 export const trackUserComment = async (subscriberId, blogId) => {
     try {
-        const response = await api.post('/api/subscribers/track/comment', { subscriberId, blogId });
+        const response = await api.post('/subscribers/track/comment', { subscriberId, blogId });
         return response.data;
     } catch (error) {
         console.error('Error tracking user comment:', error);
@@ -63,7 +72,7 @@ export const trackUserComment = async (subscriberId, blogId) => {
 
 export const trackUserRead = async (subscriberId, blogId, duration) => {
     try {
-        const response = await api.post('/api/subscribers/track/read', { subscriberId, blogId, duration });
+        const response = await api.post('/subscribers/track/read', { subscriberId, blogId, duration });
         return response.data;
     } catch (error) {
         console.error('Error tracking user read behavior:', error);
@@ -78,7 +87,7 @@ export const trackUserRead = async (subscriberId, blogId, duration) => {
  */
 export const incrementShareCount = async (blogId) => {
     try {
-        const response = await api.post(`/api/blogs/${blogId}/share`);
+        const response = await api.post(`/blogs/${blogId}/share`);
         return response.data; // This will return { shareCount: newCount }
     } catch (error) {
         console.error('Error incrementing share count:', error);
@@ -89,7 +98,7 @@ export const incrementShareCount = async (blogId) => {
 
 export const incrementBlogView = async (blogId) => {
     try {
-        const response = await api.patch(`/api/blogs/${blogId}/views`);
+        const response = await api.patch(`/blogs/${blogId}/views`);
         return response.data;
     } catch (error) {
         console.error('Error incrementing view count:', error);
@@ -108,7 +117,7 @@ export const incrementBlogView = async (blogId) => {
  */
 export const likePost = async (blogId, visitorId) => {
     try {
-        const response = await api.post(`/api/blogs/${blogId}/like`, { visitorId });
+        const response = await api.post(`/blogs/${blogId}/like`, { visitorId });
         return response.data;
     } catch (error) {
         console.error('Error liking post:', error);
@@ -124,7 +133,7 @@ export const likePost = async (blogId, visitorId) => {
  */
 export const unlikePost = async (blogId, visitorId) => {
     try {
-        const response = await api.post(`/api/blogs/${blogId}/unlike`, { visitorId });
+        const response = await api.post(`/blogs/${blogId}/unlike`, { visitorId });
         return response.data;
     } catch (error) {
         console.error('Error unliking post:', error);
@@ -140,10 +149,26 @@ export const unlikePost = async (blogId, visitorId) => {
  */
 export const addComment = async (blogId, commentData) => {
     try {
-        const response = await api.post(`/api/blogs/${blogId}/comments`, commentData);
+        const response = await api.post(`/blogs/${blogId}/comments`, commentData);
         return response.data;
     } catch (error) {
         console.error('Error adding comment:', error);
+        throw error;
+    }
+};
+
+/**
+ * Gets a single blog by category and slug.
+ * @param {string} categoryName The category name.
+ * @param {string} slug The blog slug.
+ * @returns {Promise<any>} The blog data.
+ */
+export const getBlogByCategoryAndSlug = async (categoryName, slug) => {
+    try {
+        const response = await api.get(`/blogs/${categoryName}/${slug}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching blog by category and slug:', error);
         throw error;
     }
 };

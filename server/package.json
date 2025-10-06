@@ -5,8 +5,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-   "dev": "cross-env NODE_ENV=development nodemon server.js",
-     
+    "dev": "cross-env NODE_ENV=development nodemon server.js",
+    "seed": "node seed/seed.js",
+    "seed-categories": "node seed/seedCategories.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "create-user": "node scripts/createUser.js",
     "generate-slugs": "node seed/generateSlugs.js",
@@ -21,6 +22,7 @@
     "@sendinblue/client": "^3.0.0",
     "axios": "^1.12.2",
     "bcryptjs": "^3.0.2",
+    "bson": "^6.10.4",
     "cloudinary": "^2.7.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -39,9 +41,7 @@
     "streamifier": "^0.1.1"
   },
   "devDependencies": {
-    "cross-env": "^10.1.0",
     "nodemon": "^3.1.10"
   },
   "proxy": "http://localhost:8081"
 }
-

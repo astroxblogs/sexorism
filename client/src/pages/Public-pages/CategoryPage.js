@@ -1,17 +1,25 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import api from '../../services/Public-service/api';
 import SEO from '../../components/Public-components/SEO';
 import Home from './Home';
 
-const CategoryPage = () => {
-    const { categoryName } = useParams(); // This is the URL slug, e.g., "health-wellness"
+const CategoryPage = ({ categoryName: propCategoryName }) => {
+     const params = useParams(); // This is the URL slug, e.g., "health-wellness"
+     const categoryName = propCategoryName || params?.categoryName; // Use prop if provided, otherwise use params
     const { i18n } = useTranslation();
 
     const [category, setCategory] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    // If categoryName is not available, show loading or error
+    if (!categoryName) {
+        return <div className="text-center py-20 text-lg dark:text-gray-200">Loading...</div>;
+    }
 
     // ✅ STEP 1: Fetch specific category data for SEO purposes.
     useEffect(() => {
@@ -20,7 +28,7 @@ const CategoryPage = () => {
             try {
                 // We assume an API endpoint exists to get a category by its slug.
                 // We will need to create this in the backend later.
-                const res = await api.get(`/api/categories/${categoryName}`);
+                const res = await api.get(`/categories/${categoryName}`);
                 setCategory(res.data);
             } catch (err) {
                 setError('Category not found.');
@@ -81,8 +89,8 @@ const CategoryPage = () => {
                 schema={[collectionPageSchema, breadcrumbSchema]}
             />
 
-            {/* We pass the English name to the Home component to ensure it fetches the correct blog posts. */}
-            <Home activeCategory={category.name_en} />
+            {/* The Home component will get category from URL params in Next.js */}
+            <Home />
         </>
     );
 };

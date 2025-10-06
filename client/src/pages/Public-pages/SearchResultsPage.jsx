@@ -1,6 +1,9 @@
 // pages/SearchResultsPage.jsx
+'use client'
+
 import React, { useState, useEffect } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
+import Link from "next/link";
 import axios from "axios";
 import DOMPurify from "dompurify";
 import truncate from "html-truncate";
@@ -8,7 +11,7 @@ import { slugify } from "../../utils/Public-utils/slugify";
 
 const SearchResultsPage = () => {
   const [searchParams] = useSearchParams();
-  const query = searchParams.get("q") || "";
+  const query = searchParams?.get("q") || "";
 
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -161,7 +164,7 @@ const SearchResultsPage = () => {
               {blogs.map((blog, index) => (
                 <Link
                   key={blog._id}
-                  to={`/category/${blog.category ? slugify(blog.category) : "uncategorized"}/${blog.slug}`}
+                  href={`/category/${blog.category ? slugify(blog.category) : "uncategorized"}/${blog.slug}`}
                   className="group relative overflow-hidden rounded-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 transform-gpu"
                   style={{
                     animationDelay: `${index * 100}ms`,

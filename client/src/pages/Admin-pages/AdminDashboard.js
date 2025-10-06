@@ -1,5 +1,7 @@
+'use client';
+
 import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useRouter, useSearchParams } from 'next/navigation';
 import AdminBlogForm from '../../components/Admin-components/AdminBlogForm';
 import AdminBlogList from './AdminBlogList';
 import PendingApprovals from '../../components/Admin-components/PendingApprovals';
@@ -20,19 +22,21 @@ const AdminDashboard = () => {
         try { return sessionStorage.getItem('astrox_admin_role_session') || 'admin'; } catch (_) { return 'admin'; }
     });
     const [pendingCount, setPendingCount] = useState(0);
-    const navigate = useNavigate();
-    const location = useLocation();
+    const router = useRouter();
+    const searchParams = useSearchParams();
     
     // ✅ 1. ADD THIS NEW STATE to manage the form's key
     const [formKey, setFormKey] = useState(0);
 
     useEffect(() => {
-        if (location.state?.blogToEdit) {
-            setEditingBlog(location.state.blogToEdit);
+        // Check for blog to edit from URL params or state
+        const blogToEdit = searchParams?.get('editBlog');
+        if (blogToEdit) {
+            setEditingBlog(JSON.parse(decodeURIComponent(blogToEdit)));
             setActiveView('blogForm');
         }
         try { const r = sessionStorage.getItem('astrox_admin_role_session'); if (r) setRole(r); } catch (_) {}
-    }, [location.state]);
+    }, [searchParams]);
 
  const handleSave = () => {
     setEditingBlog(null);
@@ -52,11 +56,11 @@ const AdminDashboard = () => {
         try {
             await apiService.logout();
             setAccessToken(null);
-            navigate('/');
+            router.push('/');
         } catch (err) {
             console.error('Logout failed:', err);
             setAccessToken(null);
-            navigate('/login');
+            router.push('/');
         }
     };
 
@@ -89,7 +93,7 @@ const AdminDashboard = () => {
 
     const handleViewChange = (view) => {
     if (view === 'subscriberManagement') {
-        navigate('/cms/admin/subscribers');
+        router.push('/cms/admin-dashboard'); // Use Next.js admin dashboard for now
     } else {
         setActiveView(view);
     }

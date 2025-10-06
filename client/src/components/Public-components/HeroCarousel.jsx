@@ -1,5 +1,7 @@
+'use client'
+
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { marked } from 'marked';
 import { useTranslation } from 'react-i18next';
 
@@ -73,7 +75,7 @@ const HeroCarousel = ({ blogs }) => {
                 <div className="relative z-10 h-full flex items-end pointer-events-none">
                     <div className="p-4 sm:p-6 md:p-8 w-full max-w-[720px] pointer-events-auto">
                        
-                        <Link to={`/category/${currentBlog?.category ? slugify(currentBlog.category) : 'uncategorized'}/${currentBlog?.slug || currentBlog?._id}`} className="block">
+                        <Link href={`/category/${currentBlog?.category ? slugify(currentBlog.category) : 'uncategorized'}/${currentBlog?.slug || currentBlog?._id}`} className="block">
     <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight drop-shadow">
         {title}
     </h2>
@@ -82,7 +84,7 @@ const HeroCarousel = ({ blogs }) => {
                             {excerpt}
                         </p>
                         <Link
-    to={`/category/${currentBlog?.category ? slugify(currentBlog.category) : 'uncategorized'}/${currentBlog?.slug || currentBlog?._id}`}
+    href={`/category/${currentBlog?.category ? slugify(currentBlog.category) : 'uncategorized'}/${currentBlog?.slug || currentBlog?._id}`}
     className="inline-block mt-4 px-4 py-2 rounded-md bg-white/90 text-gray-900 text-sm font-semibold hover:bg-white"
 >
     {t('blog_card.read_more')}

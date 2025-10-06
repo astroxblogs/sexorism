@@ -62,7 +62,7 @@ const AppContent = () => {
 
     const fetchCategories = useCallback(async () => {
         try {
-            const baseUrl = process.env.REACT_APP_API_BASE_URL || 'https://api.innvibs.com';
+            const baseUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8081';
             const response = await axios.get(`${baseUrl.replace(/\/$/, '')}/api/blogs/categories`);
             setCategories(response.data);
         } catch (error) {
@@ -108,7 +108,7 @@ const AppContent = () => {
             )}
 
             <main className="flex-1 overflow-y-auto">
-                <Suspense fallback={<div className="text-center py-20 dark:text-gray-200">{t('loading page')}</div>}>
+                <Suspense fallback={<div className="text-center py-20 dark:text-gray-200">{t('general.loading_components')}</div>}>
                     <Routes>
                         <Route path="/" element={<Home activeCategory={activeCategory} searchQuery={searchQuery} />} />
                         <Route path="/category/:categoryName" element={<CategoryPage />} />

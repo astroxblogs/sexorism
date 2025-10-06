@@ -1,6 +1,8 @@
 // client/src/pages/TagPage.js
+'use client';
+
 import React, { useState, useEffect, Suspense, lazy } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'next/navigation';
 import api from '../../services/Public-service/api';
 import { useTranslation } from 'react-i18next';
 
@@ -9,7 +11,8 @@ const BlogList = lazy(() => import('../../components/Public-components/BlogFiles
 
 
 const TagPage = () => {
-    const { tagName } = useParams(); // Get the tag from the URL parameter
+    const params = useParams(); // Get the tag from the URL parameter
+    const tagName = params?.tagName; // Safely destructure tagName
     const [blogs, setBlogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -18,6 +21,11 @@ const TagPage = () => {
     const [totalBlogs, setTotalBlogs] = useState(0);
     const [searchParams, setSearchParams] = useSearchParams(); // For pagination URL updates
     const { t } = useTranslation();
+
+    // If tagName is not available, show loading or error
+    if (!tagName) {
+        return <div className="text-center py-20 text-lg dark:text-gray-300">Loading...</div>;
+    }
 
     const blogsPerPage = 10; // Consistent with Home.js pagination
 
@@ -28,7 +36,7 @@ const TagPage = () => {
             try {
                 // Decode the tagName from URL format (hyphens) back to original format (spaces)
                 const decodedTagName = tagName.replace(/-/g, ' ');
-                const res = await api.get(`/api/blogs?tag=${encodeURIComponent(decodedTagName)}&page=${currentPage}&limit=${blogsPerPage}`);
+                const res = await api.get(`/blogs?tag=${encodeURIComponent(decodedTagName)}&page=${currentPage}&limit=${blogsPerPage}`);
                 setBlogs(res.data.blogs);
                 setCurrentPage(res.data.currentPage);
                 setTotalPages(res.data.totalPages);
@@ -41,7 +49,7 @@ const TagPage = () => {
             }
         };
 
-        const urlPage = parseInt(searchParams.get('page')) || 1;
+        const urlPage = searchParams ? parseInt(searchParams.get('page')) || 1 : 1;
 
         // Always update currentPage from URL, and let it trigger re-fetch
         if (urlPage !== currentPage) {

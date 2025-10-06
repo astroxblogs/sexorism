@@ -14,7 +14,7 @@ const CategoryManager = () => {
     const fetchCategories = async () => {
         try {
             setLoading(true);
-            const response = await api.get('/api/admin/categories');
+            const response = await api.get('/admin/categories');
             setCategories(response.data);
             setError(null);
         } catch (err) {
@@ -27,6 +27,32 @@ const CategoryManager = () => {
 
     useEffect(() => {
         fetchCategories();
+    }, []);
+
+    // Add styles only on client side
+    useEffect(() => {
+        const styles = `
+            .input-style {
+                display: block;
+                width: 100%;
+                border-radius: 0.375rem;
+                border-width: 1px;
+                border-color: #D1D5DB;
+                box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            }
+            .dark .input-style {
+                background-color: #374151;
+                border-color: #4B5563;
+                color: #FFFFFF;
+            }
+            .input-style:focus {
+                border-color: #3B82F6;
+                --tw-ring-color: #3B82F6;
+            }
+        `;
+        const styleSheet = document.createElement("style");
+        styleSheet.innerText = styles;
+        document.head.appendChild(styleSheet);
     }, []);
 
     // ✅ STEP 3: Populate the form when entering edit mode
@@ -58,11 +84,11 @@ const CategoryManager = () => {
         try {
             if (editingCategory) {
                 // Update existing category
-                await api.put(`/api/admin/categories/${editingCategory._id}`, payload);
+                await api.put(`/admin/categories/${editingCategory._id}`, payload);
                 alert('Category updated successfully!');
             } else {
                 // Create new category
-                await api.post('/api/admin/categories', payload);
+                await api.post('/admin/categories', payload);
                 alert('Category added successfully!');
             }
             reset();
@@ -80,9 +106,10 @@ const CategoryManager = () => {
     };
 
     const handleDelete = async (categoryId) => {
-        if (window.confirm('Are you sure you want to delete this category?')) {
+        // Use browser confirm only on client side
+        if (typeof window !== 'undefined' && window.confirm('Are you sure you want to delete this category?')) {
             try {
-                await api.delete(`/api/admin/categories/${categoryId}`);
+                await api.delete(`/admin/categories/${categoryId}`);
                 alert('Category deleted successfully!');
                 fetchCategories(); // Refresh the list
             } catch (err) {
@@ -194,29 +221,5 @@ const CategoryManager = () => {
     );
 };
 
-// Add a simple style for inputs to avoid repetition
-const styles = `
-    .input-style {
-        display: block;
-        width: 100%;
-        border-radius: 0.375rem;
-        border-width: 1px;
-        border-color: #D1D5DB;
-        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    }
-    .dark .input-style {
-        background-color: #374151;
-        border-color: #4B5563;
-        color: #FFFFFF;
-    }
-    .input-style:focus {
-        border-color: #3B82F6;
-        --tw-ring-color: #3B82F6;
-    }
-`;
-const styleSheet = document.createElement("style");
-styleSheet.innerText = styles;
-document.head.appendChild(styleSheet);
-
-
+// Export the component
 export default CategoryManager;

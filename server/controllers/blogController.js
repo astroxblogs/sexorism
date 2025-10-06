@@ -60,8 +60,71 @@ const getBlogs = async (req, res) => {
         const parsedLimit = parseInt(limit, 10);
         const parsedPage = parseInt(page, 10);
         let filter = {};
-        if (category && category.toLowerCase() !== 'all') { filter.category = category.trim(); }
-        if (excludeCategory) { filter.category = { $ne: excludeCategory.trim() }; }
+
+        // Handle URL-encoded category parameter (robust decoding)
+         let decodedCategory = category;
+         try {
+             // Keep decoding until no % characters remain (handles multiple levels of encoding)
+             while (decodedCategory && decodedCategory.includes('%')) {
+                 decodedCategory = decodeURIComponent(decodedCategory);
+             }
+         } catch (e) {
+             // If decoding fails, use original value
+             decodedCategory = category;
+         }
+
+         if (decodedCategory && decodedCategory.toLowerCase() !== 'all') {
+             const trimmedCategory = decodedCategory.trim();
+
+             // Handle special case: convert slug format to category name format
+             // "health-&-wellness" → "Health & Wellness"
+             let categoryToMatch = trimmedCategory;
+             if (trimmedCategory.includes('-&-')) {
+                 // Convert slug format back to category name format for matching
+                 categoryToMatch = trimmedCategory
+                     .split('-&-')
+                     .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                     .join(' & ');
+             }
+
+             // Use case-insensitive regex to match category names
+             filter.category = { $regex: new RegExp(`^${categoryToMatch}$`, 'i') };
+         }
+        if (excludeCategory) {
+            let decodedExcludeCategory = excludeCategory;
+            try {
+                // Keep decoding until no % characters remain
+                while (decodedExcludeCategory && decodedExcludeCategory.includes('%')) {
+                    decodedExcludeCategory = decodeURIComponent(decodedExcludeCategory);
+                }
+            } catch (e) {
+                decodedExcludeCategory = excludeCategory;
+            }
+            const trimmedExcludeCategory = decodedExcludeCategory.trim();
+
+            // Handle special case: convert slug format to category name format
+            let categoryToExclude = trimmedExcludeCategory;
+            if (trimmedExcludeCategory.includes('-&-')) {
+                categoryToExclude = trimmedExcludeCategory
+                    .split('-&-')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                    .join(' & ');
+            }
+
+            // Fix: Use $nin (not in) with an array instead of $ne with regex
+            // First get all categories except the one to exclude
+            const allCategories = await Category.find({}, 'name_en').lean();
+            const categoriesToInclude = allCategories
+                .map(cat => cat.name_en)
+                .filter(catName => !catName.toLowerCase().includes(categoryToExclude.toLowerCase()));
+
+            if (categoriesToInclude.length > 0) {
+                filter.category = { $in: categoriesToInclude };
+            } else {
+                // If no categories to include, return empty result
+                filter.category = { $in: [] };
+            }
+        }
         if (tag) { filter.tags = { $in: [new RegExp(`^${tag.trim()}$`, 'i')] }; }
         const skip = (parsedPage - 1) * parsedLimit;
         const publicFilter = { ...filter, $or: [{ status: 'published' }, { status: { $exists: false } }] };
@@ -607,19 +670,40 @@ const generateSocialPreviewHTML = (blog, errorMessage = null, categoryName = nul
 
 const getBlogByCategoryAndSlug = async (req, res) => {
     // ✅ FIX: Declare slug here to make it available in the catch block
-    const { categoryName, slug } = req.params; 
+    const { categoryName, slug } = req.params;
 
     try {
-        // This category finding logic is correct and does not need changes
-        let category = await Category.findOne({ slug: categoryName });
-        if (!category) {
-            const encodedCategoryName = categoryName.replace(/&/g, '-&-');
-            category = await Category.findOne({ slug: encodedCategoryName });
+        // Handle URL-encoded categoryName parameter (robust decoding)
+        let decodedCategoryName = categoryName;
+        try {
+            // Keep decoding until no % characters remain (handles multiple levels of encoding)
+            while (decodedCategoryName && decodedCategoryName.includes('%')) {
+                decodedCategoryName = decodeURIComponent(decodedCategoryName);
+            }
+        } catch (e) {
+            // If decoding fails, use original value
+            decodedCategoryName = categoryName;
         }
+
+        // Find category by slug with flexible matching
+        let category = await Category.findOne({ slug: decodedCategoryName });
+
+        // If not found by slug, try case-insensitive name matching
         if (!category) {
-            const decodedCategoryName = categoryName.replace(/-&-/g, '&');
-            category = await Category.findOne({ slug: decodedCategoryName });
+            // Handle special case: convert slug format to category name format
+            let categoryNameToMatch = decodedCategoryName;
+            if (decodedCategoryName.includes('-&-')) {
+                categoryNameToMatch = decodedCategoryName
+                    .split('-&-')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                    .join(' & ');
+            }
+
+            category = await Category.findOne({
+                name_en: { $regex: new RegExp(`^${categoryNameToMatch}$`, 'i') }
+            });
         }
+
         if (!category) {
             return res.status(404).json({ error: 'Category not found' });
         }
@@ -629,7 +713,15 @@ const getBlogByCategoryAndSlug = async (req, res) => {
             category: category.name_en,
             $or: [{ status: 'published' }, { status: { $exists: false } }],
         });
-        
+
+        console.log(`🔍 Looking for blog: slug="${slug}", category="${category.name_en}"`);
+        console.log(`📄 Blog found: ${blog ? '✅' : '❌'}`);
+        if (!blog) {
+            console.log(`❌ Available blogs with slug "${slug}":`);
+            const allBlogsWithSlug = await Blog.find({ slug: slug }).select('title category status');
+            console.log(allBlogsWithSlug);
+        }
+
         if (!blog) {
             return res.status(404).json({ error: 'Blog not found in this category' });
         }
@@ -645,6 +737,33 @@ const getBlogByCategoryAndSlug = async (req, res) => {
     }
 };
 // ===============================
+// Delete Blog
+// ===============================
+const deleteBlog = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find and delete the blog
+    const deletedBlog = await Blog.findByIdAndDelete(id);
+
+    if (!deletedBlog) {
+      return res.status(404).json({ error: 'Blog not found' });
+    }
+
+    res.json({
+      message: 'Blog deleted successfully',
+      deletedBlog: {
+        id: deletedBlog._id,
+        title: deletedBlog.title_en || deletedBlog.title
+      }
+    });
+  } catch (err) {
+    console.error('Error deleting blog:', err);
+    res.status(500).json({ error: 'Failed to delete blog' });
+  }
+};
+
+// ===============================
 // Export
 // ===============================
 // ===============================
@@ -657,12 +776,13 @@ module.exports = {
   searchBlogs,
   getBlog,
   getBlogBySlug,
-  getBlogByCategoryAndSlug, 
-  getBlogBySlugHelper, 
-  getSocialMediaPreview, 
+  getBlogByCategoryAndSlug,
+  getBlogBySlugHelper,
+  getSocialMediaPreview,
   incrementViews,
   incrementShares,
   likePost,
   unlikePost,
-  addComment
+  addComment,
+  deleteBlog // ✅ ADD THIS LINE
 };

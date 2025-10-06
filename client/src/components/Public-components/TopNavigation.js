@@ -1,4 +1,7 @@
+'use client'
+
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 
 import ThemeToggle from './ThemeToggle';
 import LanguageSelector from './LanguageSelector';
@@ -12,6 +15,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLogoClick, categories }) => {
     const { t, i18n } = useTranslation();
+    const router = useRouter();
 
     const [showSearchInput, setShowSearchInput] = useState(false);
     const [inputValue, setInputValue] = useState('');
@@ -58,7 +62,25 @@ const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLog
     };
 
     const handleCategoryClick = (categoryValue) => {
-        onCategoryChange(categoryValue.trim());
+        const trimmedValue = categoryValue.trim();
+        onCategoryChange(trimmedValue);
+
+        // Navigate to category page if it's not "all"
+        if (trimmedValue !== 'all') {
+            const slugify = (text) => {
+                return text
+                    .toLowerCase()
+                    .replace(/\s+/g, '-')
+                    .replace(/[^a-z0-9\-&]/g, '')
+                    .replace(/-+/g, '-')
+                    .replace(/^-+|-+$/g, '');
+            };
+            const categorySlug = slugify(trimmedValue);
+            router.push(`/category/${categorySlug}`);
+        } else {
+            // Navigate to home page for "all" category
+            router.push('/');
+        }
     };
 
   const handleSearchSubmit = (e) => {
@@ -68,7 +90,7 @@ const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLog
   const searchTerm = inputValue.trim();
 
   // ✅ Send user to search results page instead of redirecting to one blog
-  window.location.href = `/search?q=${encodeURIComponent(searchTerm)}`;
+  router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
 };
 
 
@@ -101,8 +123,8 @@ const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLog
             <div className="py-2.5 px-3 sm:px-4 md:px-8 flex flex-col lg:flex-row gap-2 lg:gap-0 lg:justify-between lg:items-center">
                 
                 <div className="flex items-center gap-3 w-full lg:w-auto">
-                    <a
-                        href="/"
+                    <button
+                        onClick={onLogoClick}
                         className="flex items-center gap-2 flex-shrink-0 max-w-[120px] sm:max-w-[140px] md:max-w-none"
                     >
                         <img
@@ -115,7 +137,7 @@ const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLog
                             alt="Logo Dark"
                             className="h-8 sm:h-10 w-auto object-contain hidden dark:block"
                         />
-                    </a>
+                    </button>
                     <div className="lg:hidden ml-auto flex items-center gap-2">
                         <button
                             onClick={handleSearchClick}
