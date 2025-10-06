@@ -290,6 +290,48 @@ export const getBlogBySlug = async (slug) => {
     }
 };
 
+/**
+ * Gets blogs for homepage feed.
+ * @returns {Promise<any>} The homepage blogs data.
+ */
+export const getHomepageBlogs = async () => {
+    try {
+        const response = await api.get('/blogs/homepage-feed');
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching homepage blogs:', error);
+        throw error;
+    }
+};
+
+/**
+ * Gets latest blogs.
+ * @returns {Promise<any>} The latest blogs data.
+ */
+export const getLatestBlogs = async () => {
+    try {
+        const response = await api.get('/blogs/latest');
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching latest blogs:', error);
+        throw error;
+    }
+};
+
+/**
+ * Gets all categories.
+ * @returns {Promise<any>} The categories data.
+ */
+export const getCategories = async () => {
+    try {
+        const response = await api.get('/categories');
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching categories:', error);
+        throw error;
+    }
+};
+
 // Admin API Functions
 export const setAccessToken = (token) => {
     if (token) {

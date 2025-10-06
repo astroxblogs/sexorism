@@ -125,7 +125,7 @@ const HomePage = () => {
             if (sidebarSections.length > 0) return; // Prevent multiple calls
 
             try {
-                const catRes = await api.get('/blogs/categories');
+                const catRes = await api.get('/categories');
                 const categories = Array.isArray(catRes.data) ? catRes.data : [];
                 const preferred = ['Technology', 'Health & Wellness', 'Trends',
                     'Fashion', 'Relationship', 'Travel',
