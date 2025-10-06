@@ -2,14 +2,14 @@
 
 import React, { useEffect, useState, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import AdminBlogForm from '../../../../src/components/Admin-components/AdminBlogForm'
-import AdminBlogList from '../../../../src/pages/Admin-pages/AdminBlogList'
-import PendingApprovals from '../../../../src/components/Admin-components/PendingApprovals'
-import { apiService, setAccessToken } from '../../../../src/services/Admin-service/api'
-import CategoryManager from '../../../../src/pages/Admin-pages/CategoryManager'
-import OperatorManagement from '../../../../src/pages/Admin-pages/Operatormanagement'
-import AdminSetting from '../../../../src/pages/Admin-pages/Adminsetting'
-import SubscriberManagement from '../../../../src/pages/Admin-pages/SubscriberManagement'
+import AdminBlogForm from '../../../components/AdminBlogForm'
+import { AdminBlogTable } from '../../../components/AdminBlogTable'
+import PendingApprovals from '../../../components/PendingApprovals'
+import { apiService, setAccessToken } from '../../../lib/api'
+import CategoryManager from '../../../admin/categories/page'
+import OperatorManagement from '../../../admin/operators/page'
+import AdminSetting from '../../../admin/settings/page'
+import SubscriberManagement from '../../../admin/subscribers/page'
 
 interface Blog {
     _id: string
@@ -250,10 +250,21 @@ const AdminDashboard = () => {
                             <h2 className="text-2xl font-semibold text-gray-800">Manage Blogs</h2>
                         </div>
                         <div className="p-6">
-                            <AdminBlogList onEdit={(blog) => { 
-                                setEditingBlog(blog); 
-                                handleViewChange('blogForm'); 
-                            }} />
+                            <AdminBlogTable
+                                blogs={[]}
+                                onEdit={(blog) => {
+                                    setEditingBlog(blog);
+                                    handleViewChange('blogForm');
+                                }}
+                                onDelete={(id) => {
+                                    // Handle delete logic here
+                                    console.log('Delete blog:', id);
+                                }}
+                                onUpdateDate={(id, date) => {
+                                    // Handle date update logic here
+                                    console.log('Update date:', id, date);
+                                }}
+                            />
                         </div>
                     </div>
                 )
