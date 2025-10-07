@@ -1,158 +1,140 @@
-// Admin authentication token management utility
-// This utility file is specifically for handling the admin's authentication token.
+// ===============================
+// Admin Authentication Management
+// ===============================
 
 const AUTH_TOKEN_KEY_BASE = 'astrox_admin_auth_token';
 const ROLE_SESSION_KEY = 'astrox_admin_role_session';
 
+// Helper: get current role safely
 const getCurrentRole = () => {
-    try {
-        const roleFromSession = sessionStorage.getItem(ROLE_SESSION_KEY);
-        if (roleFromSession) return roleFromSession;
-    } catch (_) {}
-    return 'admin';
+  try {
+    const roleFromSession = sessionStorage.getItem(ROLE_SESSION_KEY);
+    if (roleFromSession) return roleFromSession;
+  } catch (_) {}
+  return 'admin';
 };
 
 /**
- * Stores the admin's authentication token in localStorage.
- * @param {string} token - The JWT token received from the backend after login.
+ * Stores the admin/operator authentication token.
+ * ✅ Stores for both roles so the app can read it regardless of timing/order.
  */
 export const setAuthToken = (token) => {
-    try {
-        const role = getCurrentRole();
-        const key = `${AUTH_TOKEN_KEY_BASE}_${role}`;
-        if (token) {
-            localStorage.setItem(key, token);
-
-        } else {
-            console.warn('Attempted to set a null or undefined auth token.');
-        }
-    } catch (error) {
-        console.error('Error saving admin auth token to localStorage:', error);
+  try {
+    if (!token) {
+      console.warn('Attempted to set a null or undefined auth token.');
+      return;
     }
+    ['admin', 'operator'].forEach((r) => {
+      localStorage.setItem(`${AUTH_TOKEN_KEY_BASE}_${r}`, token);
+    });
+  } catch (error) {
+    console.error('Error saving auth token to localStorage:', error);
+  }
 };
 
 /**
- * Retrieves the admin's authentication token from localStorage.
- * @returns {string | null} The token if found, otherwise null.
+ * Retrieves the auth token from localStorage for the current role.
  */
 export const getAuthToken = () => {
-    try {
-        const role = getCurrentRole();
-        const key = `${AUTH_TOKEN_KEY_BASE}_${role}`;
-        const token = localStorage.getItem(key);
-        return token;
-    } catch (error) {
-        console.error('Error retrieving admin auth token from localStorage:', error);
-        return null;
-    }
+  try {
+    const role = getCurrentRole();
+    return localStorage.getItem(`${AUTH_TOKEN_KEY_BASE}_${role}`);
+  } catch (error) {
+    console.error('Error retrieving auth token from localStorage:', error);
+    return null;
+  }
 };
 
 /**
- * Removes the admin's authentication token from localStorage, effectively logging out the user.
+ * Removes all stored tokens (admin + operator) from localStorage.
  */
 export const removeAuthToken = () => {
-    try {
-        const role = getCurrentRole();
-        const key = `${AUTH_TOKEN_KEY_BASE}_${role}`;
-        localStorage.removeItem(key);
-
-    } catch (error) {
-        console.error('Error removing admin auth token from localStorage:', error);
-    }
+  try {
+    ['admin', 'operator'].forEach((r) => {
+      localStorage.removeItem(`${AUTH_TOKEN_KEY_BASE}_${r}`);
+    });
+  } catch (error) {
+    console.error('Error removing auth token from localStorage:', error);
+  }
 };
 
 /**
- * Checks if an admin authentication token exists in localStorage.
- * @returns {boolean} True if a token exists, false otherwise.
+ * Checks if any auth token exists in localStorage.
  */
 export const hasAuthToken = () => {
-    return !!getAuthToken();
+  return !!getAuthToken();
 };
 
-// Visitor ID management for anonymous users
+// ===============================
+// Visitor ID Management
+// ===============================
+
 const VISITOR_ID_KEY = 'astrox_visitor_id';
 
-/**
- * Generates or retrieves a visitor ID for anonymous users.
- * @returns {string} The visitor ID.
- */
 export const getVisitorId = () => {
-    try {
-        let visitorId = localStorage.getItem(VISITOR_ID_KEY);
-        if (!visitorId) {
-            // Generate a simple visitor ID based on timestamp and random number
-            visitorId = `visitor_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-            localStorage.setItem(VISITOR_ID_KEY, visitorId);
-        }
-        return visitorId;
-    } catch (error) {
-        console.error('Error managing visitor ID:', error);
-        return `visitor_${Date.now()}`;
+  try {
+    let visitorId = localStorage.getItem(VISITOR_ID_KEY);
+    if (!visitorId) {
+      visitorId = `visitor_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem(VISITOR_ID_KEY, visitorId);
     }
+    return visitorId;
+  } catch (error) {
+    console.error('Error managing visitor ID:', error);
+    return `visitor_${Date.now()}`;
+  }
 };
 
-/**
- * Clears the visitor ID (useful for testing or logout).
- */
 export const clearVisitorId = () => {
-    try {
-        localStorage.removeItem(VISITOR_ID_KEY);
-    } catch (error) {
-        console.error('Error clearing visitor ID:', error);
-    }
+  try {
+    localStorage.removeItem(VISITOR_ID_KEY);
+  } catch (error) {
+    console.error('Error clearing visitor ID:', error);
+  }
 };
 
-// Subscriber ID management for subscription features
+// ===============================
+// Subscriber ID Management
+// ===============================
+
 const SUBSCRIBER_ID_KEY = 'astrox_subscriber_id';
 
-/**
- * Gets the subscriber ID from localStorage.
- * @returns {string | null} The subscriber ID if found, otherwise null.
- */
 export const getSubscriberId = () => {
-    try {
-        return localStorage.getItem(SUBSCRIBER_ID_KEY);
-    } catch (error) {
-        console.error('Error retrieving subscriber ID:', error);
-        return null;
-    }
+  try {
+    return localStorage.getItem(SUBSCRIBER_ID_KEY);
+  } catch (error) {
+    console.error('Error retrieving subscriber ID:', error);
+    return null;
+  }
 };
 
-/**
- * Sets the subscriber ID in localStorage.
- * @param {string} subscriberId - The subscriber ID to store.
- */
 export const setSubscriberId = (subscriberId) => {
-    try {
-        if (subscriberId) {
-            localStorage.setItem(SUBSCRIBER_ID_KEY, subscriberId);
-        } else {
-            console.warn('Attempted to set a null or undefined subscriber ID.');
-        }
-    } catch (error) {
-        console.error('Error saving subscriber ID:', error);
+  try {
+    if (subscriberId) {
+      localStorage.setItem(SUBSCRIBER_ID_KEY, subscriberId);
+    } else {
+      console.warn('Attempted to set a null or undefined subscriber ID.');
     }
+  } catch (error) {
+    console.error('Error saving subscriber ID:', error);
+  }
 };
 
-/**
- * Checks if a subscriber ID exists in localStorage.
- * @returns {boolean} True if a subscriber ID exists, false otherwise.
- */
 export const hasSubscriberId = () => {
-    return !!getSubscriberId();
+  return !!getSubscriberId();
 };
 
-/**
- * Removes the subscriber ID from localStorage.
- */
 export const removeSubscriberId = () => {
-    try {
-        localStorage.removeItem(SUBSCRIBER_ID_KEY);
-    } catch (error) {
-        console.error('Error removing subscriber ID:', error);
-    }
+  try {
+    localStorage.removeItem(SUBSCRIBER_ID_KEY);
+  } catch (error) {
+    console.error('Error removing subscriber ID:', error);
+  }
 };
 
-// Export helpers in case other modules need them
+// ===============================
+// Exports for external usage
+// ===============================
+
 export const getCurrentRoleForTab = getCurrentRole;
 export const ROLE_KEYS = { ROLE_SESSION_KEY };

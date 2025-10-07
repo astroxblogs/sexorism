@@ -6,10 +6,11 @@ import AdminBlogForm from '../../../components/AdminBlogForm'
 import { AdminBlogTable } from '../../../components/AdminBlogTable'
 import PendingApprovals from '../../../components/PendingApprovals'
 import { apiService, setAccessToken } from '../../../lib/api'
-import CategoryManager from '../../../admin/categories/page'
-import OperatorManagement from '../../../admin/operators/page'
-import AdminSetting from '../../../admin/settings/page'
-import SubscriberManagement from '../../../admin/subscribers/page'
+import CategoryManagementComponent from '../../../components/CategoryManagementComponent'
+import OperatorManagementComponent from '../../../components/OperatorManagementComponent'
+import SettingsComponent from '../../../components/SettingsComponent'
+import SubscriberManagementComponent from '../../../components/SubscriberManagementComponent'
+import BlogManagementComponent from '../../../components/BlogManagementComponent'
 
 interface Blog {
     _id: string
@@ -143,7 +144,7 @@ const AdminDashboard = () => {
             badge: pendingCount
         },
         {
-            id: 'categoryManager',
+            id: 'categories',
             label: 'Categories',
             icon: '🏷️',
             color: 'text-indigo-600',
@@ -151,7 +152,7 @@ const AdminDashboard = () => {
             activeColor: 'bg-indigo-600 text-white'
         },
         {
-            id: 'operatorManagement',
+            id: 'operators',
             label: 'Operators',
             icon: '👥',
             color: 'text-cyan-600',
@@ -159,7 +160,7 @@ const AdminDashboard = () => {
             activeColor: 'bg-cyan-600 text-white'
         },
         {
-            id: 'subscriberManagement',
+            id: 'subscribers',
             label: 'Subscribers',
             icon: '📧',
             color: 'text-teal-600',
@@ -167,7 +168,7 @@ const AdminDashboard = () => {
             activeColor: 'bg-teal-600 text-white'
         },
         {
-            id: 'adminSettings',
+            id: 'settings',
             label: 'Settings',
             icon: '⚙️',
             color: 'text-gray-600',
@@ -187,7 +188,7 @@ const AdminDashboard = () => {
                             <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white">
                                 <h3 className="text-lg font-semibold mb-2">Quick Actions</h3>
                                 <p className="text-blue-100 mb-4">Start creating content</p>
-                                <button 
+                                <button
                                     onClick={() => handleViewChange('blogForm')}
                                     className="bg-white text-blue-600 px-4 py-2 rounded-lg font-medium hover:bg-blue-50 transition-colors"
                                 >
@@ -197,7 +198,7 @@ const AdminDashboard = () => {
                             <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-6 text-white">
                                 <h3 className="text-lg font-semibold mb-2">Content Management</h3>
                                 <p className="text-green-100 mb-4">Manage your blogs</p>
-                                <button 
+                                <button
                                     onClick={() => handleViewChange('blogList')}
                                     className="bg-white text-green-600 px-4 py-2 rounded-lg font-medium hover:bg-green-50 transition-colors"
                                 >
@@ -208,7 +209,7 @@ const AdminDashboard = () => {
                                 <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-6 text-white">
                                     <h3 className="text-lg font-semibold mb-2">Pending Reviews</h3>
                                     <p className="text-purple-100 mb-4">{pendingCount} items waiting</p>
-                                    <button 
+                                    <button
                                         onClick={() => handleViewChange('pendingApprovals')}
                                         className="bg-white text-purple-600 px-4 py-2 rounded-lg font-medium hover:bg-purple-50 transition-colors"
                                     >
@@ -245,26 +246,29 @@ const AdminDashboard = () => {
                 )
             case 'blogList':
                 return (
+                    <div className="space-y-6">
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-2xl font-bold text-gray-900">Manage Blogs</h2>
+                            <button
+                                onClick={() => handleViewChange('blogForm')}
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium"
+                            >
+                                Add New Blog
+                            </button>
+                        </div>
+                        <div className="bg-white rounded-xl shadow-sm border">
+                            <BlogManagementComponent />
+                        </div>
+                    </div>
+                )
+            case 'categories':
+                return (
                     <div className="bg-white rounded-xl shadow-sm border">
                         <div className="p-6 border-b">
-                            <h2 className="text-2xl font-semibold text-gray-800">Manage Blogs</h2>
+                            <h2 className="text-2xl font-semibold text-gray-800">Category Management</h2>
                         </div>
                         <div className="p-6">
-                            <AdminBlogTable
-                                blogs={[]}
-                                onEdit={(blog) => {
-                                    setEditingBlog(blog);
-                                    handleViewChange('blogForm');
-                                }}
-                                onDelete={(id) => {
-                                    // Handle delete logic here
-                                    console.log('Delete blog:', id);
-                                }}
-                                onUpdateDate={(id, date) => {
-                                    // Handle date update logic here
-                                    console.log('Update date:', id, date);
-                                }}
-                            />
+                            <CategoryManagementComponent />
                         </div>
                     </div>
                 )
@@ -275,7 +279,7 @@ const AdminDashboard = () => {
                             <h2 className="text-2xl font-semibold text-gray-800">Category Management</h2>
                         </div>
                         <div className="p-6">
-                            <CategoryManager />
+                            <CategoryManagementComponent />
                         </div>
                     </div>
                 )
@@ -296,36 +300,36 @@ const AdminDashboard = () => {
                         </div>
                     </div>
                 )
-            case 'operatorManagement':
+            case 'operators':
                 return (
                     <div className="bg-white rounded-xl shadow-sm border">
                         <div className="p-6 border-b">
                             <h2 className="text-2xl font-semibold text-gray-800">Operator Management</h2>
                         </div>
                         <div className="p-6">
-                            <OperatorManagement />
+                            <OperatorManagementComponent />
                         </div>
                     </div>
                 )
-            case 'adminSettings':
+            case 'settings':
                 return (
                     <div className="bg-white rounded-xl shadow-sm border">
                         <div className="p-6 border-b">
                             <h2 className="text-2xl font-semibold text-gray-800">Admin Settings</h2>
                         </div>
                         <div className="p-6">
-                            <AdminSetting />
+                            <SettingsComponent />
                         </div>
                     </div>
                 )
-            case 'subscriberManagement':
+            case 'subscribers':
                 return (
                     <div className="bg-white rounded-xl shadow-sm border">
                         <div className="p-6 border-b">
                             <h2 className="text-2xl font-semibold text-gray-800">Subscriber Management</h2>
                         </div>
                         <div className="p-6">
-                            <SubscriberManagement />
+                            <SubscriberManagementComponent />
                         </div>
                     </div>
                 )

@@ -5,141 +5,156 @@ let isRefreshing = false;
 let failedQueue = [];
 
 const processQueue = (error, token = null) => {
-    failedQueue.forEach(prom => {
-        if (error) {
-            prom.reject(error);
-        } else {
-            prom.resolve(token);
-        }
-    });
-    failedQueue = [];
+  failedQueue.forEach(prom => (error ? prom.reject(error) : prom.resolve(token)));
+  failedQueue = [];
 };
 
-// Use relative URLs so Next.js rewrites can proxy to the backend
+function hasRefreshToken() {
+  try {
+    const fromSession = window.sessionStorage.getItem('astrox_last_refresh_token');
+    const fromCookie = document.cookie.split('; ').some(c => c.startsWith('refreshToken='));
+    return !!fromSession || !!fromCookie;
+  } catch {
+    return false;
+  }
+}
+
 const api = axios.create({
-    baseURL: '/api', // Use /api as baseURL for Next.js proxy
-    withCredentials: true,
+  baseURL: '/api',
+  withCredentials: true,
 });
 
-// Add request interceptor to log URLs for debugging
+// request logging (optional)
 api.interceptors.request.use(
-    (config) => {
-        console.log('🚀 API Request:', config.method?.toUpperCase(), config.baseURL + config.url);
-        return config;
-    },
-    (error) => {
-        console.error('❌ API Request Error:', error);
-        return Promise.reject(error);
+  (config) => {
+    // attach token to /admin/* requests only
+    const token = getAuthToken();
+    if (token && config.url?.includes('/admin/')) {
+      config.headers['Authorization'] = `Bearer ${token}`;
     }
+    return config;
+  },
+  (error) => Promise.reject(error)
 );
 
-// Authentication interceptor for admin functions
-api.interceptors.request.use(
-    (config) => {
-        const token = getAuthToken();
-        if (token && config.url.includes('/admin/')) {
-            config.headers['Authorization'] = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
-    }
-);
-
+// responses
 api.interceptors.response.use(
-    (response) => {
-        // Handle admin login response
-        if (response.config.url.includes('/admin/login') && response.data.accessToken) {
-            setAuthToken(response.data.accessToken);
-            if (response.data.role) {
-                try {
-                    sessionStorage.setItem('astrox_admin_role_session', response.data.role);
-                } catch (_) {}
-            }
-        }
-        return response;
-    },
-    async (error) => {
-        const originalRequest = error.config;
-
-        if (error.response?.status === 401) {
-            if (originalRequest.url.includes('/admin/login')) {
-                if (error.response?.data?.message?.includes('deactivated')) {
-                    return Promise.reject(error);
-                }
-                return Promise.reject(error);
-            }
-
-            if (originalRequest.url.includes('/admin/refresh-token')) {
-                setAuthToken(null);
-                processQueue(error);
-                window.location.href = '/login';
-                return Promise.reject(error);
-            }
-
-            if (isRefreshing) {
-                return new Promise(function (resolve, reject) {
-                    failedQueue.push({ resolve, reject });
-                }).then(token => {
-                    originalRequest.headers['Authorization'] = `Bearer ${token}`;
-                    return api(originalRequest);
-                }).catch(err => {
-                    return Promise.reject(err);
-                });
-            }
-
-            isRefreshing = true;
-
-            try {
-                let refreshResponse;
-                try {
-                    refreshResponse = await api.post('/admin/refresh-token');
-                } catch (cookieErr) {
-                    const lastLogin = window.sessionStorage.getItem('astrox_last_refresh_token');
-                    if (!lastLogin) throw cookieErr;
-                    refreshResponse = await api.post('/admin/refresh-token',
-                        { refreshToken: lastLogin },
-                        { headers: { 'x-refresh-token': lastLogin } }
-                    );
-                }
-
-                const newAccessToken = refreshResponse.data.accessToken;
-                setAuthToken(newAccessToken);
-
-                if (refreshResponse.data.role) {
-                    try {
-                        sessionStorage.setItem('astrox_admin_role_session', refreshResponse.data.role);
-                    } catch (_) {}
-                }
-
-                processQueue(null, newAccessToken);
-                isRefreshing = false;
-
-                originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
-                return api(originalRequest);
-
-            } catch (refreshError) {
-                setAuthToken(null);
-                processQueue(refreshError);
-                isRefreshing = false;
-                window.location.href = '/login';
-                return Promise.reject(refreshError);
-            }
-        }
-
-        if (error.response?.status === 403) {
-            if (error.response?.data?.message?.includes('deactivated')) {
-                setAuthToken(null);
-                window.location.href = '/login';
-            }
-            return Promise.reject(error);
-        }
-
-        console.error('Response Interceptor: Unhandled API error for', error.config?.url, ':', error.message);
-        return Promise.reject(error);
+  (response) => {
+    // ✅ login success: set role first, then token
+    if (response.config?.url?.includes('/admin/login') && response.data?.accessToken) {
+      if (response.data.role) {
+        try { sessionStorage.setItem('astrox_admin_role_session', response.data.role); } catch {}
+      }
+      setAuthToken(response.data.accessToken);
     }
+    return response;
+  },
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401) {
+    // ⛔ IMPORTANT: do NOT redirect/refresh on verify-token failures.
+    // Let /cms decide to show the login UI without causing a loop.
+    if (originalRequest?.url?.includes('/admin/verify-token')) {
+      try { sessionStorage.removeItem('astrox_admin_role_session'); } catch {}
+      return Promise.reject(error);
+    }
+
+      // if already retried once, stop
+      if (originalRequest?.__isRetryRequest) {
+        removeAuthToken();
+        try { sessionStorage.removeItem('astrox_admin_role_session'); } catch {}
+        if (typeof window !== 'undefined' && window.location.pathname !== '/cms') window.location.href = '/cms';
+        return Promise.reject(error);
+      }
+
+      // never try to refresh for login endpoint
+      if (originalRequest?.url?.includes('/admin/login')) return Promise.reject(error);
+
+      // if refresh endpoint itself 401s
+      if (originalRequest?.url?.includes('/admin/refresh-token')) {
+        removeAuthToken();
+        processQueue(error);
+        try { sessionStorage.removeItem('astrox_admin_role_session'); } catch {}
+        if (typeof window !== 'undefined' && window.location.pathname !== '/cms') window.location.href = '/cms';
+        return Promise.reject(error);
+      }
+
+      // no refresh token? go to /cms once
+      if (!hasRefreshToken()) {
+        removeAuthToken();
+        processQueue(error);
+        isRefreshing = false;
+        try { sessionStorage.removeItem('astrox_admin_role_session'); } catch {}
+        if (typeof window !== 'undefined' && window.location.pathname !== '/cms') window.location.href = '/cms';
+        return Promise.reject(error);
+      }
+
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            originalRequest.headers['Authorization'] = `Bearer ${token}`;
+            return api(originalRequest);
+          })
+          .catch((err) => Promise.reject(err));
+      }
+
+      isRefreshing = true;
+
+      try {
+        originalRequest.__isRetryRequest = true;
+
+        let refreshResponse;
+        try {
+          refreshResponse = await api.post('/admin/refresh-token');
+        } catch (cookieErr) {
+          const lastLogin = window.sessionStorage.getItem('astrox_last_refresh_token');
+          if (!lastLogin) throw cookieErr;
+          refreshResponse = await api.post('/admin/refresh-token',
+            { refreshToken: lastLogin },
+            { headers: { 'x-refresh-token': lastLogin } }
+          );
+        }
+
+        const newAccessToken = refreshResponse.data?.accessToken;
+
+        if (refreshResponse.data?.role) {
+          try { sessionStorage.setItem('astrox_admin_role_session', refreshResponse.data.role); } catch {}
+        }
+        setAuthToken(newAccessToken);
+
+        processQueue(null, newAccessToken);
+        isRefreshing = false;
+
+        originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
+        return api(originalRequest);
+      } catch (refreshError) {
+        removeAuthToken();
+        processQueue(refreshError);
+        isRefreshing = false;
+        try { sessionStorage.removeItem('astrox_admin_role_session'); } catch {}
+        if (typeof window !== 'undefined' && window.location.pathname !== '/cms') window.location.href = '/cms';
+        return Promise.reject(refreshError);
+      }
+    }
+
+    if (error.response?.status === 403) {
+      if (error.response?.data?.message?.includes('deactivated')) {
+        removeAuthToken();
+        try { sessionStorage.removeItem('astrox_admin_role_session'); } catch {}
+        if (typeof window !== 'undefined' && window.location.pathname !== '/cms') window.location.href = '/cms';
+      }
+      return Promise.reject(error);
+    }
+
+    return Promise.reject(error);
+  }
 );
+
+
+     
 
 // Functions for public-facing blog actions
 export const subscribeUser = async (email) => {

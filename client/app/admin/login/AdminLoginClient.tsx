@@ -3,6 +3,9 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
+import { apiService } from '../../lib/api';
+import { setAuthToken } from '../../utils/localStorage';
+import { toast } from 'react-hot-toast';
 
 const AdminLoginClient = () => {
   const { t } = useTranslation();
@@ -17,28 +20,22 @@ const AdminLoginClient = () => {
     setError('');
 
     try {
-      const response = await fetch('/api/admin/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(credentials),
-      });
+      const response = await apiService.login(credentials);
 
-      const data = await response.json();
-
-      if (response.ok) {
-        // Store token and redirect
-        localStorage.setItem('adminToken', data.accessToken);
-        if (data.role) {
-          sessionStorage.setItem('astrox_admin_role_session', data.role);
+      if (response.data.accessToken) {
+        // Store token using the utility function
+        setAuthToken(response.data.accessToken);
+        if (response.data.role) {
+          sessionStorage.setItem('astrox_admin_role_session', response.data.role);
         }
+        toast.success('Login successful!');
         router.push('/admin/dashboard');
       } else {
-        setError(data.message || 'Login failed');
+        setError(response.data.message || 'Login failed');
       }
-    } catch (err) {
-      setError('Network error occurred');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Network error occurred');
+      toast.error('Login failed');
     } finally {
       setLoading(false);
     }

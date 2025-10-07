@@ -77,6 +77,8 @@ const HomePage = () => {
         ]
     };
 
+    console.log(">>>>>", process.env.NEXT_PUBLIC_BASE_URL);
+    
     const websiteSchema = {
         "@context": "https://schema.org",
         "@type": "WebSite",

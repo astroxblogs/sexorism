@@ -4,10 +4,16 @@ const nextConfig = {
     domains: ['res.cloudinary.com'], // Add your Cloudinary domain
   },
   async rewrites() {
+    // Use local backend for development, production backend for production
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    const backendUrl = isDevelopment
+      ? 'http://localhost:8081/api/:path*'  // Local development server
+      : 'https://api.innvibs.in/api/:path*'; // Production server
+
     return [
       {
         source: '/api/:path*',
-        destination: 'https://api.innvibs.in/api/:path*', // Proxy to deployed backend
+        destination: backendUrl,
       },
     ];
   },

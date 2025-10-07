@@ -7,7 +7,7 @@ const AdminBlogTable = ({ blogs, onEdit, onDelete, onUpdateDate, startIndex = 0 
   const [editingDateId, setEditingDateId] = useState(null);
 
   const todayString = new Date().toISOString().split('T')[0];
-  const validBlogs = blogs ? blogs.filter((blog) => blog) : [];
+  const validBlogs = blogs ? blogs.filter((blog) => blog && blog._id) : [];
 
   const handleConfirmDelete = (id) => {
     if (onDelete) {
