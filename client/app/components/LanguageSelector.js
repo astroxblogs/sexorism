@@ -2,16 +2,22 @@
 
 import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+ import { useRouter } from 'next/navigation'
+import { setApiLanguage } from '../lib/api'
+
 
 const LanguageSelector = () => {
     const { i18n, t } = useTranslation();
 
     const [open, setOpen] = useState(false);
-    const changeLanguage = (newLang) => {
-        i18n.changeLanguage(newLang);
-        localStorage.setItem('lang', newLang);
-        setOpen(false);
-    };
+   const router = useRouter()
+ const changeLanguage = async (newLang) => {
+  await i18n.changeLanguage(newLang)
+  setApiLanguage(newLang)        // make axios send ?lang + Accept-Language
+  localStorage.setItem('lang', newLang)
+   setOpen(false)
+   router.refresh()               // re-fetch data in App Router
+ }
 
     // Open dropdown smoothly on hover; close when mouse leaves the wrapper
     const hoverTimer = useRef(null);
@@ -37,7 +43,9 @@ const LanguageSelector = () => {
                 aria-haspopup="listbox"
                 aria-expanded={open}
             >
-                {i18n.language === 'hi' ? t('language_selector.hindi') : t('language_selector.english')}
+               {(i18n.resolvedLanguage || i18n.language) === 'hi'
+  ? t('language_selector.hindi')
+   : t('language_selector.english')}
             </button>
             {open && (
                 <ul

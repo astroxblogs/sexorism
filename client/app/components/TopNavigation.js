@@ -14,7 +14,8 @@ import { motion, AnimatePresence } from "framer-motion";
 
 
 const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLogoClick, categories }) => {
-    const { t, i18n } = useTranslation();
+     const { t, i18n } = useTranslation();
+ const lang = i18n?.resolvedLanguage || i18n?.language || 'en';
     const router = useRouter();
 
     const [showSearchInput, setShowSearchInput] = useState(false);
@@ -115,7 +116,7 @@ const selectValue = dynamicCategories.some(c => c.value === activeCategory)
     ? activeCategory
     : (dynamicCategories[0]?.value || '');
   const getCategoryName = (category) => {
-    return i18n.language === 'hi'
+    return lang === 'hi'
       ? (category.name_hi || category.name_en)
       : (category.name_en || category.name_hi);
   };

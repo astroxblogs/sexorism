@@ -15,7 +15,7 @@ const slugify = (text) => {
 
 const SidebarSection = ({ title, items = [], onViewMore }) => {
     const { i18n, t } = useTranslation();
-    const currentLang = i18n.language;
+   const currentLang = i18n?.resolvedLanguage || i18n?.language || 'en';
 
     const getLocalized = (blog, field) => {
         const localizedField = blog?.[`${field}_${currentLang}`];
@@ -27,7 +27,7 @@ const SidebarSection = ({ title, items = [], onViewMore }) => {
     if (!items || items.length === 0) return null;
 
     return (
-        <aside className="mb-8">
+  <aside key={currentLang} className="mb-8">
             <div className="flex items-center justify-between mb-3">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
   {currentLang === 'hi'

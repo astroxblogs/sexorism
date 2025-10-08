@@ -15,6 +15,41 @@ const generateSlug = (title) => {
 
 
 
+// Decide language: ?lang=xx > Accept-Language > 'en'
+function getLang(req) {
+  const q = (req.query?.lang || '').toString().trim().toLowerCase();
+  if (q) return q.split('-')[0];
+  const h = (req.headers['accept-language'] || '').toString().trim().toLowerCase();
+  if (h) return h.split(',')[0].split('-')[0];
+  return 'en';
+}
+
+// Apply language to a single Blog document (works with Mongoose docs or plain objects)
+function localizeBlog(doc, lang = 'en') {
+  if (!doc) return doc;
+  const o = typeof doc.toObject === 'function' ? doc.toObject() : { ...doc };
+
+  // If you store flat fields like title_hi/content_hi/excerpt_hi
+  const suf = lang === 'en' ? '' : `_${lang}`;
+
+  // title
+  if (suf && o[`title${suf}`]) o.title = o[`title${suf}`];
+  else if (o.title_en && lang === 'en') o.title = o.title_en;
+
+  // excerpt
+  if (suf && o[`excerpt${suf}`]) o.excerpt = o[`excerpt${suf}`];
+  else if (o.excerpt_en && lang === 'en') o.excerpt = o.excerpt_en;
+
+  // content
+  if (suf && o[`content${suf}`]) o.content = o[`content${suf}`];
+  else if (o.content_en && lang === 'en') o.content = o.content_en;
+
+  // optional: tags, if you keep localized variants like tags_hi
+  if (suf && o[`tags${suf}`]) o.tags = o[`tags${suf}`];
+
+  o.lang = lang; // debugging/visibility
+  return o;
+}
 
 // ===============================
 // HELPER FUNCTION for Social Media Previews
@@ -55,101 +90,100 @@ const getBlogBySlugHelper = async (slug) => {
 // Get all blogs (homepage, with pagination + filters)
 // ===============================
 const getBlogs = async (req, res) => {
+  try {
+    // 🔤 pick lang from ?lang or Accept-Language; normalize to 'en' | 'hi'
+    const qLang = (req.query?.lang || '').toString().toLowerCase();
+    const headerLang = (req.headers['accept-language'] || '').toString().toLowerCase();
+    const lang = (qLang || headerLang.split(',')[0]).split('-')[0] || 'en';
+    const suf = lang === 'en' ? '' : `_${lang}`;
+
+    const { category, tag, page = 1, limit = 10, excludeCategory } = req.query;
+    const parsedLimit = parseInt(limit, 10);
+    const parsedPage = parseInt(page, 10);
+    let filter = {};
+
+    // robust decode for category
+    let decodedCategory = category;
     try {
-        const { category, tag, page = 1, limit = 10, excludeCategory } = req.query;
-        const parsedLimit = parseInt(limit, 10);
-        const parsedPage = parseInt(page, 10);
-        let filter = {};
-
-        // Handle URL-encoded category parameter (robust decoding)
-         let decodedCategory = category;
-         try {
-             // Keep decoding until no % characters remain (handles multiple levels of encoding)
-             while (decodedCategory && decodedCategory.includes('%')) {
-                 decodedCategory = decodeURIComponent(decodedCategory);
-             }
-         } catch (e) {
-             // If decoding fails, use original value
-             decodedCategory = category;
-         }
-
-         if (decodedCategory && decodedCategory.toLowerCase() !== 'all') {
-             const trimmedCategory = decodedCategory.trim();
-
-             // Handle special case: convert slug format to category name format
-             // "health-&-wellness" → "Health & Wellness"
-             let categoryToMatch = trimmedCategory;
-             if (trimmedCategory.includes('-&-')) {
-                 // Convert slug format back to category name format for matching
-                 categoryToMatch = trimmedCategory
-                     .split('-&-')
-                     .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                     .join(' & ');
-             }
-
-             // Use case-insensitive regex to match category names
-             filter.category = { $regex: new RegExp(`^${categoryToMatch}$`, 'i') };
-         }
-        if (excludeCategory) {
-            let decodedExcludeCategory = excludeCategory;
-            try {
-                // Keep decoding until no % characters remain
-                while (decodedExcludeCategory && decodedExcludeCategory.includes('%')) {
-                    decodedExcludeCategory = decodeURIComponent(decodedExcludeCategory);
-                }
-            } catch (e) {
-                decodedExcludeCategory = excludeCategory;
-            }
-            const trimmedExcludeCategory = decodedExcludeCategory.trim();
-
-            // Handle special case: convert slug format to category name format
-            let categoryToExclude = trimmedExcludeCategory;
-            if (trimmedExcludeCategory.includes('-&-')) {
-                categoryToExclude = trimmedExcludeCategory
-                    .split('-&-')
-                    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                    .join(' & ');
-            }
-
-            // Fix: Use $nin (not in) with an array instead of $ne with regex
-            // First get all categories except the one to exclude
-            const allCategories = await Category.find({}, 'name_en').lean();
-            const categoriesToInclude = allCategories
-                .map(cat => cat.name_en)
-                .filter(catName => !catName.toLowerCase().includes(categoryToExclude.toLowerCase()));
-
-            if (categoriesToInclude.length > 0) {
-                filter.category = { $in: categoriesToInclude };
-            } else {
-                // If no categories to include, return empty result
-                filter.category = { $in: [] };
-            }
-        }
-        if (tag) { filter.tags = { $in: [new RegExp(`^${tag.trim()}$`, 'i')] }; }
-        const skip = (parsedPage - 1) * parsedLimit;
-        const publicFilter = { ...filter, $or: [{ status: 'published' }, { status: { $exists: false } }] };
-        
-        // ✅ FIX: Added .select() to ensure excerpt fields are fetched efficiently
-        const blogs = await Blog.find(publicFilter)
-            .sort({ date: -1 })
-            .skip(skip)
-            .limit(parsedLimit)
-            .select('title_en title_hi content_en content_hi image date category tags slug views likedBy shareCount comments excerpt_en excerpt_hi');
-
-        const blogsWithLikeCount = blogs.map(blog => {
-            const blogObject = blog.toObject();
-            blogObject.likes = blog.likedBy ? blog.likedBy.length : 0;
-            return blogObject;
-        });
-
-        const totalBlogs = await Blog.countDocuments(publicFilter);
-        const totalPages = Math.ceil(totalBlogs / parsedLimit);
-
-        res.json({ blogs: blogsWithLikeCount, currentPage: parsedPage, totalPages, totalBlogs });
-    } catch (err) {
-        console.error('Error in getBlogs:', err);
-        res.status(500).json({ error: err.message || 'Failed to retrieve blogs.' });
+      while (decodedCategory && decodedCategory.includes('%')) {
+        decodedCategory = decodeURIComponent(decodedCategory);
+      }
+    } catch {
+      decodedCategory = category;
     }
+
+    if (decodedCategory && decodedCategory.toLowerCase() !== 'all') {
+      const trimmedCategory = decodedCategory.trim();
+      let categoryToMatch = trimmedCategory;
+      if (trimmedCategory.includes('-&-')) {
+        categoryToMatch = trimmedCategory
+          .split('-&-')
+          .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+          .join(' & ');
+      }
+      filter.category = { $regex: new RegExp(`^${categoryToMatch}$`, 'i') };
+    }
+
+    if (excludeCategory) {
+      let decodedExcludeCategory = excludeCategory;
+      try {
+        while (decodedExcludeCategory && decodedExcludeCategory.includes('%')) {
+          decodedExcludeCategory = decodeURIComponent(decodedExcludeCategory);
+        }
+      } catch {
+        decodedExcludeCategory = excludeCategory;
+      }
+      const trimmedExcludeCategory = decodedExcludeCategory.trim();
+
+      let categoryToExclude = trimmedExcludeCategory;
+      if (trimmedExcludeCategory.includes('-&-')) {
+        categoryToExclude = trimmedExcludeCategory
+          .split('-&-')
+          .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+          .join(' & ');
+      }
+
+      const allCategories = await Category.find({}, 'name_en').lean();
+      const categoriesToInclude = allCategories
+        .map(cat => cat.name_en)
+        .filter(catName => !catName.toLowerCase().includes(categoryToExclude.toLowerCase()));
+
+      filter.category = categoriesToInclude.length > 0 ? { $in: categoriesToInclude } : { $in: [] };
+    }
+
+    if (tag) {
+      filter.tags = { $in: [new RegExp(`^${tag.trim()}$`, 'i')] };
+    }
+
+    const skip = (parsedPage - 1) * parsedLimit;
+    const publicFilter = { ...filter, $or: [{ status: 'published' }, { status: { $exists: false } }] };
+
+    // include base + localized fields for safe fallback
+    const blogs = await Blog.find(publicFilter)
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(parsedLimit)
+      .select('title title_en title_hi content content_en content_hi excerpt excerpt_en excerpt_hi image date category tags slug views likedBy shareCount comments');
+
+    const blogsWithLikeCount = blogs.map(doc => {
+      const b = doc.toObject();
+      b.likes = Array.isArray(b.likedBy) ? b.likedBy.length : (b.likes || 0);
+      // ✅ prefer requested lang -> English -> base
+      b.title   = (suf && b[`title${suf}`])   || b.title_en   || b.title   || b.title_hi;
+      b.excerpt = (suf && b[`excerpt${suf}`]) || b.excerpt_en || b.excerpt || b.excerpt_hi;
+      b.content = (suf && b[`content${suf}`]) || b.content_en || b.content || b.content_hi;
+      b.lang = lang;
+      return b;
+    });
+
+    const totalBlogs = await Blog.countDocuments(publicFilter);
+    const totalPages = Math.ceil(totalBlogs / parsedLimit);
+
+    res.json({ blogs: blogsWithLikeCount, currentPage: parsedPage, totalPages, totalBlogs });
+  } catch (err) {
+    console.error('Error in getBlogs:', err);
+    res.status(500).json({ error: err.message || 'Failed to retrieve blogs.' });
+  }
 };
 
 // ===============================
@@ -157,17 +191,17 @@ const getBlogs = async (req, res) => {
 // ===============================
 const getLatestBlogs = async (req, res) => {
   try {
+    const lang = getLang(req);
+
     const blogs = await Blog.find({
       $or: [{ status: 'published' }, { status: { $exists: false } }]
     })
       .sort({ date: -1 })
       .limit(5)
-      // ✅ FIX: Added excerpt_en and excerpt_hi to the selection
-      .select(
-        'title title_en title_hi content content_en content_hi image date category tags slug views comments likes shareCount excerpt_en excerpt_hi'
-      );
+      .select('title title_en title_hi content content_en content_hi image date category tags slug views comments likes shareCount excerpt_en excerpt_hi likedBy');
 
-    res.json(blogs);
+    const localized = blogs.map(b => localizeBlog(b, lang));
+    res.json(localized);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -178,39 +212,26 @@ const getLatestBlogs = async (req, res) => {
 // ===============================
 const getHomepageBlogs = async (req, res) => {
   try {
-    // The new logic is simpler: Match -> Sort -> Limit
+    const lang = getLang(req);
+
     const latestBlogs = await Blog.aggregate([
-      // Stage 1: Match only published blogs (same as before)
-      {
-        $match: {
-          category: { $exists: true, $ne: null, $ne: "" },
-          $or: [{ status: 'published' }, { status: { $exists: false } }]
-        }
-      },
-      // Stage 2: Sort by date to get the newest first (same as before)
-      {
-        $sort: { date: -1 }
-      },
-      // Stage 3: Limit the results to the top 20 blogs
-      {
-        $limit: 20
-      },
-      // Stage 4: Add a 'likes' count field (same as before)
-      {
-        $addFields: {
-          likes: { $size: { $ifNull: ['$likedBy', []] } }
-        }
-      }
+      { $match: { category: { $exists: true, $ne: null, $ne: "" },
+                  $or: [{ status: 'published' }, { status: { $exists: false } }] } },
+      { $sort: { date: -1 } },
+      { $limit: 20 },
+      { $addFields: { likes: { $size: { $ifNull: ['$likedBy', []] } } } }
+      // no $project needed—keep all fields so we can localize below
     ]);
 
-    // Send the list of 20 blogs as the response
-    res.json({ blogs: latestBlogs });
-
+    // Localize each blog
+    const localized = latestBlogs.map(b => localizeBlog(b, lang));
+    res.json({ blogs: localized });
   } catch (err) {
     console.error('Error in getHomepageBlogs:', err);
     res.status(500).json({ error: 'Failed to retrieve homepage blogs.' });
   }
 };
+
 
 
 // ===============================
@@ -296,22 +317,27 @@ const getBlog = async (req, res) => {
 // ===============================
 const getBlogBySlug = async (req, res) => {
   try {
+    const lang = getLang(req);
+
     const blog = await Blog.findOne({
       slug: req.params.slug,
       $or: [{ status: 'published' }, { status: { $exists: false } }]
     })
       .populate('comments')
-      .select(
-        'title title_en title_hi content content_en content_hi image date category tags slug views comments likes shareCount'
-      );
+      .select('title title_en title_hi content content_en content_hi image date category tags slug views comments likes shareCount excerpt_en excerpt_hi likedBy');
 
     if (!blog) return res.status(404).json({ error: 'Blog not found' });
 
-    res.json(blog);
+    const localized = localizeBlog(blog, lang);
+    // keep your computed likes if you want
+    localized.likes = Array.isArray(localized.likedBy) ? localized.likedBy.length : (localized.likes || 0);
+
+    res.json(localized);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 
 
@@ -669,73 +695,62 @@ const generateSocialPreviewHTML = (blog, errorMessage = null, categoryName = nul
 // In server/controllers/blogController.js
 
 const getBlogByCategoryAndSlug = async (req, res) => {
-    // ✅ FIX: Declare slug here to make it available in the catch block
-    const { categoryName, slug } = req.params;
+  const { categoryName, slug } = req.params;
 
+  try {
+    const lang = getLang(req);
+
+    // robust decode
+    let decodedCategoryName = categoryName;
     try {
-        // Handle URL-encoded categoryName parameter (robust decoding)
-        let decodedCategoryName = categoryName;
-        try {
-            // Keep decoding until no % characters remain (handles multiple levels of encoding)
-            while (decodedCategoryName && decodedCategoryName.includes('%')) {
-                decodedCategoryName = decodeURIComponent(decodedCategoryName);
-            }
-        } catch (e) {
-            // If decoding fails, use original value
-            decodedCategoryName = categoryName;
-        }
-
-        // Find category by slug with flexible matching
-        let category = await Category.findOne({ slug: decodedCategoryName });
-
-        // If not found by slug, try case-insensitive name matching
-        if (!category) {
-            // Handle special case: convert slug format to category name format
-            let categoryNameToMatch = decodedCategoryName;
-            if (decodedCategoryName.includes('-&-')) {
-                categoryNameToMatch = decodedCategoryName
-                    .split('-&-')
-                    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                    .join(' & ');
-            }
-
-            category = await Category.findOne({
-                name_en: { $regex: new RegExp(`^${categoryNameToMatch}$`, 'i') }
-            });
-        }
-
-        if (!category) {
-            return res.status(404).json({ error: 'Category not found' });
-        }
-
-        const blog = await Blog.findOne({
-            slug: slug,
-            category: category.name_en,
-            $or: [{ status: 'published' }, { status: { $exists: false } }],
-        });
-
-        console.log(`🔍 Looking for blog: slug="${slug}", category="${category.name_en}"`);
-        console.log(`📄 Blog found: ${blog ? '✅' : '❌'}`);
-        if (!blog) {
-            console.log(`❌ Available blogs with slug "${slug}":`);
-            const allBlogsWithSlug = await Blog.find({ slug: slug }).select('title category status');
-            console.log(allBlogsWithSlug);
-        }
-
-        if (!blog) {
-            return res.status(404).json({ error: 'Blog not found in this category' });
-        }
-
-        const responseBlog = blog.toObject();
-        responseBlog.likes = blog.likedBy ? blog.likedBy.length : 0;
-
-        res.json(responseBlog);
-    } catch (err) {
-        // ✅ FIX: The 'slug' variable is now accessible here for proper logging
-        console.error(`Error in getBlogByCategoryAndSlug for slug "${slug}":`, err);
-        res.status(500).json({ error: err.message });
+      while (decodedCategoryName && decodedCategoryName.includes('%')) {
+        decodedCategoryName = decodeURIComponent(decodedCategoryName);
+      }
+    } catch {
+      decodedCategoryName = categoryName;
     }
+
+    // find category by slug; fallback to name_en
+    let category = await Category.findOne({ slug: decodedCategoryName });
+    if (!category) {
+      let categoryNameToMatch = decodedCategoryName;
+      if (decodedCategoryName.includes('-&-')) {
+        categoryNameToMatch = decodedCategoryName
+          .split('-&-')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join(' & ');
+      }
+      category = await Category.findOne({
+        name_en: { $regex: new RegExp(`^${categoryNameToMatch}$`, 'i') }
+      });
+    }
+
+    if (!category) {
+      return res.status(404).json({ error: 'Category not found' });
+    }
+
+    const blog = await Blog.findOne({
+      slug: slug,
+      category: category.name_en, // you store category in English key
+      $or: [{ status: 'published' }, { status: { $exists: false } }],
+    }).select('title title_en title_hi content content_en content_hi image date category tags slug views comments likes shareCount excerpt_en excerpt_hi likedBy');
+
+    if (!blog) {
+      // debug logging stays if you want
+      console.log(`❌ Blog not found: slug="${slug}" in category="${category.name_en}"`);
+      return res.status(404).json({ error: 'Blog not found in this category' });
+    }
+
+    const localized = localizeBlog(blog, lang);
+    localized.likes = Array.isArray(localized.likedBy) ? localized.likedBy.length : (localized.likes || 0);
+
+    res.json(localized);
+  } catch (err) {
+    console.error(`Error in getBlogByCategoryAndSlug for slug "${slug}":`, err);
+    res.status(500).json({ error: err.message });
+  }
 };
+
 // ===============================
 // Delete Blog
 // ===============================

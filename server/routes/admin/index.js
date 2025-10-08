@@ -164,5 +164,6 @@ router.put('/categories/:id', adminAuth, categoryController.updateCategory);
 
 // ----------------- SUBSCRIBER MANAGEMENT (Admin Only) -----------------
 router.get('/subscribers', adminAuth, requireRole('admin'), subscriberController.getSubscribers);
+router.get('/subscribers/stats', adminAuth, requireRole('admin'), subscriberController.getSubscriberStats);
 
 module.exports = router;

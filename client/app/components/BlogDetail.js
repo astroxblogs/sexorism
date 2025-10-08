@@ -11,7 +11,9 @@ import BlogArticle from './BlogArticle';
 const POPUP_DELAY_SECONDS = 15;
 
 const BlogDetail = ({ blog }) => {
-    const { i18n } = useTranslation();
+     const { i18n } = useTranslation();
+ const lang = i18n?.resolvedLanguage || i18n?.language || 'en';
+
     const { updateBlog } = useBlogs();
     const { getShareCount, setInitialShareCount } = useShare();
 
@@ -20,6 +22,19 @@ const BlogDetail = ({ blog }) => {
     const timerRef = useRef(null);
     const processedBlogId = useRef(null);
 
+
+
+
+    const localizedBlog = blog
+   ? {
+       ...blog,
+       title:   blog?.[`title_${lang}`]   ?? blog?.title_en   ?? blog?.title,
+       excerpt: blog?.[`excerpt_${lang}`] ?? blog?.excerpt_en ?? blog?.excerpt,
+       content: blog?.[`content_${lang}`] ?? blog?.content_en ?? blog?.content,
+       tags:    blog?.[`tags_${lang}`]    ?? blog?.tags,
+       lang,
+     }
+   : blog;
     // Blog is now passed as prop, so we just update the context
     useEffect(() => {
         if (blog && updateBlog) {
@@ -78,15 +93,16 @@ const BlogDetail = ({ blog }) => {
     if (!blog) return <div className="text-center mt-20 p-4 dark:text-gray-300">Blog not found.</div>;
 
     return (
-        <BlogArticle
-            blog={blog}
+   <BlogArticle
+            key={lang}              // force rerender on language switch
+            blog={localizedBlog}
             isSubscribed={isSubscribed}
             setIsSubscribed={setIsSubscribed}
             showTimedPopup={showTimedPopup}
             setShowTimedPopup={setShowTimedPopup}
             onTimedPopupSuccess={handleTimedPopupSuccess}
             getShareCount={getShareCount}
-            currentLang={i18n.language}
+             currentLang={lang}
         />
     );
 };

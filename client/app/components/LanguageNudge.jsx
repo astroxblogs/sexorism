@@ -1,5 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'next/navigation';
+ import { setApiLanguage } from '../lib/api';
+
 
 const LanguageNudge = () => {
     const { i18n } = useTranslation();
@@ -7,7 +10,7 @@ const LanguageNudge = () => {
     const boxRef = useRef(null);
 
     // Determine if the nudge should be active and what it should display
-    const currentLang = i18n.language;
+    const currentLang = i18n?.resolvedLanguage || i18n?.language || 'en';
     const isNudgeActiveForLang = currentLang === 'en' || currentLang === 'hi';
     const targetLang = currentLang === 'en' ? 'hi' : 'en';
     const nudgeText = currentLang === 'en' ? 'Read in Hindi' : 'Read in English';
@@ -51,11 +54,14 @@ const LanguageNudge = () => {
 
     if (!visible) return null;
 
-    const handleSwitchLanguage = () => {
-        i18n.changeLanguage(targetLang);
-        localStorage.setItem('lang', targetLang);
-        setVisible(false);
-    };
+    const router = useRouter();
+const handleSwitchLanguage = async () => {
+  await i18n.changeLanguage(targetLang);
+  setApiLanguage(targetLang);          // keep axios in sync (adds ?lang + header)
+  localStorage.setItem('lang', targetLang);
+  setVisible(false);
+  router.refresh();                    // triggers data re-fetch (sidebar rebuild)
+ };
 
     const handleDismiss = (e) => {
         e.stopPropagation(); // Prevents the language from switching when closing

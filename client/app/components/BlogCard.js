@@ -20,7 +20,7 @@ const tagSlugify = (tag) => {
 
 const BlogCard = ({ blog, onLikeUpdate, searchQuery, visitorId }) => {
     const { i18n, t } = useTranslation();
-    const currentLang = i18n.language;
+ const currentLang = i18n?.resolvedLanguage || i18n?.language || 'en';
     const { setInitialShareCount } = useShare();
 
     useEffect(() => {
@@ -29,18 +29,14 @@ const BlogCard = ({ blog, onLikeUpdate, searchQuery, visitorId }) => {
         }
     }, [blog, setInitialShareCount]);
 
-    const getLocalizedField = (field) => {
-        // Always prioritize English fields first for consistent display
-        const englishField = blog[`${field}_en`];
-        if (englishField && englishField.trim() !== '') return englishField;
-
-        // Then check current language (for non-English content)
-        const localizedField = blog[`${field}_${currentLang}`];
-        if (localizedField && localizedField.trim() !== '') return localizedField;
-
-        // Fallback for older single-language fields
-        return blog[field] || "";
-    };
+ const getLocalizedField = (field) => {
+   // ✅ Prefer current language first (hi -> *_hi), then English, then base
+   const localized = blog?.[`${field}_${currentLang}`];
+if (localized && localized.trim() !== '') return localized;
+   const english = blog?.[`${field}_en`];
+   if (english && english.trim() !== '') return english;
+   return blog?.[field] || '';
+ };
 
     const displayTitle = getLocalizedField("title");
     
@@ -87,7 +83,7 @@ const BlogCard = ({ blog, onLikeUpdate, searchQuery, visitorId }) => {
     const blogUrl = generateBlogUrl();
 
     return (
-        <div className="flex flex-col sm:flex-row items-stretch bg-white dark:bg-gray-900 rounded-xl shadow-sm hover:shadow transition overflow-visible w-full">
+        <div  key={currentLang} className="flex flex-col sm:flex-row items-stretch bg-white dark:bg-gray-900 rounded-xl shadow-sm hover:shadow transition overflow-visible w-full">
             <Link
                 href={blogUrl}
                 className="w-full aspect-[16/9] sm:w-40 md:w-48 sm:aspect-auto sm:self-stretch flex-shrink-0 overflow-hidden group"

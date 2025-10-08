@@ -53,8 +53,8 @@ const BlogArticle = ({
 }) => {
     
     // Content Processing (no changes here)
-    const displayTitle = getLocalizedContent('title', blog, currentLang);
-    const displayContent = getLocalizedContent('content', blog, currentLang);
+    const displayTitle = blog?.title ?? getLocalizedContent('title', blog, currentLang);
+ const displayContent = blog?.content ?? getLocalizedContent('content', blog, currentLang);
     const rawContentHtml = marked.parse(displayContent);
     const cleanContentHtml = DOMPurify.sanitize(rawContentHtml);
     const contentToDisplay = cleanContentHtml;

@@ -77,13 +77,27 @@ app.get('/', (req, res) => {
 
 
 // --- Database Connection ---
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(process.env.MONGO_URI, {
+    serverSelectionTimeoutMS: 15000, // 15 seconds
+    socketTimeoutMS: 45000, // 45 seconds
+    maxPoolSize: 10, // Maintain up to 10 socket connections
+    minPoolSize: 5, // Maintain a minimum of 5 socket connections
+})
     .then(() => {
-        console.log('✅ MongoDB connected...', process.env.MONGO_URI);
+        console.log('✅ MongoDB connected successfully!');
+        console.log('📊 Database:', mongoose.connection.db.databaseName);
+        console.log('🔗 Connection ready state:', mongoose.connection.readyState);
         // ✅ ADDED: Confirmation message that the job is scheduled on startup
         console.log('🗓️  Daily personalized email job is scheduled to run at 8:00 AM IST.');
     })
-    .catch(err => console.log('❌ MongoDB connection error:', err));
+    .catch(err => {
+        console.log('❌ MongoDB connection error:', err.message);
+        console.log('🔍 Troubleshooting:');
+        console.log('   - MONGO_URI loaded:', !!process.env.MONGO_URI);
+        console.log('   - MongoDB Atlas cluster status: Check dashboard');
+        console.log('   - Network connectivity: Verify internet connection');
+        console.log('   - Firewall/VPN: Check if blocking MongoDB Atlas');
+    });
 
 
 // --- Scheduled Jobs ---

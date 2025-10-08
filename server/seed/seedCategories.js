@@ -117,23 +117,23 @@ const seedCategories = [
   }
 ];
 
-async function seed() {
-  try {
+// async function seed() {
+//   try {
    
-    // Insert new categories
-    await Category.insertMany(seedCategories);
-    console.log('✅ Categories seeded successfully!');
+//     // Insert new categories
+//     await Category.insertMany(seedCategories);
+//     console.log('✅ Categories seeded successfully!');
 
-    console.log('\n📋 Created Categories:');
-    seedCategories.forEach(cat => {
-      console.log(`  - ${cat.name_en} (${cat.name_hi}) - Slug: ${cat.slug}`);
-    });
+//     console.log('\n📋 Created Categories:');
+//     seedCategories.forEach(cat => {
+//       console.log(`  - ${cat.name_en} (${cat.name_hi}) - Slug: ${cat.slug}`);
+//     });
 
-  } catch (error) {
-    console.error('❌ Error during category seeding:', error);
-  } finally {
-    mongoose.disconnect();
-  }
-}
+//   } catch (error) {
+//     console.error('❌ Error during category seeding:', error);
+//   } finally {
+//     mongoose.disconnect();
+//   }
+// }
 
 seed();

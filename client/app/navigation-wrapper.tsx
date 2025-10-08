@@ -5,7 +5,8 @@ import TopNavigation from './components/TopNavigation'
 import Footer1 from './components/Footer1'
 import LanguageNudge from './components/LanguageNudge'
 import { usePathname, useRouter } from 'next/navigation'
-import axios from 'axios'
+ import { getCategories } from './lib/api'
+
 
 interface NavigationWrapperProps {
   children: React.ReactNode
@@ -32,11 +33,8 @@ const NavigationWrapper: React.FC<NavigationWrapperProps> = ({ children }) => {
     if (categories.length > 0) return; // Prevent multiple calls
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8081'
-      const response = await axios.get(`${baseUrl.replace(/\/$/, '')}/api/blogs/categories`)
-      if (response.data) {
-        setCategories(response.data)
-      }
+      const data = await getCategories()        // uses axios instance with language attached
+      if (data) setCategories(data)
     } catch (error) {
       console.error('Error fetching categories:', error)
     }

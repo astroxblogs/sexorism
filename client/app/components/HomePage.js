@@ -15,7 +15,8 @@ import { useBlogs } from '../context/BlogContext.js';
 const INITIAL_PAGE_SIZE = 6;
 
 const HomePage = () => {
-  const { t } = useTranslation();
+   const { t, i18n } = useTranslation();
+ const lang = i18n?.resolvedLanguage || i18n?.language || 'en';
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -123,11 +124,12 @@ const HomePage = () => {
 
   // ===== FEATURED BLOGS (HOMEPAGE HERO) =====
   useEffect(() => {
-    const fetchFeaturedBlogs = async () => {
-      if (featuredBlogs.length > 0) return; // Prevent multiple calls
+  const fetchFeaturedBlogs = async () => {
+    // allow refetch on language change
+    if (featuredBlogs.length > 0) setFeaturedBlogs([]);
 
       try {
-        const res = await api.get('/blogs/latest');
+         const res = await api.get('/blogs/latest'); // interceptor adds ?lang + header
         if (setFeaturedBlogs) {
           setFeaturedBlogs(res.data);
         }
@@ -136,8 +138,8 @@ const HomePage = () => {
       }
     };
 
-    fetchFeaturedBlogs();
-  }, []); // run once
+   fetchFeaturedBlogs();
+ }, [lang]); // refetch when language changes
 
   // ===== SIDEBAR DATA =====
   useEffect(() => {
@@ -199,7 +201,8 @@ const HomePage = () => {
 
     const loadSidebar = async () => {
       setSidebarLoading(true);
-
+setSidebarSections([]);
+   setSidebarLatest([]);
       if (searchQuery) {
         setSidebarSections([]);
         setSidebarLatest([]);
@@ -230,7 +233,7 @@ const HomePage = () => {
     return () => {
       isMounted = false;
     };
-  }, [activeCategory, searchQuery, activeTag]); // include tag in deps
+ }, [activeCategory, searchQuery, activeTag, lang]);
 
   // ===== MAIN FEED FETCH (HOME / CATEGORY / TAG / SEARCH) =====
   const fetchBlogs = useCallback(
@@ -293,8 +296,16 @@ const HomePage = () => {
         setLoadingMore(false);
       }
     },
-    [activeCategory, searchQuery, activeTag, setBlogs]
+   [activeCategory, searchQuery, activeTag, setBlogs, lang]
   );
+
+
+
+useEffect(() => {   // refetch first page when language changes
+  if (!isInitialLoad) {     fetchBlogs(1, false);
+  }
+}, [lang]);
+
 
   useEffect(() => {
     if (isInitialLoad) {
@@ -386,8 +397,8 @@ const HomePage = () => {
               </h2>
             )}
 
-            <BlogList
-              key={`${activeCategory}-${activeTag}-${searchQuery}-${currentPage}`}
+           <BlogList
+              key={`${lang}-${activeCategory}-${activeTag}-${searchQuery}-${currentPage}`}
               blogs={blogs}
               loadingMore={loadingMore}
               hasMore={currentPage < totalPages}

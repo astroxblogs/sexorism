@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getCategoryClasses } from '../lib/categoryColors';
 import { useTranslation } from 'react-i18next';
+import { getCategories } from '../lib/api';
 
 const slugify = (text) => {
     return text
@@ -15,28 +16,27 @@ const slugify = (text) => {
 };
 
 const SidebarLatest = ({ title = 'Latest Updates', items = [] }) => {
-    const { i18n, t } = useTranslation();
-    const currentLang = i18n.language;
+ const { i18n, t } = useTranslation();
+const currentLang = i18n?.resolvedLanguage || i18n?.language || 'en';
     const [categoryMap, setCategoryMap] = useState({});
 
     // console.log('DEBUG (SidebarLatest): Rendering SidebarLatest with items:', items);
 
-    useEffect(() => {
-        let isMounted = true;
-        fetch('/api/blogs/categories')
-            .then(res => res.json())
-            .then(data => {
-                if (!isMounted) return;
-                const map = {};
-                (Array.isArray(data) ? data : []).forEach(c => {
-                    map[c.name_en] = { name_en: c.name_en, name_hi: c.name_hi, slug: c.slug };
-                });
-                setCategoryMap(map);
-            })
-            .catch(() => { });
-        return () => { isMounted = false; };
-    }, []);
-
+   + useEffect(() => {
+   let isMounted = true;
+   (async () => {
+     try {
+       const data = await getCategories(); // carries ?lang + Accept-Language
+       if (!isMounted) return;
+       const map = {};
+       (Array.isArray(data) ? data : []).forEach(c => {
+         map[c.name_en] = { name_en: c.name_en, name_hi: c.name_hi, slug: c.slug };
+       });
+       setCategoryMap(map);
+     } catch {}
+   })();
+   return () => { isMounted = false; };
+ }, [currentLang]);
     const getLocalized = (blog, field) => {
         const localized = blog[`${field}_${currentLang}`];
         if (localized) return localized;
@@ -46,8 +46,8 @@ const SidebarLatest = ({ title = 'Latest Updates', items = [] }) => {
 
     if (!items || items.length === 0) return null;
 
-    return (
-        <aside className="bg-white dark:bg-gray-900 rounded-xl shadow-sm p-4">
+   return (
+       <aside key={currentLang} className="bg-white dark:bg-gray-900 rounded-xl shadow-sm p-4">
             <div className="inline-block bg-black text-white px-3 py-2 rounded font-sans text-sm tracking-wide uppercase mb-4">
                 {title}
             </div>

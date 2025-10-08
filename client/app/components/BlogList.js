@@ -5,7 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { getVisitorId } from '../utils/localStorage';
 
 const BlogList = ({ blogs, loadingMore, hasMore, onLoadMore, totalBlogsCount, onLikeUpdate, searchQuery }) => {
-    const { t } = useTranslation();
+     const { t, i18n } = useTranslation();
+ const lang = i18n?.resolvedLanguage || i18n?.language || 'en';
     const observerRef = useRef(null);
 
     // ✅ STEP 2: Get the visitorId once for the entire list
@@ -38,7 +39,7 @@ const BlogList = ({ blogs, loadingMore, hasMore, onLoadMore, totalBlogsCount, on
     }, [hasMore, loadingMore, onLoadMore]);
 
     return (
-        <div className="max-w-4xl w-full mx-auto px-0">
+      <div key={lang} className="max-w-4xl w-full mx-auto px-0">
             {blogs && blogs.length > 0 ? (
                 <div className="grid grid-cols-1 gap-3">
                     {blogs.map((blog, index) => {

@@ -3,6 +3,8 @@ import { getAuthToken, removeAuthToken, setAuthToken } from '../utils/localStora
 
 let isRefreshing = false;
 let failedQueue = [];
+let activeLang = 'en';
+export const setApiLanguage = (lng) => { activeLang = lng || 'en'; };
 
 const processQueue = (error, token = null) => {
   failedQueue.forEach(prom => (error ? prom.reject(error) : prom.resolve(token)));
@@ -25,17 +27,48 @@ const api = axios.create({
 });
 
 // request logging (optional)
+// --- keep your imports and existing code ---
+
 api.interceptors.request.use(
   (config) => {
-    // attach token to /admin/* requests only
+    // existing admin token attach…
     const token = getAuthToken();
     if (token && config.url?.includes('/admin/')) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
+
+    // PUBLIC endpoints: attach language + query param
+    const isPublic =
+      config.url &&
+      !config.url.includes('/admin/') &&
+      (config.url.startsWith('/blogs') ||
+       config.url.startsWith('/categories') ||
+       config.url.startsWith('/subscribers'));
+
+    if (isPublic) {
+      const lng = activeLang || 'en';
+      config.headers['Accept-Language'] = lng;
+
+      // add ?lang=xx if missing
+      if (config.method?.toLowerCase() === 'get') {
+        const url = new URL(config.url, 'http://dummy');
+        if (!url.searchParams.has('lang')) url.searchParams.set('lang', lng);
+        config.url = url.pathname + '?' + url.searchParams.toString();
+      }
+
+      // DEBUG (remove later)
+      if (!config.headers['x-lang-logged']) {
+        // log only once per request
+        config.headers['x-lang-logged'] = '1';
+        console.log('[api] GET', config.url, 'Accept-Language:', lng);
+      }
+    }
+
     return config;
   },
   (error) => Promise.reject(error)
 );
+
 
 // responses
 api.interceptors.response.use(
@@ -275,64 +308,89 @@ export const addComment = async (blogId, commentData) => {
 };
 
 /**
- * Gets a single blog by category and slug.
- * @param {string} categoryName The category name.
- * @param {string} slug The blog slug.
- * @returns {Promise<any>} The blog data.
+ * Gets a single blog by category and slug, localized by language.
+ * @param {string} categoryName
+ * @param {string} slug
+ * @param {object} options - { lang?: string, signal?: AbortSignal }
  */
-export const getBlogByCategoryAndSlug = async (categoryName, slug) => {
-    try {
-        const response = await api.get(`/blogs/${categoryName}/${slug}`);
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching blog by category and slug:', error);
-        throw error;
-    }
+export const getBlogByCategoryAndSlug = async (
+  categoryName,
+  slug,
+  { lang, signal } = {}
+) => {
+  try {
+    const params = new URLSearchParams();
+    if (lang) params.set('lang', lang);
+
+    const url =
+      `/blogs/${encodeURIComponent(categoryName)}/${encodeURIComponent(slug)}` +
+      (params.toString() ? `?${params.toString()}` : '');
+
+    const response = await api.get(url, {
+      signal,
+      headers: lang ? { 'Accept-Language': lang } : undefined,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching blog by category and slug:', error);
+    throw error;
+  }
 };
+
 
 /**
  * Gets a single blog by slug.
  * @param {string} slug The blog slug.
  * @returns {Promise<any>} The blog data.
  */
-export const getBlogBySlug = async (slug) => {
-    try {
-        const response = await api.get(`/blogs/slug/${slug}`);
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching blog by slug:', error);
-        throw error;
-    }
+export const getBlogBySlug = async (slug, { lang, signal } = {}) => {
+  try {
+    const params = new URLSearchParams();
+    if (lang) params.set('lang', lang);
+
+    const url =
+      `/blogs/slug/${encodeURIComponent(slug)}` +
+      (params.toString() ? `?${params.toString()}` : '');
+
+    const response = await api.get(url, {
+      signal,
+      headers: lang ? { 'Accept-Language': lang } : undefined,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching blog by slug:', error);
+    throw error;
+  }
 };
+
 
 /**
  * Gets blogs for homepage feed.
  * @returns {Promise<any>} The homepage blogs data.
  */
-export const getHomepageBlogs = async () => {
-    try {
-        const response = await api.get('/blogs/homepage-feed');
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching homepage blogs:', error);
-        throw error;
-    }
+export const getHomepageBlogs = async (opts = {}) => {
+  const { signal, lang } = opts;
+  const res = await api.get('/blogs/homepage-feed' + (lang ? `?lang=${lang}` : ''), {
+    signal,
+    headers: lang ? { 'Accept-Language': lang } : undefined,
+  });
+  return res.data;
 };
 
 /**
  * Gets latest blogs.
  * @returns {Promise<any>} The latest blogs data.
  */
-export const getLatestBlogs = async () => {
-    try {
-        const response = await api.get('/blogs/latest');
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching latest blogs:', error);
-        throw error;
-    }
+export const getLatestBlogs = async (opts = {}) => {
+  const { signal, lang } = opts;
+  const res = await api.get('/blogs/latest' + (lang ? `?lang=${lang}` : ''), {
+    signal,
+    headers: lang ? { 'Accept-Language': lang } : undefined,
+  });
+  return res.data;
 };
-
 /**
  * Gets all categories.
  * @returns {Promise<any>} The categories data.
