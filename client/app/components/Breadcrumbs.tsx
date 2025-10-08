@@ -9,6 +9,59 @@ interface BreadcrumbItem {
   href?: string
 }
 
+/**
+ * Exact display names for your categories.
+ * If a slug matches one of these keys, we use the mapped label.
+ * Otherwise we fall back to smart formatting (title case + "&" handling).
+ */
+const CATEGORY_DISPLAY_MAP: Record<string, string> = {
+  'health-&-wellness': 'Health & Wellness',
+  'food-&-cooking': 'Food & Cooking',
+  'vastu-shastra': 'Vastu Shastra',
+  'business-&-finance': 'Business & Finance',
+  'sports': 'Sports',
+  'lifestyle': 'Lifestyle',
+  'astrology': 'Astrology',
+  'technology': 'Technology',
+  'trends': 'Trends',
+  'fashion': 'Fashion',
+  'travel': 'Travel',
+}
+
+/** Title-case words (simple, predictable) */
+function toTitleCase(s: string) {
+  return s
+    .split(' ')
+    .map(w => (w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : w))
+    .join(' ')
+}
+
+/** Format a category slug to a nice display label */
+function formatCategoryLabelFromSlug(rawSlug: string): string {
+  if (!rawSlug) return ''
+
+  const slug = decodeURIComponent(rawSlug).trim().toLowerCase()
+
+  // 1) Exact map first (ensures perfect brand spelling)
+  if (CATEGORY_DISPLAY_MAP[slug]) return CATEGORY_DISPLAY_MAP[slug]
+
+  // 2) Generic smart formatting:
+  //    - support "-&-" -> " & "
+  //    - then replace remaining "-" with spaces
+  //    - title-case the result
+  const withAmp = slug.replace(/-&-/g, ' & ')
+  const spaced = withAmp.replace(/-/g, ' ')
+  // if it already contains "&", keep it; just title-case words around it
+  const parts = spaced.split('&').map(p => toTitleCase(p.trim()))
+  return parts.join(' & ')
+}
+
+/** Format a tag slug similarly (no special map, just decode + title case hyphenated words) */
+function formatTagLabelFromSlug(rawSlug: string): string {
+  const slug = decodeURIComponent(rawSlug || '').trim().toLowerCase()
+  return toTitleCase(slug.replace(/-/g, ' '))
+}
+
 export default function Breadcrumbs() {
   const [isClient, setIsClient] = useState(false)
   const pathname = usePathname()
@@ -17,48 +70,46 @@ export default function Breadcrumbs() {
     setIsClient(true)
   }, [])
 
-  // Don't render on server side to prevent hydration mismatch
-  if (!isClient || !pathname) {
-    return null
-  }
+  if (!isClient || !pathname) return null
 
   const generateBreadcrumbs = (): BreadcrumbItem[] => {
-    if (!pathname) return [{ label: 'Home', href: '/' }]
-
+    const breadcrumbs: BreadcrumbItem[] = [{ label: 'Home', href: '/' }]
     const pathSegments = pathname.split('/').filter(Boolean)
-    const breadcrumbs: BreadcrumbItem[] = [
-      { label: 'Home', href: '/' }
-    ]
-
     if (pathSegments.length === 0) return breadcrumbs
 
     if (pathSegments[0] === 'category') {
       if (pathSegments.length >= 2) {
-        breadcrumbs.push(
-          { label: 'Categories', href: '/category' },
-          { label: decodeURIComponent(pathSegments[1].replace(/-/g, ' ')) }
-        )
+        const categorySlug = pathSegments[1]
+        const categoryLabel = formatCategoryLabelFromSlug(categorySlug)
 
+        // /category/[categoryName]
+        if (pathSegments.length === 2) {
+          breadcrumbs.push({ label: categoryLabel })
+          return breadcrumbs
+        }
+
+        // /category/[categoryName]/[blogSlug]
         if (pathSegments.length >= 3) {
-          breadcrumbs.push({ label: 'Post' })
+          breadcrumbs.push({ label: categoryLabel, href: `/category/${categorySlug}` })
+          breadcrumbs.push({ label: 'Blog' })
+          return breadcrumbs
         }
       }
     } else if (pathSegments[0] === 'tag') {
-      breadcrumbs.push(
-        { label: 'Tags', href: '/tag' },
-        { label: decodeURIComponent(pathSegments[1].replace(/-/g, ' ')) }
-      )
+      // Tag breadcrumb: Home > {tag}
+      const tagLabel = formatTagLabelFromSlug(pathSegments[1] || '')
+      breadcrumbs.push({ label: tagLabel })
+      return breadcrumbs
     } else if (pathSegments[0] === 'search') {
       breadcrumbs.push({ label: 'Search' })
+      return breadcrumbs
     } else {
-      // Handle other static pages
-      const pageNames: { [key: string]: string } = {
-        'about': 'About Us',
-        'contact': 'Contact',
-        'privacy': 'Privacy Policy',
-        'terms': 'Terms of Service'
+      const pageNames: Record<string, string> = {
+        about: 'About Us',
+        contact: 'Contact',
+        privacy: 'Privacy Policy',
+        terms: 'Terms of Service',
       }
-
       if (pageNames[pathSegments[0]]) {
         breadcrumbs.push({ label: pageNames[pathSegments[0]] })
       }
@@ -68,7 +119,6 @@ export default function Breadcrumbs() {
   }
 
   const breadcrumbs = generateBreadcrumbs()
-
   if (breadcrumbs.length <= 1) return null
 
   return (
@@ -80,7 +130,11 @@ export default function Breadcrumbs() {
               <li key={index} className="flex items-center">
                 {index > 0 && (
                   <svg className="w-4 h-4 text-gray-400 mx-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                    <path
+                      fillRule="evenodd"
+                      d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 )}
                 {breadcrumb.href && index < breadcrumbs.length - 1 ? (

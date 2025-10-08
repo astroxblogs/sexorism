@@ -1,10 +1,5 @@
-import { Metadata } from 'next';
+// app/about/page.tsx
 import AboutClient from './AboutClient';
-
-export const metadata: Metadata = {
-  title: "About Us - Innvibs",
-  description: "Learn more about Innvibs and our mission",
-};
 
 export default function AboutPage() {
   return <AboutClient />;

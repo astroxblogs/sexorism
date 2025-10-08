@@ -105,21 +105,20 @@ const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLog
     };
 
     const handleSearchClick = () => setShowSearchInput(true);
+const dynamicCategories = categories.map(cat => ({
+  name_en: cat.name_en,
+  name_hi: cat.name_hi,
+  value: cat.name_en,
+}));
 
-    const dynamicCategories = [
-        { name_en: t('navigation.categories'), name_hi: t('navigation.categories'), value: "all" },
-        ...categories.map(cat => ({
-            name_en: cat.name_en,
-            name_hi: cat.name_hi,
-            value: cat.name_en
-        }))
-    ];
-
-    const getCategoryName = (category) => {
-        if (category.value === 'all') return t('navigation.categories');
-        return i18n.language === 'hi' ? (category.name_hi || category.name_en) : (category.name_en || category.name_hi);
-    };
-
+const selectValue = dynamicCategories.some(c => c.value === activeCategory)
+    ? activeCategory
+    : (dynamicCategories[0]?.value || '');
+  const getCategoryName = (category) => {
+    return i18n.language === 'hi'
+      ? (category.name_hi || category.name_en)
+      : (category.name_en || category.name_hi);
+  };
     return (
         <nav className="sticky top-0 z-50 bg-white/90 dark:bg-dark-bg-secondary backdrop-blur supports-[backdrop-filter]:bg-white/70 dark:supports-[backdrop-filter]:bg-dark-bg-secondary shadow">
             <div className="py-2.5 px-3 sm:px-4 md:px-8 flex flex-col lg:flex-row gap-2 lg:gap-0 lg:justify-between lg:items-center">
@@ -162,7 +161,7 @@ const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLog
                                 <select
                                     aria-label="Select category"
                                     className="appearance-none w-full rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 px-3 pr-9 py-2 text-sm font-medium shadow-sm"
-                                    value={activeCategory}
+                                    value={selectValue}
                                     onChange={(e) => handleCategoryClick(e.target.value)}
                                 >
                                     {dynamicCategories.map((cat) => (

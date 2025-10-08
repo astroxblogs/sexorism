@@ -1,4 +1,6 @@
 import type { Metadata } from 'next'
+import { getBaseUrl } from './lib/site';
+
 import { Inter } from 'next/font/google'
 import { headers } from 'next/headers'
 import './globals.css'
@@ -9,6 +11,10 @@ import Analytics from './components/Analytics'
 import { HeaderAd, FooterAd } from './components/AdSense'
 import I18nProvider from './components/I18nProvider'
 import React from 'react'
+// app/layout.tsx
+import RouteAwareChrome from './RouteAwareChrome'; // <-- ADD THIS import
+
+const BASE_URL = getBaseUrl();
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -41,7 +47,7 @@ function isTestingDomain(): boolean {
 
 // Global metadata for the entire site
 export const metadata: Metadata = {
-  metadataBase: new URL('https://innvibs.com'),
+  metadataBase: new URL(BASE_URL),
   title: {
     default: 'Innvibs Blog - Your Daily Source for Insightful Articles',
     template: '%s | Innvibs Blog'
@@ -59,7 +65,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://innvibs.com',
+    url: '/',
     siteName: 'Innvibs Blog',
     title: 'Innvibs Blog - Your Daily Source for Insightful Articles',
     description: 'Discover insightful articles on lifestyle, fashion, technology, travel, sports, astrology, and Vastu Shastra.',
@@ -108,8 +114,8 @@ const organizationSchema = {
   "@type": "Organization",
   "name": "Innvibs",
   "alternateName": "Innvibs Blog",
-  "url": "https://innvibs.com",
-  "logo": "https://innvibs.com/logo.png",
+  "url":  BASE_URL,
+  "logo": `${BASE_URL}/logo.png`,
   "description": "Your daily source for insightful articles on lifestyle, fashion, technology, travel, sports, astrology, and Vastu Shastra.",
   "foundingDate": "2023",
   "contactPoint": {
@@ -143,16 +149,17 @@ const websiteSchema = {
   "@context": "https://schema.org",
   "@type": "WebSite",
   "name": "Innvibs Blog",
-  "url": "https://innvibs.com",
+  "url":BASE_URL,
   "description": "Your daily source for insightful articles on lifestyle, fashion, technology, travel, sports, astrology, and Vastu Shastra.",
   "publisher": {
     "@type": "Organization",
     "name": "Innvibs",
-    "url": "https://innvibs.com"
+    "url": BASE_URL,
   },
   "potentialAction": {
     "@type": "SearchAction",
-    "target": "https://innvibs.com/search?q={search_term_string}",
+    "target": `${BASE_URL}/search?q={search_term_string}`,
+
     "query-input": "required name=search_term_string"
   }
 }
@@ -183,11 +190,13 @@ export default function RootLayout({
           <I18nProvider>
             <Analytics />
             <NavigationWrapper>
-              <HeaderAd />
-              <Breadcrumbs />
-              {children}
-              <FooterAd />
-            </NavigationWrapper>
+  <HeaderAd />
+  {/* REMOVE this: <Breadcrumbs /> */}
+  <RouteAwareChrome>
+    {children}
+  </RouteAwareChrome>
+  <FooterAd />
+</NavigationWrapper>
           </I18nProvider>
         </Providers>
       </body>

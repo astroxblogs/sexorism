@@ -3,8 +3,6 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from 'react-i18next';
 
-  
-
 export default function CategoryNav({ activeCategory, onCategoryChange, categories = [] }) {
   const { t } = useTranslation();
   const scrollRef = useRef(null);
@@ -13,16 +11,19 @@ export default function CategoryNav({ activeCategory, onCategoryChange, categori
   const [showRightArrow, setShowRightArrow] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // ✅ NEW: Filter out the generic "Categories" item if present
+  const normalize = (s) => String(s || '').trim().toLowerCase();
+  const visibleCategories = categories.filter(
+    (c) => normalize(c.value) !== 'categories' && normalize(c.label) !== 'categories'
+  );
+
   const checkArrows = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
     const isScrollable = el.scrollWidth > el.clientWidth;
-    // Added parentheses to satisfy the 'no-mixed-operators' rule
     setShowLeftArrow(isScrollable && (el.scrollLeft > 1));
-    setShowRightArrow(
-      isScrollable && (el.scrollWidth - el.clientWidth - el.scrollLeft > 1)
-    );
-  }, [scrollRef]); // 1. Added scrollRef as a dependency
+    setShowRightArrow(isScrollable && (el.scrollWidth - el.clientWidth - el.scrollLeft > 1));
+  }, [scrollRef]);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -33,13 +34,14 @@ export default function CategoryNav({ activeCategory, onCategoryChange, categori
       el?.removeEventListener("scroll", checkArrows);
       window.removeEventListener("resize", checkArrows);
     };
-  }, [checkArrows, scrollRef]); // 2. Added scrollRef as a dependency
+  }, [checkArrows, scrollRef]);
 
   const handleCategoryClick = (categoryValue) => {
     onCategoryChange(categoryValue);
     setMobileOpen(false);
 
-    const categoryIndex = categories.findIndex(
+    // ✅ Use filtered list for indexing/scrolling
+    const categoryIndex = visibleCategories.findIndex(
       (c) => c.value === categoryValue
     );
     const itemEl = itemRefs.current[categoryIndex];
@@ -61,6 +63,14 @@ export default function CategoryNav({ activeCategory, onCategoryChange, categori
     });
   };
 
+  // ✅ Mobile button shows active category (or 'Browse') instead of "Categories"
+  const activeObj = visibleCategories.find(c => c.value === activeCategory);
+  const activeLabel =
+    t(
+      `category.${String(activeObj?.value || '').toLowerCase().replace(/ & /g, '_').replace(/\s+/g, '_').replace(/&/g, '_')}`,
+      { defaultValue: activeObj?.label || t('navigation.browse', 'Browse') }
+    );
+
   return (
     <div className="w-full bg-background py-2 border-b dark:border-gray-800">
       {/* Mobile: dropdown on hover/tap */}
@@ -75,7 +85,7 @@ export default function CategoryNav({ activeCategory, onCategoryChange, categori
           aria-expanded={mobileOpen}
           aria-haspopup="true"
         >
-          {t('navigation.categories')}
+          {activeLabel}
           <ChevronRight className={`h-4 w-4 transition-transform ${mobileOpen ? "rotate-90" : "rotate-0"}`} />
         </button>
         <AnimatePresence>
@@ -88,16 +98,20 @@ export default function CategoryNav({ activeCategory, onCategoryChange, categori
               className="absolute left-0 right-0 mt-2 rounded-md border border-gray-200 bg-white shadow-lg dark:bg-gray-900 dark:border-gray-700 z-20"
             >
               <ul className="py-2">
-                {categories.map((cat) => (
+                {visibleCategories.map((cat) => (
                   <li key={cat.value}>
                     <button
                       onClick={() => handleCategoryClick(cat.value)}
-                      className={`w-full text-left px-4 py-2 text-sm transition-colors ${activeCategory === cat.value
+                      className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                        activeCategory === cat.value
                           ? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white"
                           : "text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
-                        }`}
+                      }`}
                     >
-                      {t(`category.${String(cat.value).toLowerCase().replace(/ & /g, '_').replace(/\s+/g, '_').replace(/&/g, '_')}`, { defaultValue: cat.label })}
+                      {t(
+                        `category.${String(cat.value).toLowerCase().replace(/ & /g, '_').replace(/\s+/g, '_').replace(/&/g, '_')}`,
+                        { defaultValue: cat.label }
+                      )}
                     </button>
                   </li>
                 ))}
@@ -107,7 +121,7 @@ export default function CategoryNav({ activeCategory, onCategoryChange, categori
         </AnimatePresence>
       </div>
 
-      {/* Desktop/tablet: keep existing horizontal nav */}
+      {/* Desktop/tablet: horizontal nav */}
       <div className="relative mx-auto hidden sm:flex max-w-2xl items-center">
         <AnimatePresence>
           {showLeftArrow && (
@@ -132,7 +146,7 @@ export default function CategoryNav({ activeCategory, onCategoryChange, categori
           ref={scrollRef}
           className="flex items-center space-x-3 overflow-x-auto whitespace-nowrap scroll-smooth no-scrollbar px-2"
         >
-          {categories.map((cat, idx) => (
+          {visibleCategories.map((cat, idx) => (
             <button
               key={cat.value}
               ref={(el) => (itemRefs.current[idx] = el)}
@@ -146,7 +160,10 @@ export default function CategoryNav({ activeCategory, onCategoryChange, categori
                 }
               `}
             >
-              {t(`category.${String(cat.value).toLowerCase().replace(/ & /g, '_').replace(/\s+/g, '_').replace(/&/g, '_')}`, { defaultValue: cat.label })}
+              {t(
+                `category.${String(cat.value).toLowerCase().replace(/ & /g, '_').replace(/\s+/g, '_').replace(/&/g, '_')}`,
+                { defaultValue: cat.label }
+              )}
             </button>
           ))}
         </div>

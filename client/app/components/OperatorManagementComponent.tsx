@@ -12,9 +12,7 @@ export default function OperatorManagementComponent() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
+    password: ''
   });
   const router = useRouter();
 
@@ -36,65 +34,76 @@ export default function OperatorManagementComponent() {
   }, []);
 
   const fetchOperators = async () => {
-  try {
-    setLoading(true);
-    const response = await apiService.getOperators();
+    try {
+      setLoading(true);
+      const response = await apiService.getOperators();
 
-    // ✅ Always extract the array
-    const data = response?.data || response;
-    const items = data?.operators || data?.data || [];
+      // ✅ Normalize to an array regardless of shape
+      const data = (response as any)?.data ?? response;
+      const items = Array.isArray(data?.operators)
+        ? data.operators
+        : Array.isArray(data?.data)
+        ? data.data
+        : Array.isArray(data)
+        ? data
+        : [];
 
-    setOperators(Array.isArray(items) ? items : []);
-    console.log('✅ Loaded operators:', Array.isArray(items) ? items.length : 0);
-  } catch (error) {
-    console.error('Error fetching operators:', error);
-    toast.error('Failed to load operators');
-  } finally {
-    setLoading(false);
-  }
-};
+      setOperators(items);
+      console.log('✅ Loaded operators:', items.length);
+    } catch (error) {
+      console.error('Error fetching operators:', error);
+      toast.error('Failed to load operators');
+      setOperators([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-
-  const handleCreateOperator = async (e) => {
+  const handleCreateOperator = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      toast.error('Passwords do not match');
+
+    if (!formData.username.trim()) {
+      toast.error('Username is required');
+      return;
+    }
+    if (!formData.password.trim()) {
+      toast.error('Password is required');
       return;
     }
 
     try {
+      // ✅ Only send username + password
       await apiService.createOperator({
-        username: formData.username,
-        email: formData.email,
+        username: formData.username.trim(),
         password: formData.password
       });
       toast.success('Operator created successfully');
-      setFormData({ username: '', email: '', password: '', confirmPassword: '' });
+      setFormData({ username: '', password: '' });
       setShowCreateForm(false);
-      fetchOperators();
+      fetchOperators(); // refresh list & implicit count
     } catch (error) {
       console.error('Error creating operator:', error);
       toast.error('Failed to create operator');
     }
   };
 
-  const handleToggleStatus = async (id) => {
+  const handleToggleStatus = async (id: string) => {
     try {
       await apiService.toggleOperatorStatus(id);
       toast.success('Operator status updated');
-      fetchOperators();
+      fetchOperators(); // refresh list & implicit count
     } catch (error) {
       console.error('Error updating operator status:', error);
       toast.error('Failed to update operator status');
     }
   };
 
-  const handleDeleteOperator = async (id) => {
+  const handleDeleteOperator = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this operator?')) {
       try {
         await apiService.deleteOperator(id);
         toast.success('Operator deleted successfully');
-        fetchOperators();
+        fetchOperators(); // refresh list & implicit count
       } catch (error) {
         console.error('Error deleting operator:', error);
         toast.error('Failed to delete operator');
@@ -113,22 +122,21 @@ export default function OperatorManagementComponent() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold">Operator Management</h2>
-        <button
-          onClick={() => setShowCreateForm(!showCreateForm)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium"
-        >
-          {showCreateForm ? 'Cancel' : 'Add New Operator'}
-        </button>
-      </div>
+     <div className="flex justify-end items-center mb-4">
+  <button
+    onClick={() => setShowCreateForm(!showCreateForm)}
+    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium"
+  >
+    {showCreateForm ? 'Cancel' : 'Add New Operator'}
+  </button>
+</div>
 
-      {/* Create Operator Form */}
+      {/* Create Operator Form (username + password only) */}
       {showCreateForm && (
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow mb-6">
           <h3 className="text-lg font-semibold mb-4">Create New Operator</h3>
           <form onSubmit={handleCreateOperator} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
+            <div className="md:col-span-1">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Username
               </label>
@@ -140,19 +148,7 @@ export default function OperatorManagementComponent() {
                 required
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Email
-              </label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                required
-              />
-            </div>
-            <div>
+            <div className="md:col-span-1">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Password
               </label>
@@ -160,18 +156,6 @@ export default function OperatorManagementComponent() {
                 type="password"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Confirm Password
-              </label>
-              <input
-                type="password"
-                value={formData.confirmPassword}
-                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 required
               />
@@ -211,17 +195,22 @@ export default function OperatorManagementComponent() {
                         <h4 className="font-semibold text-gray-900 dark:text-white">
                           {operator.username}
                         </h4>
-                        <span className={`px-2 py-1 text-xs rounded-full ${
-                          operator.isActive
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                        }`}>
+                        <span
+                          className={`px-2 py-1 text-xs rounded-full ${
+                            operator.isActive
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                              : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                          }`}
+                        >
                           {operator.isActive ? 'Active' : 'Inactive'}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {operator.email}
-                      </p>
+                      {/* Email is optional; only show if present */}
+                      {operator.email ? (
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {operator.email}
+                        </p>
+                      ) : null}
                       <p className="text-sm text-gray-500 dark:text-gray-400">
                         Created: {new Date(operator.createdAt).toLocaleDateString()}
                       </p>

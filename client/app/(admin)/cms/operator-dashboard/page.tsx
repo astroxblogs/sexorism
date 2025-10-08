@@ -372,22 +372,37 @@ const BlogFormView = ({ editingBlog, setEditingBlog, handleSave, formKey, handle
 
 
 // ---------------- Settings View ----------------
+// ---------------- Settings View ----------------
 const SettingsView = ({ handleLogout }: { handleLogout: () => void }) => {
+  const [showChangePassword, setShowChangePassword] = useState(false);
+
   return (
     <div className="bg-white rounded-xl shadow-sm border p-6">
       <h2 className="text-2xl font-semibold text-gray-800 mb-6">Settings</h2>
-     <OperatorSettingsForm onClose={() => { /* noop for now */ }} />
-      <div className="mt-6">
+
+      <div className="flex gap-3">
         <button
+          onClick={() => setShowChangePassword(true)}
+          className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+        >
+          Change Password
+        </button>
+
+        {/* <button
           onClick={handleLogout}
           className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700"
         >
           Logout
-        </button>
+        </button> */}
       </div>
+
+      {/* Mount the modal only when requested; onClose unmounts it */}
+      {showChangePassword && (
+        <OperatorSettingsForm onClose={() => setShowChangePassword(false)} />
+      )}
     </div>
-  )
-}
+  );
+};
 
 
 

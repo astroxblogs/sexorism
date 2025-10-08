@@ -291,25 +291,25 @@ const AdminBlogForm = ({ blog, onSave, onCancel }) => {
                                     <input
                                         id={`metaTitle_${lang.code}`}
                                         {...register(`metaTitle_${lang.code}`)}
-                                        placeholder="An SEO-friendly title for search engine results (around 120 characters)."
+                                        placeholder="An SEO-friendly title for search engine results."
                                         className="mt-1 border border-gray-300 dark:border-gray-700 p-2 rounded w-full text-gray-900 dark:text-white bg-white dark:bg-gray-700"
                                     />
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    {/* <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                         Character count: {watchedMetaTitle?.length || 0} / 120
-                                    </p>
+                                    </p> */}
                                 </div>
                                 <div>
                                     <label htmlFor={`metaDescription_${lang.code}`} className="block font-medium text-sm text-gray-700 dark:text-gray-300">Meta Description</label>
                                     <textarea
                                         id={`metaDescription_${lang.code}`}
                                         {...register(`metaDescription_${lang.code}`)}
-                                        placeholder="A compelling description for search engine results (around 500 characters)."
+                                        placeholder="A compelling description for search engine results."
                                         rows="4"
                                         className="mt-1 border border-gray-300 dark:border-gray-700 p-2 rounded w-full text-gray-900 dark:text-white bg-white dark:bg-gray-700"
                                     />
-                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                     {/* <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                         Character count: {watchedMetaDescription?.length || 0} / 500
-                                    </p>
+                                    </p> */}
                                 </div>
                             </div>
                         )

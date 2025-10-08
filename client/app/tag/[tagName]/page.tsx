@@ -1,23 +1,26 @@
-import dynamic from 'next/dynamic';
-import { Metadata } from 'next';
+import dynamic from 'next/dynamic'
+import type { Metadata } from 'next'
 
-// Dynamically import HomePage component for tag pages
+// Use the same HomePage layout everywhere (category, tag, home)
 const HomePage = dynamic(() => import('../../components/HomePage'), {
   ssr: false,
-  loading: () => <div className="text-center py-20">Loading tag page...</div>
-});
+  loading: () => <div className="text-center py-20">Loading…</div>,
+})
 
-export const metadata: Metadata = {
-  title: "Tag - Innvibs",
-  description: "Browse articles by tag on Innvibs",
-};
-
-interface TagPageProps {
-  params: {
-    tagName: string;
-  };
+export async function generateMetadata({
+  params,
+}: {
+  params: { tagName: string }
+}): Promise<Metadata> {
+  const raw = decodeURIComponent(params.tagName || '')
+  const pretty = raw.replace(/-/g, ' ').replace(/\s+/g, ' ').trim()
+  return {
+    title: `Curated #${pretty} Reads – Innvibs`,
+    description: `Explore articles tagged "${pretty}" on Innvibs.`,
+  }
 }
 
-export default function TagPageRoute({ params }: TagPageProps) {
-   return <HomePage />;
+export default function TagPageRoute() {
+  // No Breadcrumbs here; your layout already renders them.
+  return <HomePage />
 }
