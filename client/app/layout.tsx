@@ -20,30 +20,27 @@ const inter = Inter({ subsets: ['latin'] })
 
 // Function to detect if we're on testing domain
 function isTestingDomain(): boolean {
-  // During build time, default to false (production behavior)
-  if (process.env.NEXT_PHASE === 'phase-production-build') {
-    return false
-  }
-
-  if (typeof window !== 'undefined') {
-    // Client-side detection
-    return window.location.hostname === 'innvibs.in' ||
-           window.location.hostname.includes('localhost') ||
-           window.location.hostname.includes('127.0.0.1')
-  }
-
-  // Server-side detection - only call headers() when actually serving requests
   try {
-    const headersList = headers()
-    const host = headersList.get('host') || ''
-    return host === 'innvibs.in' ||
+    // Always trust env if defined
+    const apiBase = process.env.NEXT_PUBLIC_API_BASE || '';
+    if (apiBase.includes('innvibs.in')) return true;
+
+    if (typeof window !== 'undefined') {
+      const host = window.location.hostname;
+      return host.includes('innvibs.in') ||
+             host.includes('localhost') ||
+             host.includes('127.0.0.1');
+    }
+
+    const host = headers().get('host') || '';
+    return host.includes('innvibs.in') ||
            host.includes('localhost') ||
-           host.includes('127.0.0.1')
-  } catch (error) {
-    // Fallback during build time or when headers() is not available
-    return false
+           host.includes('127.0.0.1');
+  } catch {
+    return false;
   }
 }
+
 
 // Global metadata for the entire site
 export const metadata: Metadata = {

@@ -406,7 +406,12 @@ const HomePage = () => {
       initial="hidden"
       animate="visible"
     >
-      {t('homepage.tagline', 'Smart stories on Tech, Travel, Health & Life — daily, in one place.')}
+      <span className="block">
+        {t('homepage.tagline_line1', 'Inner Vibes — Explore Inside, Express Outside')}
+      </span>
+      <span className="block">
+        {t('homepage.tagline_line2', 'Your daily dose of insights into technology and more.')}
+      </span>
     </motion.p>
   </div>
 )}

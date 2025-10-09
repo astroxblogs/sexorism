@@ -154,7 +154,10 @@ const AdminBlogTable = ({ blogs, onEdit, onDelete, onUpdateDate, startIndex = 0 
             <div className="flex gap-4">
               <button
                 className="text-sm text-green-600 hover:underline font-medium"
-                onClick={() => onEdit(blog)}
+                onClick={() => {
+                  console.log('Edit clicked for blog:', blog);
+                  onEdit(blog);
+                }}
               >
                 {t('Edit')}
               </button>

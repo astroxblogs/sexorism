@@ -87,12 +87,18 @@ export default function BalancedMonumentFooter() {
           />
         </div>
 
-        {/* --- Tagline --- */}
-        <div className="mb-6 md:mb-8">
-          <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 max-w-2xl">
-            {t('footer.tagline')}
-          </p>
-        </div>
+       {/* --- Tagline --- */}
+<div className="mb-6 md:mb-8">
+  <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 max-w-2xl leading-relaxed">
+    <span className="block">
+      {t('footer.tagline_line1', 'Inner Vibes — Explore Inside, Express Outside')}
+    </span>
+    <span className="block">
+      {t('footer.tagline_line2', 'A curated space for insights, stories, and ideas that matter.')}
+    </span>
+  </p>
+</div>
+
 
         {/* --- Sections Grid --- */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-y-5 gap-x-6">

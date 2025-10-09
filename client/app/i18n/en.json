@@ -30,11 +30,12 @@
         "astrology": "Astrology",
   "vastu_shastra": "Vastu Shastra"
     },
-    "homepage": {
-        "welcome_title": "Welcome to innvibs Blogs",
-        "tagline": "Inner Vibes — Explore Inside, Express Outside, Your daily dose of insights into technology and more.",
-        "featured_posts": "Featured Posts"
-    },
+   "homepage": {
+    "welcome_title": "Welcome to Innvibs Blogs",
+    "tagline_line1": "Inner Vibes — Explore Inside, Express Outside",
+    "tagline_line2": "Your daily dose of insights into technology and more.",
+    "featured_posts": "Featured Posts"
+  },
     "language_selector": {
         "select_language": "Select Language",
         "english": "English",
@@ -95,7 +96,8 @@
         "mode": "Mode"
     },
     "footer": {
-        "tagline": "Inner Vibes — Explore Inside, Express Outside, A curated space for insights, stories, and ideas that matter.",
+        "tagline_line1": "Inner Vibes — Explore Inside, Express Outside",
+    "tagline_line2": "A curated space for insights, stories, and ideas that matter.",
         "company_title": "Company",
         "about_us": "About Us",
         "careers": "Careers",
