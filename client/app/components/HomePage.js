@@ -375,12 +375,12 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen">
-      <SEO
-        title="Innvibs - Innovation & Ideas Hub"
-        description="Discover innovative ideas, cutting-edge technology insights, and breakthrough concepts. Join thousands of innovators exploring the future of tech, business, and creativity."
-        canonicalUrl="/"
-        schema={[organizationSchema, websiteSchema]}
-      />
+     <SEO
+  title="Inner Vibes: Technology, Travel, Health, Lifestyle, Trends, Sports, Fashion with Vastu & Astro"
+  description="Explore technology, travel, health & wellness, lifestyle trends, sports and fashion—plus Vastu & astrology insights. Fresh stories daily from Innvibs."
+  canonicalUrl="/"
+  schema={[organizationSchema, websiteSchema]}
+/>
 
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
@@ -389,27 +389,29 @@ const HomePage = () => {
             {!isSearchView && !isCategoryView && !isTagView && featuredBlogs.length > 0 && (
               <HeroCarousel blogs={featuredBlogs} />
             )}
+{!isSearchView && !isCategoryView && !isTagView && (
+  <div className="text-center md:text-left mt-4 md:mt-6">
+    <motion.h1
+      className="text-lg sm:text-xl md:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white tracking-tight leading-snug md:leading-tight"
+      variants={textVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      {t('homepage.welcome_title', 'Welcome to Innvibs Blogs')}
+    </motion.h1>
 
-            {!isSearchView && !isCategoryView && !isTagView && (
-              <div className="text-center md:text-left">
-                <motion.h1
-                  className="text-2xl md:text-4xl font-extrabold text-gray-900 dark:text-white"
-                  variants={textVariants}
-                  initial="hidden"
-                  animate="visible"
-                >
-                  {t('homepage.welcome_title')}
-                </motion.h1>
-                <motion.p
-                  className="mt-2 text-gray-600 dark:text-gray-400 max-w-2xl"
-                  variants={taglineVariants}
-                  initial="hidden"
-                  animate="visible"
-                >
-                  {t('homepage.tagline')}
-                </motion.p>
-              </div>
-            )}
+    <motion.p
+      className="mt-2 text-xs sm:text-sm md:text-base lg:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto md:mx-0"
+      variants={taglineVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      {t('homepage.tagline', 'Smart stories on Tech, Travel, Health & Life — daily, in one place.')}
+    </motion.p>
+  </div>
+)}
+
+
 
             {showDynamicPageTitle && (
               <h2 className="text-2xl md:text-3xl font-bold mb-2 text-gray-900 dark:text-white capitalize">

@@ -9,22 +9,11 @@ import { useTranslation } from "react-i18next";
 import { getCategoryClasses } from "../lib/categoryColors.js";
 import { useShare } from "../context/ShareContext.js";
 
-// BEFORE (yours produced "health-wellness")
 const slugify = (text) => {
   if (!text) return '';
   return text
     .toLowerCase()
-    .replace(/\s*&\s*/g, '-and-')   // ✅ keep "&" as "-and-"
-    .replace(/\s+/g, '-')           // spaces → hyphen
-    .replace(/[^a-z0-9-]/g, '')     // only a–z 0–9 -
-    .replace(/-+/g, '-')            // collapse hyphens
-    .replace(/^-+|-+$/g, '');       // trim
-};
-
-
-const tagSlugify = (tag) => {
-  return String(tag || '')
-    .toLowerCase()
+    .replace(/\s*&\s*/g, '-and-')
     .replace(/\s+/g, '-')
     .replace(/[^a-z0-9-]/g, '')
     .replace(/-+/g, '-')
@@ -51,8 +40,6 @@ const BlogCard = ({ blog, onLikeUpdate, searchQuery, visitorId }) => {
   };
 
   const displayTitle = getLocalizedField("title");
-
-  // Excerpt/content summary
   const displayExcerpt = getLocalizedField("excerpt");
   const displayContent = getLocalizedField("content");
 
@@ -80,7 +67,6 @@ const BlogCard = ({ blog, onLikeUpdate, searchQuery, visitorId }) => {
     return highlightedText;
   };
 
-  // ✅ Clean URLs (no `/category`)
   const generateBlogUrl = () => {
     const categorySlug = blog?.category ? slugify(blog.category) : 'uncategorized';
     const blogSlug = blog?.slug || blog?._id || '';
@@ -89,7 +75,6 @@ const BlogCard = ({ blog, onLikeUpdate, searchQuery, visitorId }) => {
 
   const blogUrl = generateBlogUrl();
 
-  // ✅ Env-driven site URL for ShareButton (works on both .in and .com)
   const siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL ||
     (typeof window !== 'undefined' ? window.location.origin : '');
@@ -140,20 +125,6 @@ const BlogCard = ({ blog, onLikeUpdate, searchQuery, visitorId }) => {
             />
           </Link>
 
-          {Array.isArray(blog?.tags) && blog.tags.length > 0 && (
-            <div className="mt-1 flex flex-wrap gap-1.5">
-              {blog.tags.slice(0, 3).map((tag) => (
-                <Link
-                  key={tag}
-                  href={`/tag/${tagSlugify(tag)}`}
-                  className="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-                >
-                  #{tag}
-                </Link>
-              ))}
-            </div>
-          )}
-
           <p
             className="mt-1.5 text-sm text-gray-600 dark:text-gray-400 line-clamp-2 break-words"
             dangerouslySetInnerHTML={{
@@ -180,7 +151,7 @@ const BlogCard = ({ blog, onLikeUpdate, searchQuery, visitorId }) => {
 
           <ShareButton
             title={displayTitle}
-            url={`${siteUrl}${blogUrl}`}     // ✅ clean + env-driven
+            url={`${siteUrl}${blogUrl}`}
             blogId={blog?._id}
             blogSlug={blog?.slug}
             variant="icon"

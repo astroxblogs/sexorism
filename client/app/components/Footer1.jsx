@@ -138,12 +138,13 @@ export default function BalancedMonumentFooter() {
           </div>
         </div>
 
-        {/* --- Bottom Bar --- */}
-        <div className="mt-6 pt-4 md:mt-8 md:pt-5 border-t border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row justify-between items-center text-center sm:text-left gap-3">
-          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-0">
-            © {new Date().getFullYear()} {t('innvibs Blogs')}.<br />
-            Copyright 2025 innvibs Media Group. All rights reserved.
-          </p>
+       {/* --- Bottom Bar --- */}
+<div className="mt-6 pt-4 md:mt-8 md:pt-5 border-t border-gray-200 dark:border-gray-800 
+                flex flex-col sm:flex-row justify-between items-center text-center sm:text-left gap-3">
+  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-0">
+    © {new Date().getFullYear()} <span className="font-semibold text-gray-700 dark:text-gray-200">Inner Vibes</span><br />
+    Powered by <span className="font-medium text-emerald-600 dark:text-emerald-400">Astrox Softech Pvt. Ltd.</span> — All Rights Reserved.
+  </p>
           <div className="flex items-center gap-3">
             {socialLinks.map((social) => (
               <a
