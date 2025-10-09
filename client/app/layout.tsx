@@ -46,7 +46,7 @@ function isTestingDomain(): boolean {
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: 'Inner Vibes: Technology, Travel, Health, Lifestyle, Trends, Sports, Fashion with Vastu & Astro',
+    default: 'Inner Vibes  - Technology, Travel, Health, Lifestyle, Trends, Sports, Fashion with Vastu & Astro - innvibs.com',
     template: '%s | Innvibs Blog'
   },
   description: 'Discover insightful articles on lifestyle, fashion, technology, travel, sports, astrology, and Vastu Shastra. Your trusted source for daily inspiration and knowledge.',
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: '/',
     siteName: 'Innvibs Blog',
-    title: 'Inner Vibes: Technology, Travel, Health, Lifestyle, Trends, Sports, Fashion with Vastu & Astro',
+    title: 'Inner Vibes  - Technology, Travel, Health, Lifestyle, Trends, Sports, Fashion with Vastu & Astro - innvibs.com',
     description: 'Discover insightful articles on lifestyle, fashion, technology, travel, sports, astrology, and Vastu Shastra.',
     images: [
       {
@@ -77,7 +77,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Inner Vibes: Technology, Travel, Health, Lifestyle, Trends, Sports, Fashion with Vastu & Astro',
+    title: 'Inner Vibes  - Technology, Travel, Health, Lifestyle, Trends, Sports, Fashion with Vastu & Astro - innvibs.com',
     description: 'Discover insightful articles on lifestyle, fashion, technology, travel, sports, astrology, and Vastu Shastra.',
     images: ['/logo.png'],
     creator: '@innvibs',

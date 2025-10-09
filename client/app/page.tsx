@@ -9,7 +9,7 @@ const Home = dynamic(() => import('./components/HomePage.js'), {
 });
 
 export const metadata: Metadata = {
-  title: "Innvibs - Innovation & Ideas Hub",
+  title: "Inner Vibes  - Technology, Travel, Health, Lifestyle, Trends, Sports, Fashion with Vastu & Astro - innvibs.com",
   description: "Discover innovative ideas, cutting-edge technology insights, and breakthrough concepts. Join thousands of innovators exploring the future of tech, business, and creativity.",
 };
 
