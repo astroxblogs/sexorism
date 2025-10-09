@@ -1,14 +1,26 @@
 /** @type {import('next').NextConfig} */
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 const nextConfig = {
+  // Image optimization (single, consolidated block)
   images: {
-    domains: ['res.cloudinary.com'], // Add your Cloudinary domain
+    domains: ['res.cloudinary.com'],
+    formats: ['image/webp', 'image/avif'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
+
+  compress: true,
+  swcMinify: true,
+  experimental: {
+    optimizeCss: true,
+  },
+
   async rewrites() {
-    // Use local backend for development, production backend for production
-    const isDevelopment = process.env.NODE_ENV === 'development';
+    // Proxy your backend API locally vs prod
     const backendUrl = isDevelopment
-      ? 'http://localhost:8081/api/:path*'  // Local development server
-      : 'https://api.innvibs.in/api/:path*'; // Production server
+      ? 'http://localhost:8081/api/:path*'      // local dev
+      : 'https://api.innvibs.in/api/:path*';   // prod (change to .com if needed)
 
     return [
       {
@@ -17,9 +29,21 @@ const nextConfig = {
       },
     ];
   },
-  // Add this for better Vercel compatibility
+
+  async redirects() {
+    return [
+      // SEO: legacy /category/... to clean /... (doesn't interfere with middleware rewrites)
+      {
+        source: '/category/:slug*',
+        destination: '/:slug*',
+        permanent: true,
+      },
+    ];
+  },
+
   async headers() {
     return [
+      // CORS headers for your proxied API (optional: keep if you rely on it)
       {
         source: '/api/:path*',
         headers: [
@@ -28,41 +52,13 @@ const nextConfig = {
           { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' },
         ],
       },
-    ];
-  },
-  // Enable experimental features for better SEO
-  experimental: {
-    optimizeCss: true,
-  },
-  // Compression and optimization
-  compress: true,
-  // Enable SWC minifier for better performance
-  swcMinify: true,
-  // Image optimization
-  images: {
-    domains: ['res.cloudinary.com'],
-    formats: ['image/webp', 'image/avif'],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-  },
-  // Headers for security and SEO
-  async headers() {
-    return [
+      // Security headers site-wide
       {
         source: '/(.*)',
         headers: [
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
-          },
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
         ],
       },
     ];

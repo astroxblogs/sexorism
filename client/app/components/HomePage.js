@@ -14,51 +14,77 @@ import { useBlogs } from '../context/BlogContext.js';
 
 const INITIAL_PAGE_SIZE = 6;
 
+// ✅ helper to make slugs consistent (keeps "&" as -&-)
+const toSlug = (text) =>
+  String(text || '')
+    .toLowerCase()
+    .replace(/\s*&\s*/g, '-and-')
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9\-&]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+// ✅ reserved top-level routes (so we can detect clean category paths)
+const RESERVED_TOP_LEVEL = new Set([
+  '', 'tag', 'search', 'about', 'contact', 'privacy', 'terms', 'admin', 'cms', '_next', 'api', 'static'
+]);
+
 const HomePage = () => {
-   const { t, i18n } = useTranslation();
- const lang = i18n?.resolvedLanguage || i18n?.language || 'en';
+  const { t, i18n } = useTranslation();
+  const lang = i18n?.resolvedLanguage || i18n?.language || 'en';
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const blogContext = useBlogs();
   const blogs = blogContext?.blogs || [];
-  const setBlogs = blogContext?.setBlogs || (() => {});
+  const setBlogs = blogContext?.setBlogs || (() => { });
   const featuredBlogs = blogContext?.featuredBlogs || [];
-  const setFeaturedBlogs = blogContext?.setFeaturedBlogs || (() => {});
+  const setFeaturedBlogs = blogContext?.setFeaturedBlogs || (() => { });
 
-  // ===== CATEGORY DETECTION =====
-  const isCategoryPage = pathname.startsWith('/category/');
-  const categoryFromUrl = isCategoryPage ? pathname.split('/category/')[1] : null;
+  // ===== CATEGORY DETECTION (supports both legacy /category/:slug and clean /:slug) =====
+  const segments = (pathname || '').split('/').filter(Boolean);
 
-  // Convert slug back to category name format (e.g., "vastu-shastra" -> "Vastu Shastra")
+  // routes that are NOT categories
+  const RESERVED = new Set(['tag', 'search', 'about', 'contact', 'privacy', 'terms', 'admin', 'cms']);
+
+  // legacy? /category/:slug
+  const isLegacyCategory = segments[0] === 'category' && !!segments[1];
+
+  // clean? /:slug (first segment exists and is not reserved)
+  const isCleanCategory = !!segments[0] && !RESERVED.has(segments[0]);
+
+  // are we on a category page?
+  const isCategoryPage = Boolean(isLegacyCategory || isCleanCategory);
+
+  // grab the raw slug
+  const categorySlug = isLegacyCategory ? segments[1] : (isCleanCategory ? segments[0] : null);
+
+  // slug -> display name your backend expects (e.g. "-and-" -> " & ", title case)
   const convertSlugToCategoryName = (slug) => {
-    if (!slug || slug === 'all') return slug;
-
-    // Handle special case: convert slug format to category name format
-    if (slug.includes('-&-')) {
-      return slug
-        .split('-&-')
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-        .join(' & ');
-    }
-
-    // Convert hyphenated slug to title case
-    return slug
-      .split('-')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
+    if (!slug) return '';
+    const s = decodeURIComponent(slug).trim().toLowerCase();
+    const withAmp = s.replace(/-and-/g, ' & ').replace(/-&-/g, ' & ');
+    const spaced = withAmp.replace(/-/g, ' ');
+    return spaced
+      .split(' ')
+      .map(w => (w ? w[0].toUpperCase() + w.slice(1) : w))
+      .join(' ')
+      .replace(/\s*&\s*/g, ' & ');
   };
+
+  const categoryFromUrl = categorySlug ? convertSlugToCategoryName(categorySlug) : null;
 
   const activeCategory =
     searchParams.get('category') ||
-    (categoryFromUrl ? convertSlugToCategoryName(categoryFromUrl) : null) ||
+    categoryFromUrl ||
     'all';
+
+
 
   // ===== TAG DETECTION =====
   const isTagPage = pathname.startsWith('/tag/');
   const tagFromUrl = isTagPage ? pathname.split('/tag/')[1] : null;
 
-  // Convert tag slug to display label (e.g., "healthy-diet" -> "Healthy Diet")
   const convertSlugToLabel = (slug) => {
     if (!slug) return '';
     const decoded = decodeURIComponent(slug);
@@ -124,12 +150,11 @@ const HomePage = () => {
 
   // ===== FEATURED BLOGS (HOMEPAGE HERO) =====
   useEffect(() => {
-  const fetchFeaturedBlogs = async () => {
-    // allow refetch on language change
-    if (featuredBlogs.length > 0) setFeaturedBlogs([]);
+    const fetchFeaturedBlogs = async () => {
+      if (featuredBlogs.length > 0) setFeaturedBlogs([]);
 
       try {
-         const res = await api.get('/blogs/latest'); // interceptor adds ?lang + header
+        const res = await api.get('/blogs/latest');
         if (setFeaturedBlogs) {
           setFeaturedBlogs(res.data);
         }
@@ -138,15 +163,18 @@ const HomePage = () => {
       }
     };
 
-   fetchFeaturedBlogs();
- }, [lang]); // refetch when language changes
+    fetchFeaturedBlogs();
+  }, [lang]);
+
+
+  // refetch when language changes
 
   // ===== SIDEBAR DATA =====
   useEffect(() => {
     let isMounted = true;
 
     const buildHomeSidebar = async () => {
-      if (sidebarSections.length > 0) return; // Prevent multiple calls
+      if (sidebarSections.length > 0) return;
 
       try {
         const catRes = await api.get('/categories');
@@ -201,8 +229,8 @@ const HomePage = () => {
 
     const loadSidebar = async () => {
       setSidebarLoading(true);
-setSidebarSections([]);
-   setSidebarLatest([]);
+      setSidebarSections([]);
+      setSidebarLatest([]);
       if (searchQuery) {
         setSidebarSections([]);
         setSidebarLatest([]);
@@ -217,7 +245,6 @@ setSidebarSections([]);
         setSidebarSections([]);
         await buildLatestSidebar();
       } else if (isTagView) {
-        // On tag pages, we also show "Latest" instead of category sections
         setSidebarSections([]);
         await buildLatestSidebar();
       } else {
@@ -233,7 +260,7 @@ setSidebarSections([]);
     return () => {
       isMounted = false;
     };
- }, [activeCategory, searchQuery, activeTag, lang]);
+  }, [activeCategory, searchQuery, activeTag, lang]);
 
   // ===== MAIN FEED FETCH (HOME / CATEGORY / TAG / SEARCH) =====
   const fetchBlogs = useCallback(
@@ -263,9 +290,10 @@ setSidebarSections([]);
           if (searchQuery) {
             url = `/blogs/search?q=${encodeURIComponent(searchQuery)}&page=${pageToLoad}&limit=${INITIAL_PAGE_SIZE}&_t=${Date.now()}`;
           } else if (isCategoryView) {
-            url = `/blogs?category=${encodeURIComponent(activeCategory)}&page=${pageToLoad}&limit=${INITIAL_PAGE_SIZE}`;
+            // Map "Health And Wellness" → "Health & Wellness" for the API
+            const queryCategory = activeCategory.replace(/\bAnd\b/g, '&');
+            url = `/blogs?category=${encodeURIComponent(queryCategory)}&page=${pageToLoad}&limit=${INITIAL_PAGE_SIZE}`;
           } else if (isTagView) {
-            // Backend should accept ?tag=<Display Name> (e.g., "Healthy Diet")
             url = `/blogs?tag=${encodeURIComponent(activeTag)}&page=${pageToLoad}&limit=${INITIAL_PAGE_SIZE}`;
           }
 
@@ -296,16 +324,14 @@ setSidebarSections([]);
         setLoadingMore(false);
       }
     },
-   [activeCategory, searchQuery, activeTag, setBlogs, lang]
+    [activeCategory, searchQuery, activeTag, setBlogs, lang]
   );
 
-
-
-useEffect(() => {   // refetch first page when language changes
-  if (!isInitialLoad) {     fetchBlogs(1, false);
-  }
-}, [lang]);
-
+  useEffect(() => {
+    if (!isInitialLoad) {
+      fetchBlogs(1, false);
+    }
+  }, [lang]);
 
   useEffect(() => {
     if (isInitialLoad) {
@@ -327,7 +353,7 @@ useEffect(() => {   // refetch first page when language changes
   const pageTitle = isSearchView
     ? t('general.search_results_for', { query: searchQuery })
     : isCategoryView
-    ? t('general.blogs_in_category', {
+      ? t('general.blogs_in_category', {
         category: t(
           `category.${String(activeCategory)
             .toLowerCase()
@@ -336,9 +362,9 @@ useEffect(() => {   // refetch first page when language changes
           { defaultValue: activeCategory }
         )
       })
-    : isTagView
-    ? `Curated #${activeTag} Reads`
-    : '';
+      : isTagView
+        ? `Curated #${activeTag} Reads`
+        : '';
 
   if (loading) {
     return <div className="text-center py-20 dark:text-gray-200">{t('general.loading_blogs')}</div>;
@@ -397,7 +423,7 @@ useEffect(() => {   // refetch first page when language changes
               </h2>
             )}
 
-           <BlogList
+            <BlogList
               key={`${lang}-${activeCategory}-${activeTag}-${searchQuery}-${currentPage}`}
               blogs={blogs}
               loadingMore={loadingMore}
@@ -427,13 +453,9 @@ useEffect(() => {   // refetch first page when language changes
                       title={sec.title}
                       items={sec.items}
                       onViewMore={() => {
-                        const slug = sec.title
-                          .toLowerCase()
-                          .replace(/\s+/g, '-')
-                          .replace(/[^a-z0-9\-&]/g, '')
-                          .replace(/-+/g, '-')
-                          .replace(/^-+|-+$/g, '');
-                        router.push(`/category/${slug}`);
+                        // ✅ push clean URL without /category and keep "&" as -&-
+                        const slug = toSlug(sec.title);
+                        router.push(`/${slug}`);
                       }}
                     />
                   ))}

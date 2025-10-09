@@ -12,8 +12,25 @@ interface BlogDetailClientProps {
   };
 }
 
+/** Turn clean URL slugs into the exact category string your API expects. */
+function categorySlugToApiName(slug: string) {
+  const s = decodeURIComponent(slug || '').trim().toLowerCase();
+
+  // support both "-and-" and "-&-" URL forms → " & "
+  const withAmp = s.replace(/-and-/g, ' & ').replace(/-&-/g, ' & ');
+
+  // remaining hyphens → spaces
+  const spaced = withAmp.replace(/-/g, ' ').replace(/\s+/g, ' ').trim();
+
+  // Title-case words so it matches your category names in DB (e.g. "Health & Wellness")
+  return spaced
+    .split(' ')
+    .map(w => (w ? w[0].toUpperCase() + w.slice(1) : w))
+    .join(' ');
+}
+
 export default function BlogDetailClient({ params }: BlogDetailClientProps) {
-  const [blog, setBlog] = useState(null);
+  const [blog, setBlog] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -22,7 +39,11 @@ export default function BlogDetailClient({ params }: BlogDetailClientProps) {
     const fetchBlog = async () => {
       try {
         setLoading(true);
-        const blogData = await getBlogByCategoryAndSlug(params.categoryName, params.blogSlug);
+
+        // 👇 normalize the category slug for the API
+        const categoryForApi = categorySlugToApiName(params.categoryName);
+
+        const blogData = await getBlogByCategoryAndSlug(categoryForApi, params.blogSlug);
         setBlog(blogData);
       } catch (err) {
         console.error('Error fetching blog:', err);

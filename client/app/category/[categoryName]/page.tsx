@@ -1,23 +1,18 @@
+// app/category/[categoryName]/page.tsx
 import dynamic from 'next/dynamic';
-import { Metadata } from 'next';
-
-// Dynamically import CategoryPage component
-const CategoryPage = dynamic(() => import('../../components/CategoryPage'), {
-  ssr: false,
-  loading: () => <div className="text-center py-20">Loading category...</div>
-});
-
-export const metadata: Metadata = {
-  title: "Category - Innvibs",
-  description: "Browse articles by category on Innvibs",
-};
 
 interface CategoryPageProps {
-  params: {
-    categoryName: string;
-  };
+  params: { categoryName: string };
 }
 
+// Load the client CategoryPage from components
+const CategoryPage = dynamic(() => import('../../components/CategoryPage'), {
+  ssr: false,
+  loading: () => <div className="text-center py-20">Loading category…</div>,
+});
+
 export default function CategoryPageRoute({ params }: CategoryPageProps) {
-   return <CategoryPage categoryName={params.categoryName} />;
+  // Pass decoded slug to the client component
+  const categoryName = decodeURIComponent(params.categoryName);
+  return <CategoryPage categoryName={categoryName} />;
 }

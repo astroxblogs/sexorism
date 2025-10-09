@@ -4,14 +4,14 @@ import React from 'react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 
-const slugify = (text) => {
-    return text
-        .toLowerCase()
-        .replace(/\s+/g, '-') // Replace spaces with hyphens
-        .replace(/[^a-z0-9\-&]/g, '') // Remove special characters except hyphens and ampersands
-        .replace(/-+/g, '-') // Replace multiple hyphens with single
-        .replace(/^-+|-+$/g, ''); // Trim leading/trailing hyphens
-};
+const slugify = (text) =>
+  String(text || '')
+    .toLowerCase()
+    .replace(/\s*&\s*/g, '-and-')  // preserve meaning of "&"
+    .replace(/\s+/g, '-')          // spaces -> hyphen
+    .replace(/[^a-z0-9-]/g, '')    // remove anything not a-z 0-9 or hyphen
+    .replace(/-+/g, '-')           // collapse hyphens
+    .replace(/^-+|-+$/g, '');      // trim hyphens
 
 const SidebarSection = ({ title, items = [], onViewMore }) => {
     const { i18n, t } = useTranslation();
@@ -48,7 +48,7 @@ const SidebarSection = ({ title, items = [], onViewMore }) => {
                 {items.map((blog) => {
                     const categorySlug = blog.category ? slugify(blog.category) : 'uncategorized';
                     const blogSlug = blog.slug || blog._id || 'unknown';
-                    const blogUrl = `/category/${categorySlug}/${blogSlug}`;
+                    const blogUrl = `/${categorySlug}/${blogSlug}`;
 
                     return (
                         <li key={blog._id} className="flex gap-3 items-start">

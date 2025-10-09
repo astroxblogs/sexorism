@@ -28,6 +28,22 @@ const CATEGORY_DISPLAY_MAP: Record<string, string> = {
   'travel': 'Travel',
 }
 
+/** Top-level routes that are NOT categories */
+const RESERVED_TOP_LEVEL = new Set([
+  '',           // root
+  'tag',
+  'search',
+  'about',
+  'contact',
+  'privacy',
+  'terms',
+  'admin',
+  'cms',
+  '_next',
+  'api',
+  'static',
+])
+
 /** Title-case words (simple, predictable) */
 function toTitleCase(s: string) {
   return s
@@ -39,7 +55,6 @@ function toTitleCase(s: string) {
 /** Format a category slug to a nice display label */
 function formatCategoryLabelFromSlug(rawSlug: string): string {
   if (!rawSlug) return ''
-
   const slug = decodeURIComponent(rawSlug).trim().toLowerCase()
 
   // 1) Exact map first (ensures perfect brand spelling)
@@ -48,10 +63,9 @@ function formatCategoryLabelFromSlug(rawSlug: string): string {
   // 2) Generic smart formatting:
   //    - support "-&-" -> " & "
   //    - then replace remaining "-" with spaces
-  //    - title-case the result
+  //    - title-case the result, preserving "&"
   const withAmp = slug.replace(/-&-/g, ' & ')
   const spaced = withAmp.replace(/-/g, ' ')
-  // if it already contains "&", keep it; just title-case words around it
   const parts = spaced.split('&').map(p => toTitleCase(p.trim()))
   return parts.join(' & ')
 }
@@ -77,6 +91,7 @@ export default function Breadcrumbs() {
     const pathSegments = pathname.split('/').filter(Boolean)
     if (pathSegments.length === 0) return breadcrumbs
 
+    // ----- Legacy support: /category/... -----
     if (pathSegments[0] === 'category') {
       if (pathSegments.length >= 2) {
         const categorySlug = pathSegments[1]
@@ -88,30 +103,56 @@ export default function Breadcrumbs() {
           return breadcrumbs
         }
 
-        // /category/[categoryName]/[blogSlug]
+        // /category/[categoryName]/[blogSlug] -> show only Home > Category
         if (pathSegments.length >= 3) {
-          breadcrumbs.push({ label: categoryLabel, href: `/category/${categorySlug}` })
-          breadcrumbs.push({ label: 'Blog' })
+          breadcrumbs.push({ label: categoryLabel, href: `/${categorySlug}` }) // link to clean URL
           return breadcrumbs
         }
       }
-    } else if (pathSegments[0] === 'tag') {
+    }
+
+    // ----- Clean URL mode -----
+    const first = pathSegments[0]
+
+    if (first === 'tag') {
       // Tag breadcrumb: Home > {tag}
       const tagLabel = formatTagLabelFromSlug(pathSegments[1] || '')
       breadcrumbs.push({ label: tagLabel })
       return breadcrumbs
-    } else if (pathSegments[0] === 'search') {
+    }
+
+    if (first === 'search') {
       breadcrumbs.push({ label: 'Search' })
       return breadcrumbs
-    } else {
-      const pageNames: Record<string, string> = {
-        about: 'About Us',
-        contact: 'Contact',
-        privacy: 'Privacy Policy',
-        terms: 'Terms of Service',
+    }
+
+    const pageNames: Record<string, string> = {
+      about: 'About Us',
+      contact: 'Contact',
+      privacy: 'Privacy Policy',
+      terms: 'Terms of Service',
+    }
+
+    if (pageNames[first]) {
+      breadcrumbs.push({ label: pageNames[first] })
+      return breadcrumbs
+    }
+
+    // If not reserved, treat as category slug
+    if (!RESERVED_TOP_LEVEL.has(first)) {
+      const categorySlug = first
+      const categoryLabel = formatCategoryLabelFromSlug(categorySlug)
+
+      if (pathSegments.length === 1) {
+        // /[categorySlug]
+        breadcrumbs.push({ label: categoryLabel })
+        return breadcrumbs
       }
-      if (pageNames[pathSegments[0]]) {
-        breadcrumbs.push({ label: pageNames[pathSegments[0]] })
+
+      if (pathSegments.length >= 2) {
+        // /[categorySlug]/[blogSlug] -> show only Home > Category (no title)
+        breadcrumbs.push({ label: categoryLabel, href: `/${categorySlug}` })
+        return breadcrumbs
       }
     }
 

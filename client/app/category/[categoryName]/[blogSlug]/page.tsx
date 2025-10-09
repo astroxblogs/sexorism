@@ -1,81 +1,95 @@
 import { Metadata } from 'next';
+import { headers } from 'next/headers';
 import BlogDetailClient from './BlogDetailClient';
 
-// Generate metadata dynamically for each blog post
-export async function generateMetadata({ params }: { params: { categoryName: string; blogSlug: string } }): Promise<Metadata> {
+const normalizeCategoryForApi = (s: string) =>
+  decodeURIComponent(s || '')
+    .toLowerCase()
+    .replace(/-and-/g, '-&-') // URL “and” → API “&”
+    .replace(/%26/g, '&');    // tolerate encoded &
+
+// --- replace only this function ---
+export async function generateMetadata(
+  { params }: { params: { categoryName: string; blogSlug: string } }
+): Promise<Metadata> {
+  const categoryForApi = normalizeCategoryForApi(params.categoryName);
+
+  // env + host
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.innvibs.in';
+  const siteUrlEnv = process.env.NEXT_PUBLIC_SITE_URL;
+  const host = headers().get('host') || 'www.innvibs.in';
+  const siteUrl = siteUrlEnv || `https://${host}`;
+
+  const cleanPath = `/${params.categoryName}/${params.blogSlug}`;
+  const cleanUrl = `${siteUrl}${cleanPath}`;
+
   try {
-    // Fetch blog data from your API
-    const response = await fetch(`https://api.innvibs.in/api/blogs/${params.categoryName}/${params.blogSlug}`, {
-      cache: 'no-store'
-    });
+    const res = await fetch(
+      `${API_BASE}/api/blogs/${categoryForApi}/${params.blogSlug}`,
+      { cache: 'no-store' }
+    );
 
-    if (response.ok) {
-       const blog = await response.json();
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-       // Create excerpt from content (remove HTML tags and get first 160 characters)
-       const createExcerpt = (content) => {
-         if (!content) return 'Read this amazing blog post on Innvibs';
-         const textContent = content.replace(/<[^>]*>/g, ''); // Remove HTML tags
-         return textContent.substring(0, 160) + (textContent.length > 160 ? '...' : '');
-       };
+    const blog = await res.json();
 
-       const excerpt = createExcerpt(blog.content);
+    // build excerpt from HTML (simple)
+    const textContent = (blog?.content || '').replace(/<[^>]*>/g, '');
+    const excerpt =
+      textContent.slice(0, 160) + (textContent.length > 160 ? '…' : '');
 
-       return {
-         title: `${blog.title} - Innvibs Blog`,
-         description: excerpt,
-         keywords: blog.tags?.join(', ') || 'blog, article, lifestyle',
-         authors: [{ name: blog.createdBy || 'Innvibs Team' }],
-         openGraph: {
-           title: `${blog.title} - Innvibs Blog`,
-           description: excerpt,
-           url: `https://www.innvibs.in/category/${params.categoryName}/${params.blogSlug}`,
-           siteName: 'Innvibs Blog',
-           images: [
-             {
-               url: blog.image || 'https://www.innvibs.in/logo.png',
-               width: 1200,
-               height: 630,
-               alt: blog.title,
-             },
-           ],
-           locale: 'en_US',
-           type: 'article',
-           publishedTime: blog.date || blog.createdAt,
-           modifiedTime: blog.updatedAt,
-           authors: [blog.createdBy || 'Innvibs Team'],
-           tags: blog.tags || [],
-         },
-         twitter: {
-           card: 'summary_large_image',
-           title: `${blog.title} - Innvibs Blog`,
-           description: excerpt,
-           images: [blog.image || 'https://www.innvibs.in/logo.png'],
-           creator: '@innvibs',
-         },
-         robots: {
-           index: true,
-           follow: true,
-           googleBot: {
-             index: true,
-             follow: true,
-             'max-video-preview': -1,
-             'max-image-preview': 'large',
-             'max-snippet': -1,
-           },
-         },
-       };
-     }
-  } catch (error) {
-    console.error('Error fetching blog metadata:', error);
+    return {
+      title: `${blog.title} - Innvibs Blog`,
+      description: excerpt,
+      alternates: { canonical: cleanUrl },
+      openGraph: {
+        title: `${blog.title} - Innvibs Blog`,
+        description: excerpt,
+        url: cleanUrl,
+        siteName: 'Innvibs Blog',
+        images: [
+          {
+            url: blog.image || `${siteUrl}/logo.png`,
+            width: 1200,
+            height: 630,
+            alt: blog.title,
+          },
+        ],
+        type: 'article',
+        publishedTime: blog.date || blog.createdAt,
+        modifiedTime: blog.updatedAt,
+        authors: [blog.createdBy || 'Innvibs Team'],
+        tags: blog.tags || [],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: `${blog.title} - Innvibs Blog`,
+        description: excerpt,
+        images: [blog.image || `${siteUrl}/logo.png`],
+        creator: '@innvibs',
+      },
+      robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          'max-video-preview': -1,
+          'max-image-preview': 'large',
+          'max-snippet': -1,
+        },
+      },
+    };
+  } catch (e) {
+    console.error('Error fetching blog metadata:', e);
+    return {
+      title: 'Blog Post - Innvibs',
+      description: 'Read the latest blog posts and articles on Innvibs',
+      alternates: { canonical: cleanUrl },
+    };
   }
-
-  // Fallback metadata
-  return {
-    title: "Blog Post - Innvibs",
-    description: "Read the latest blog posts and articles on Innvibs",
-  };
 }
+
 
 interface BlogDetailPageProps {
   params: {

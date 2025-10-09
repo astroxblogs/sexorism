@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
+import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from 'react-i18next';
@@ -11,7 +12,7 @@ export default function CategoryNav({ activeCategory, onCategoryChange, categori
   const [showRightArrow, setShowRightArrow] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // ✅ NEW: Filter out the generic "Categories" item if present
+  // ✅ Filter out generic "Categories"
   const normalize = (s) => String(s || '').trim().toLowerCase();
   const visibleCategories = categories.filter(
     (c) => normalize(c.value) !== 'categories' && normalize(c.label) !== 'categories'
@@ -21,9 +22,9 @@ export default function CategoryNav({ activeCategory, onCategoryChange, categori
     const el = scrollRef.current;
     if (!el) return;
     const isScrollable = el.scrollWidth > el.clientWidth;
-    setShowLeftArrow(isScrollable && (el.scrollLeft > 1));
+    setShowLeftArrow(isScrollable && el.scrollLeft > 1);
     setShowRightArrow(isScrollable && (el.scrollWidth - el.clientWidth - el.scrollLeft > 1));
-  }, [scrollRef]);
+  }, []);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -34,19 +35,16 @@ export default function CategoryNav({ activeCategory, onCategoryChange, categori
       el?.removeEventListener("scroll", checkArrows);
       window.removeEventListener("resize", checkArrows);
     };
-  }, [checkArrows, scrollRef]);
+  }, [checkArrows]);
 
   const handleCategoryClick = (categoryValue) => {
-    onCategoryChange(categoryValue);
+    if (typeof onCategoryChange === 'function') onCategoryChange(categoryValue);
     setMobileOpen(false);
 
-    // ✅ Use filtered list for indexing/scrolling
-    const categoryIndex = visibleCategories.findIndex(
-      (c) => c.value === categoryValue
-    );
-    const itemEl = itemRefs.current[categoryIndex];
+    // center selected pill in view
+    const idx = visibleCategories.findIndex((c) => c.value === categoryValue);
+    const itemEl = itemRefs.current[idx];
     const scrollEl = scrollRef.current;
-
     if (itemEl && scrollEl) {
       const scrollAmount = itemEl.offsetLeft - scrollEl.offsetWidth / 2 + itemEl.offsetWidth / 2;
       scrollEl.scrollTo({ left: scrollAmount, behavior: "smooth" });
@@ -63,7 +61,7 @@ export default function CategoryNav({ activeCategory, onCategoryChange, categori
     });
   };
 
-  // ✅ Mobile button shows active category (or 'Browse') instead of "Categories"
+  // ✅ Mobile button shows active category (or 'Browse')
   const activeObj = visibleCategories.find(c => c.value === activeCategory);
   const activeLabel =
     t(
@@ -73,7 +71,7 @@ export default function CategoryNav({ activeCategory, onCategoryChange, categori
 
   return (
     <div className="w-full bg-background py-2 border-b dark:border-gray-800">
-      {/* Mobile: dropdown on hover/tap */}
+      {/* Mobile */}
       <div
         className="relative mx-auto block max-w-2xl sm:hidden"
         onMouseEnter={() => setMobileOpen(true)}
@@ -88,6 +86,7 @@ export default function CategoryNav({ activeCategory, onCategoryChange, categori
           {activeLabel}
           <ChevronRight className={`h-4 w-4 transition-transform ${mobileOpen ? "rotate-90" : "rotate-0"}`} />
         </button>
+
         <AnimatePresence>
           {mobileOpen && (
             <motion.div
@@ -100,9 +99,10 @@ export default function CategoryNav({ activeCategory, onCategoryChange, categori
               <ul className="py-2">
                 {visibleCategories.map((cat) => (
                   <li key={cat.value}>
-                    <button
+                    <Link
+                      href={`/${cat.value}`}             // ✅ clean URL
                       onClick={() => handleCategoryClick(cat.value)}
-                      className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                      className={`block w-full text-left px-4 py-2 text-sm transition-colors ${
                         activeCategory === cat.value
                           ? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white"
                           : "text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
@@ -112,7 +112,7 @@ export default function CategoryNav({ activeCategory, onCategoryChange, categori
                         `category.${String(cat.value).toLowerCase().replace(/ & /g, '_').replace(/\s+/g, '_').replace(/&/g, '_')}`,
                         { defaultValue: cat.label }
                       )}
-                    </button>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -121,7 +121,7 @@ export default function CategoryNav({ activeCategory, onCategoryChange, categori
         </AnimatePresence>
       </div>
 
-      {/* Desktop/tablet: horizontal nav */}
+      {/* Desktop/tablet */}
       <div className="relative mx-auto hidden sm:flex max-w-2xl items-center">
         <AnimatePresence>
           {showLeftArrow && (
@@ -147,8 +147,9 @@ export default function CategoryNav({ activeCategory, onCategoryChange, categori
           className="flex items-center space-x-3 overflow-x-auto whitespace-nowrap scroll-smooth no-scrollbar px-2"
         >
           {visibleCategories.map((cat, idx) => (
-            <button
+            <Link
               key={cat.value}
+              href={`/${cat.value}`}           // ✅ clean URL
               ref={(el) => (itemRefs.current[idx] = el)}
               onClick={() => handleCategoryClick(cat.value)}
               className={`
@@ -164,7 +165,7 @@ export default function CategoryNav({ activeCategory, onCategoryChange, categori
                 `category.${String(cat.value).toLowerCase().replace(/ & /g, '_').replace(/\s+/g, '_').replace(/&/g, '_')}`,
                 { defaultValue: cat.label }
               )}
-            </button>
+            </Link>
           ))}
         </div>
 
