@@ -405,6 +405,38 @@ export const getCategories = async () => {
     }
 };
 
+
+// Get ONE category by slug (returns metaTitle/metaDescription too)
+export const getCategoryBySlug = async (slug, { lang, signal } = {}) => {
+  const params = new URLSearchParams();
+  if (lang) params.set('lang', lang);
+
+  // Try common endpoint shapes; keep whichever one your API uses
+  const paths = [
+    `/categories/slug/${encodeURIComponent(slug)}`,
+    `/categories/by-slug/${encodeURIComponent(slug)}`
+  ];
+
+  let lastErr;
+  for (const p of paths) {
+    try {
+      const url = p + (params.toString() ? `?${params.toString()}` : '');
+      const res = await api.get(url, {
+        signal,
+        headers: lang ? { 'Accept-Language': lang } : undefined,
+      });
+      // adapt if your payload wraps data
+      return res.data?.payload?.data ?? res.data?.data ?? res.data;
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr || new Error('Category not found');
+};
+
+
+
+
 // Admin API Functions
 export const setAccessToken = (token) => {
     if (token) {

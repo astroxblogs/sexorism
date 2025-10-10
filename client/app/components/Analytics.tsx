@@ -1,94 +1,59 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import { usePathname, useSearchParams } from 'next/navigation'
+import { useEffect } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { pushToDataLayer } from '../lib/gtmEvents';
 
-declare global {
-  interface Window {
-    gtag: (command: string, targetId: string, config?: object) => void
-    dataLayer: any[]
-  }
-}
-
+/**
+ * GTM-friendly analytics component:
+ * - DOES NOT inject gtag.js directly
+ * - Pushes page_view (redundant safety) and Web Vitals into dataLayer
+ * - Let GTM route events to GA4 (configure tags/triggers inside GTM)
+ */
 export default function Analytics() {
-  const [isClient, setIsClient] = useState(false)
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
+  // Optional: additional page_view push (harmless with GTM)
   useEffect(() => {
-    setIsClient(true)
-  }, [])
+    if (typeof window === 'undefined') return;
+    const q = searchParams?.toString();
+    const page_path = q ? `${pathname}?${q}` : pathname;
 
+    pushToDataLayer('page_view', {
+      page_path,
+      page_title: typeof document !== 'undefined' ? document.title : '',
+      page_location: typeof window !== 'undefined' ? window.location.href : '',
+    });
+  }, [pathname, searchParams]);
+
+  // Core Web Vitals -> dataLayer (GTM -> GA4)
   useEffect(() => {
-    if (typeof window === 'undefined' || !isClient) return
+    if (typeof window === 'undefined') return;
 
-    // Check if GA is already loaded to prevent duplicate initialization
-    if (typeof window !== 'undefined' && 'gtag' in window && 'dataLayer' in window) {
-      return
-    }
+    (async () => {
+      try {
+        const { getCLS, getFID, getFCP, getLCP, getTTFB } = await import('web-vitals');
 
-    try {
-      // Google Analytics 4
-      const gtagScript = document.createElement('script')
-      gtagScript.async = true
-      gtagScript.src = 'https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID'
+        const report = (metric: any) => {
+          // Example: { name: 'CLS', value: 0.03, delta: ..., id: 'v4-...' }
+          pushToDataLayer('web_vitals', {
+            metric_name: metric.name,
+            metric_id: metric.id,
+            metric_value: metric.value,
+          });
+        };
 
-      const configScript = document.createElement('script')
-      configScript.innerHTML = `
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'GA_MEASUREMENT_ID', {
-          page_title: document.title,
-          page_location: window.location.href,
-        });
-      `
-
-      // Append to head safely
-      const head = document.getElementsByTagName('head')[0]
-      if (head) {
-        head.appendChild(gtagScript)
-        head.appendChild(configScript)
+        getCLS(report);
+        getFID(report);
+        getFCP(report);
+        getLCP(report);
+        getTTFB(report);
+      } catch {
+        // ignore if web-vitals not available
       }
+    })();
+  }, []);
 
-      // Core Web Vitals monitoring
-      const reportWebVitals = ({ name, delta, value, id }: any) => {
-        if (window.gtag) {
-          window.gtag('event', name, {
-            event_category: 'Web Vitals',
-            event_label: id,
-            value: Math.round(name === 'CLS' ? delta * 1000 : delta),
-            non_interaction: true,
-          })
-        }
-      }
-
-      // Import and use web-vitals if available
-      import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
-        getCLS(reportWebVitals)
-        getFID(reportWebVitals)
-        getFCP(reportWebVitals)
-        getLCP(reportWebVitals)
-        getTTFB(reportWebVitals)
-      }).catch(() => {
-        // web-vitals not available, continue without it
-      })
-
-    } catch (error) {
-      console.error('Analytics initialization error:', error)
-    }
-  }, [isClient])
-
-  useEffect(() => {
-    if (!isClient || typeof window === 'undefined') return
-
-    // Track page views
-    if ('gtag' in window && window.gtag) {
-      window.gtag('config', 'GA_MEASUREMENT_ID', {
-        page_path: pathname + (searchParams?.toString() ? '?' + searchParams.toString() : ''),
-      })
-    }
-  }, [pathname, searchParams, isClient])
-
-  return null
+  return null;
 }
