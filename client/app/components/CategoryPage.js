@@ -36,64 +36,56 @@ const CategoryPage = ({ categoryName }) => {
       try {
         let cat = null;
 
-        // 1) Try direct by-slug endpoint with candidates
-        for (const s of candidates) {
-          try {
-            const res = await api.get(`/categories/by-slug/${s}`);
-            if (res?.data) {
-              cat = res.data;
-              break;
-            }
-          } catch {
-            // keep trying candidates
-          }
-        }
+// 1) Try /categories/:slug (since /by-slug is 404 on .in)
+for (const s of candidates) {
+  try {
+    const res = await api.get(`/categories/${s}`);
+    if (res?.data) {
+      cat = res.data;
+      break;
+    }
+  } catch {}
+}
 
         // 2) Fallback: fetch list and match by slug or name
-        if (!cat) {
-          try {
-            const listRes = await api.get('/categories');
-            const items = Array.isArray(listRes.data)
-              ? listRes.data
-              : (listRes.data?.categories || []);
+if (!cat) {
+  try {
+    const listRes = await api.get('/categories');
+    const items = Array.isArray(listRes.data)
+      ? listRes.data
+      : (listRes.data?.categories || []);
 
-            const nameFromCleanSlug = categorySlug
-              .replace(/-and-/g, ' & ')
-              .replace(/-/g, ' ')
-              .replace(/\s+/g, ' ')
-              .trim();
+    const nameFromCleanSlug = categorySlug
+      .replace(/-and-/g, ' & ')
+      .replace(/-/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
 
-            cat =
-              items.find((c) => norm(c.slug) === norm(categorySlug)) ||
-              items.find((c) => norm(c.slug) === norm(categorySlug.replace(/-and-/g, '-&-'))) ||
-              items.find((c) => norm(c.name_en) === norm(nameFromCleanSlug)) ||
-              items.find((c) => norm(c.name_hi) === norm(nameFromCleanSlug)) ||
-              null;
-          } catch {
-            // ignore; will be handled by !cat check below
-          }
-        }
+    cat =
+      items.find((c) => norm(c.slug) === norm(categorySlug)) ||
+      items.find((c) => norm(c.slug) === norm(categorySlug.replace(/-and-/g, '-&-'))) ||
+      items.find((c) => norm(c.name_en) === norm(nameFromCleanSlug)) ||
+      items.find((c) => norm(c.name_hi) === norm(nameFromCleanSlug)) ||
+      null;
+  } catch {}
+}
 
-        // 3) If we matched via list but it lacks SEO fields, hydrate once via by-slug
-        if (
-          cat &&
-          !(
-            'metaTitle' in cat ||
-            'metaTitle_en' in cat ||
-            'metaTitle_hi' in cat ||
-            'metaDescription' in cat ||
-            'metaDescription_en' in cat ||
-            'metaDescription_hi' in cat
-          ) &&
-          cat.slug
-        ) {
-          try {
-            const res = await api.get(`/categories/by-slug/${cat.slug}`);
-            if (res?.data) cat = res.data;
-          } catch {
-            // ignore; keep minimal cat
-          }
-        }
+       // 3) If still no SEO, hydrate by ID to pull full meta fields
+if (
+  cat &&
+  !(
+    'metaTitle' in cat ||
+    'metaTitle_en' in cat || 'metaTitle_hi' in cat ||
+    'metaDescription' in cat ||
+    'metaDescription_en' in cat || 'metaDescription_hi' in cat
+  ) &&
+  cat._id
+) {
+  try {
+    const res = await api.get(`/categories/${cat._id}`);
+    if (res?.data) cat = res.data;
+  } catch {}
+}
 
         if (!cat) {
           throw new Error('not-found');

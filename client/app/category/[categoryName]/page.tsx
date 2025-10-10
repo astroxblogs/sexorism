@@ -69,29 +69,21 @@ function hasSeoFields(cat: any): boolean {
  * 3) fallback: GET /categories and match by slug or name
  * If fallback result lacks SEO fields, hydrate once via by-slug.
  */
-async function fetchCategory(
-  slug: string,
-  lang: 'en' | 'hi'
-): Promise<CategoryDto | null> {
+async function fetchCategory(slug: string, lang: 'en' | 'hi'): Promise<CategoryDto | null> {
   const candidates = Array.from(new Set([slug, slug.replace(/-and-/g, '-&-')]));
 
-  // 1) by-slug first
+  // 1) Try /categories/:slug first (since /by-slug is 404 on .in)
   for (const s of candidates) {
-    const url = `${API_BASE}/api/categories/by-slug/${encodeURIComponent(s)}?lang=${lang}`;
-    const cat = await fetchJson(url, lang);
-    if (cat) return cat as CategoryDto;
+    const bySlug = await fetchJson(
+      `${API_BASE}/api/categories/${encodeURIComponent(s)}?lang=${lang}`,
+      lang
+    );
+    if (bySlug) return bySlug as CategoryDto;
   }
 
-  // 2) /categories/:slug next
-  for (const s of candidates) {
-    const url = `${API_BASE}/api/categories/${encodeURIComponent(s)}?lang=${lang}`;
-    const cat = await fetchJson(url, lang);
-    if (cat) return cat as CategoryDto;
-  }
-
-  // 3) list fallback and match
+  // 2) Fallback to list and match
   const list = await fetchJson(`${API_BASE}/api/categories?lang=${lang}`, lang);
-  const items: CategoryDto[] = Array.isArray(list) ? list : list?.categories || [];
+  const items: any[] = Array.isArray(list) ? list : list?.categories || [];
   const norm = (x: any) => String(x ?? '').trim().toLowerCase();
 
   const nameFromCleanSlug = slug
@@ -107,17 +99,18 @@ async function fetchCategory(
     items.find((c) => norm(c.name_hi) === norm(nameFromCleanSlug)) ||
     null;
 
-  // Hydrate from by-slug if list result lacks SEO fields
-  if (cat && !hasSeoFields(cat) && cat.slug) {
-    const hydrate = await fetchJson(
-      `${API_BASE}/api/categories/by-slug/${encodeURIComponent(cat.slug)}?lang=${lang}`,
+  // 3) If we matched via list, hydrate by ID to get full SEO
+  if (cat && cat._id) {
+    const hydrated = await fetchJson(
+      `${API_BASE}/api/categories/${cat._id}?lang=${lang}`,
       lang
     );
-    if (hydrate) cat = hydrate as CategoryDto;
+    if (hydrated) cat = hydrated as CategoryDto;
   }
 
   return cat;
 }
+
 
 export async function generateMetadata({
   params,
