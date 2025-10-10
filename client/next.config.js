@@ -1,8 +1,19 @@
 /** @type {import('next').NextConfig} */
+
+// Pick API origin from environment only (Preview/Prod set in Vercel).
+// We *intentionally* do NOT hardcode a fallback to avoid hitting the wrong API.
 const API_ORIGIN =
   process.env.NEXT_PUBLIC_API_BASE ||
-  process.env.NEXT_PUBLIC_API_BASE_URL || // keep compat
-  'https://api.innvibs.com'; // final fallback (prod)
+  process.env.NEXT_PUBLIC_API_BASE_URL;
+
+if (!API_ORIGIN) {
+  // Fail fast if the env var is missing in any environment
+  throw new Error(
+    'Missing NEXT_PUBLIC_API_BASE (or NEXT_PUBLIC_API_BASE_URL). Set it in Vercel envs.'
+  );
+}
+
+const apiBase = API_ORIGIN.replace(/\/$/, ''); // trim trailing slash once
 
 const nextConfig = {
   images: {
@@ -16,22 +27,22 @@ const nextConfig = {
   experimental: { optimizeCss: true },
 
   async rewrites() {
-    const base = API_ORIGIN.replace(/\/$/, '');
     return [
-      { source: '/api/:path*', destination: `${base}/api/:path*` },
+      // Proxy frontend /api → your backend API (Preview uses .in, Prod uses .com)
+      { source: '/api/:path*', destination: `${apiBase}/api/:path*` },
     ];
   },
 
+  // Remove the category redirect while verifying SEO (it can get cached).
+  // You can re-add later if you really want only one URL form.
   async redirects() {
-    return [
-      { source: '/category/:slug*', destination: '/:slug*', permanent: true },
-    ];
+    return [];
+    // If you re-enable later, prefer a temporary redirect during testing:
+    // return [{ source: '/category/:slug*', destination: '/:slug*', permanent: false }];
   },
 
   async headers() {
     return [
-      // You generally don't need CORS when proxying through Next,
-      // but harmless to keep if you rely on it.
       {
         source: '/api/:path*',
         headers: [
