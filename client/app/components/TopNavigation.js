@@ -35,12 +35,18 @@ const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLog
   const [showRightArrow, setShowRightArrow] = useState(false);
 
   const checkArrows = useCallback(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const isScrollable = el.scrollWidth > el.clientWidth;
-    setShowLeftArrow(isScrollable && el.scrollLeft > 5);
-    setShowRightArrow(isScrollable && (el.scrollWidth - el.clientWidth - el.scrollLeft > 5));
-  }, []);
+  const el = scrollRef.current;
+  if (!el) return;
+
+  // more robust thresholds to avoid rounding issues
+  const isScrollable = el.scrollWidth - el.clientWidth > 1;
+  const atStart = el.scrollLeft <= 1;
+  const atEnd = el.scrollWidth - el.clientWidth - el.scrollLeft <= 1;
+
+  setShowLeftArrow(isScrollable && !atStart);
+  setShowRightArrow(isScrollable && !atEnd);
+}, []);
+
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -65,12 +71,17 @@ const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLog
   }, [checkArrows, categories]);
 
   const handleNext = () => {
-    scrollRef.current?.scrollBy({ left: scrollRef.current.clientWidth * 0.5, behavior: "smooth" });
-  };
+  if (!scrollRef.current) return;
+  scrollRef.current.scrollBy({ left: scrollRef.current.clientWidth * 0.5, behavior: "smooth" });
+  setTimeout(checkArrows, 300);
+};
 
-  const handlePrev = () => {
-    scrollRef.current?.scrollBy({ left: -scrollRef.current.clientWidth * 0.5, behavior: "smooth" });
-  };
+const handlePrev = () => {
+  if (!scrollRef.current) return;
+  scrollRef.current.scrollBy({ left: -scrollRef.current.clientWidth * 0.5, behavior: "smooth" });
+  setTimeout(checkArrows, 300);
+};
+
 
   // ✅ Use slugs consistently; push clean URL without /category and without double-encoding
   const handleCategoryClick = (categoryValue) => {
@@ -153,8 +164,10 @@ const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLog
         </div>
 
         {/* ✅ min-w-0 allows this flex item to shrink properly. */}
-        <div className="flex flex-grow justify-center items-center order-last lg:order-none min-w-0">
-          <div className="relative flex items-center w-full max-w-[920px] mx-auto">
+       <div className="flex flex-grow justify-center items-center order-last lg:order-none min-w-0 lg:ml-8">
+
+        <div className="relative flex items-center w-full max-w-[920px] mx-auto lg:px-8">
+
             <div className="w-full lg:hidden px-3">
               <div className="relative">
                 <select
