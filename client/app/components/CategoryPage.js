@@ -130,12 +130,24 @@ const CategoryPage = ({ categoryName }) => {
 
   return (
     <>
-      <SEO
-        title={`${displayName} Blogs - Latest Articles | Innvibs`}
-        description={metaDescription}
-        canonicalUrl={canonicalPath}   // ✅ clean canonical
-        schema={[collectionPageSchema, breadcrumbSchema]}
-      />
+      // pick meta from DB first, then fallbacks
+const metaTitle =
+  category?.metaTitle ||
+  (i18n.language === 'hi' ? category?.metaTitle_hi : category?.metaTitle_en) ||
+  `${displayName} Blogs - Latest Articles | Innvibs`;
+
+const metaDesc =
+  category?.metaDescription ||
+  (i18n.language === 'hi' ? category?.metaDescription_hi : category?.metaDescription_en) ||
+  metaDescription; // your existing fallback
+
+<SEO
+  title={metaTitle}
+  description={metaDesc}
+  canonicalUrl={`/${categorySlug}`}   // clean canonical
+  schema={[collectionPageSchema, breadcrumbSchema]}
+/>
+
       {/* Main feed renders based on current path (HomePage already handles category/tag/search) */}
       <HomePage />
     </>
