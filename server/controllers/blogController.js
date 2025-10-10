@@ -577,7 +577,7 @@ const generateSocialPreviewHTML = (blog, errorMessage = null, categoryName = nul
         <meta property="og:type" content="website">
         <meta property="og:title" content="${errorMessage || 'Blog Not Found'}">
         <meta property="og:description" content="Visit InnVibs for the latest blogs and insights">
-        <meta property="og:image" content="${baseUrl}/header.png">
+        <meta property="og:image" content="${baseUrl}/top.png">
         <meta property="og:url" content="${baseUrl}">
         <meta property="og:site_name" content="InnVibs">
 
@@ -585,7 +585,7 @@ const generateSocialPreviewHTML = (blog, errorMessage = null, categoryName = nul
         <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:title" content="${errorMessage || 'Blog Not Found'}">
         <meta name="twitter:description" content="Visit InnVibs for the latest blogs and insights">
-        <meta name="twitter:image" content="${baseUrl}/header.png">
+        <meta name="twitter:image" content="${baseUrl}/top.png">
       </head>
       <body>
         <h1>${errorMessage || 'Blog Not Found'}</h1>
@@ -614,7 +614,7 @@ const generateSocialPreviewHTML = (blog, errorMessage = null, categoryName = nul
     imageUrl = imageUrl;
   } else {
     // Default image if no blog image
-    imageUrl = `${baseUrl}/header.png`;
+    imageUrl = `${baseUrl}/top.png`;
   }
 
   // Generate the correct URL based on whether we have a category

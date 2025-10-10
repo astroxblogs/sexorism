@@ -52,7 +52,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // --- API Routes ---
 app.use('/', socialPreviewRoutes); // Must come before API routes to catch root-level slugs
 app.use('/api/blogs', blogRoutes);
-app.use('/api/categories', categoryRoutes);
+app.use('/api/categories', require('./routes/categories'));
+
 app.use('/api/subscribers', subscriberRoutes);
 app.use('/api/admin', adminRoutes); // ✅ ADDED: Admin routes are now active
 

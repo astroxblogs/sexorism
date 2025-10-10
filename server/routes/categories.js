@@ -3,10 +3,13 @@ const express = require('express');
 const router = express.Router();
 const categoryController = require('../controllers/categoryController');
 
-// This route gets all categories (e.g., /api/categories)
+// List
 router.get('/', categoryController.getCategories);
 
-// This is our NEW route to get a single category (e.g., /api/categories/health-wellness)
-router.get('/:slug', categoryController.getCategoryBySlug);
+// Single by slug (keep this BEFORE the :id route)
+router.get('/by-slug/:slug', categoryController.getCategoryBySlug);
+
+// Single by id (validate inside the controller)
+router.get('/:id', categoryController.getCategoryById);
 
 module.exports = router;
