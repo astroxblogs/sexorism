@@ -1,59 +1,67 @@
 'use client';
 
-// client/src/components/SEO.js
-
-import React, { useEffect } from 'react';
+import React from 'react';
 import Head from 'next/head';
 
 /**
- * A reusable SEO component to manage head tags for Next.js.
- * Uses Next.js Head component instead of react-helmet-async.
- *
- * @param {object} props - The component props.
- * @param {string} props.title - The title of the page.
- * @param {string} props.description - The meta description of the page.
- * @param {string} [props.canonicalUrl] - The canonical URL of the page.
- * @param {object|object[]} [props.schema] - The JSON-LD schema object or an array of schema objects.
+ * SEO component:
+ * - Renders ONLY the tags you provide (no defaults).
+ * - Avoids overriding server metadata if a prop is undefined.
+ * - Canonical uses current origin or NEXT_PUBLIC_SITE_URL.
  */
 const SEO = ({ title, description, canonicalUrl, schema }) => {
-  // The base URL of your site, update this to your domain
-  const siteUrl = 'https://www.innvibs.com';
+  // Determine site origin safely for preview/prod
+  const runtimeOrigin =
+    (typeof window !== 'undefined' && window.location?.origin) ||
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    ''; // empty means we'll skip absolute canonical if we can't build it
 
-  // Construct the full canonical URL if a path is provided
-  const fullCanonicalUrl = canonicalUrl ? `${siteUrl}${canonicalUrl}` : siteUrl;
+  // Build absolute canonical only if we have a path and an origin
+  let fullCanonicalUrl;
+  if (canonicalUrl) {
+    fullCanonicalUrl = canonicalUrl.startsWith('http')
+      ? canonicalUrl
+      : (runtimeOrigin ? `${runtimeOrigin}${canonicalUrl}` : undefined);
+  }
 
-  // Ensure schema is always an array to handle single or multiple schemas easily
   const schemaArray = Array.isArray(schema) ? schema : schema ? [schema] : [];
 
   return (
     <Head>
-      {/* General tags */}
-      <title>{title}</title>
-      <meta name="description" content={description} />
-      {canonicalUrl && <link rel="canonical" href={fullCanonicalUrl} />}
+      {/* Render ONLY when provided so we don't override server tags */}
+      {title !== undefined && <title>{title}</title>}
+      {description !== undefined && (
+        <meta name="description" content={description} />
+      )}
+      {fullCanonicalUrl && <link rel="canonical" href={fullCanonicalUrl} />}
 
-      {/* Open Graph tags */}
-      <meta property="og:title" content={title} />
-      <meta property="og:description" content={description} />
-      <meta property="og:url" content={fullCanonicalUrl} />
+      {/* Open Graph */}
+      {title !== undefined && (
+        <meta property="og:title" content={title} />
+      )}
+      {description !== undefined && (
+        <meta property="og:description" content={description} />
+      )}
+      {fullCanonicalUrl && <meta property="og:url" content={fullCanonicalUrl} />}
       <meta property="og:type" content="website" />
 
-      {/* Twitter Card tags */}
+      {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={title} />
-      <meta name="twitter:description" content={description} />
+      {title !== undefined && (
+        <meta name="twitter:title" content={title} />
+      )}
+      {description !== undefined && (
+        <meta name="twitter:description" content={description} />
+      )}
 
-      {/* JSON-LD Structured Data */}
-      {schemaArray.length > 0 &&
-        schemaArray.map((schemaItem, index) => (
-          <script
-            key={`schema-${index}`}
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify(schemaItem)
-            }}
-          />
-        ))}
+      {/* JSON-LD */}
+      {schemaArray.map((schemaItem, idx) => (
+        <script
+          key={`schema-${idx}`}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaItem) }}
+        />
+      ))}
     </Head>
   );
 };

@@ -95,18 +95,16 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
 
   // Prefer localized single-field, then suffixed, then fallbacks
   const title =
-    cat?.seo?.metaTitle ||
-    cat?.metaTitle ||
-    (lang === 'hi' ? cat?.metaTitle_hi : cat?.metaTitle_en) ||
-    `${name} Blogs - Innvibs`
+  cat?.seo?.metaTitle ??
+  cat?.metaTitle ??
+  (lang === 'hi' ? cat?.metaTitle_hi : cat?.metaTitle_en) ??
+  undefined;   // no suffix, no generic
 
-  const description =
-    cat?.seo?.metaDescription ||
-    cat?.metaDescription ||
-    (lang === 'hi' ? cat?.metaDescription_hi : cat?.metaDescription_en) ||
-    (lang === 'hi'
-      ? `${name} श्रेणी के ताज़ा लेख पढ़ें।`
-      : `Explore the latest ${name} articles on Innvibs.`)
+const description =
+  cat?.seo?.metaDescription ??
+  cat?.metaDescription ??
+  (lang === 'hi' ? cat?.metaDescription_hi : cat?.metaDescription_en) ??
+  undefined;
 
   const url = `/${slug}` // clean canonical to root form
 

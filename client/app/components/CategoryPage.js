@@ -131,22 +131,27 @@ const CategoryPage = ({ categoryName }) => {
   return (
     <>
       // pick meta from DB first, then fallbacks
+// language flag
+const isHi = (i18n.language || '').toLowerCase().startsWith('hi');
+
+// use ONLY DB values (no suffix/prefix)
 const metaTitle =
-  category?.metaTitle ||
-  (i18n.language === 'hi' ? category?.metaTitle_hi : category?.metaTitle_en) ||
-  `${displayName} Blogs - Latest Articles | Innvibs`;
+  category?.metaTitle ??
+  (isHi ? category?.metaTitle_hi : category?.metaTitle_en) ??
+  undefined;  // if missing, don't override
 
 const metaDesc =
-  category?.metaDescription ||
-  (i18n.language === 'hi' ? category?.metaDescription_hi : category?.metaDescription_en) ||
-  metaDescription;
+  category?.metaDescription ??
+  (isHi ? category?.metaDescription_hi : category?.metaDescription_en) ??
+  undefined;  // if missing, don't override
 
 <SEO
-  title={metaTitle}
-  description={metaDesc}
-  canonicalUrl={`/${categorySlug}`}   // clean canonical
+  title={metaTitle}            // will be exactly what’s in DB
+  description={metaDesc}       // will be exactly what’s in DB
+  canonicalUrl={`/${categorySlug}`}
   schema={[collectionPageSchema, breadcrumbSchema]}
 />
+
 
       {/* Main feed renders based on current path (HomePage already handles category/tag/search) */}
       <HomePage />
