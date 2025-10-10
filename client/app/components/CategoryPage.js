@@ -27,8 +27,8 @@ const CategoryPage = ({ categoryName }) => {
 
       // slug candidates: keep clean one, try & version
       const candidates = Array.from(new Set([
-        categorySlug,                                  // e.g. business-and-finance
-        categorySlug.replace(/-and-/g, '-&-'),         // e.g. business-&-finance
+        categorySlug,                          // e.g. business-and-finance
+        categorySlug.replace(/-and-/g, '-&-'), // e.g. business-&-finance
       ]));
 
       const norm = (s) => String(s || '').trim().toLowerCase();
@@ -36,7 +36,7 @@ const CategoryPage = ({ categoryName }) => {
       try {
         let cat = null;
 
-        // 1) Try direct slug endpoint with candidates
+        // 1) Try direct by-slug endpoint with candidates
         for (const s of candidates) {
           try {
             const res = await api.get(`/categories/by-slug/${s}`);
@@ -44,29 +44,55 @@ const CategoryPage = ({ categoryName }) => {
               cat = res.data;
               break;
             }
-          } catch (_) {
+          } catch {
             // keep trying candidates
           }
         }
 
         // 2) Fallback: fetch list and match by slug or name
         if (!cat) {
-          const listRes = await api.get('/categories');
-          const items = Array.isArray(listRes.data)
-            ? listRes.data
-            : (listRes.data?.categories || []);
+          try {
+            const listRes = await api.get('/categories');
+            const items = Array.isArray(listRes.data)
+              ? listRes.data
+              : (listRes.data?.categories || []);
 
-          const nameFromCleanSlug = categorySlug
-            .replace(/-and-/g, ' & ')
-            .replace(/-/g, ' ')
-            .replace(/\s+/g, ' ')
-            .trim();
+            const nameFromCleanSlug = categorySlug
+              .replace(/-and-/g, ' & ')
+              .replace(/-/g, ' ')
+              .replace(/\s+/g, ' ')
+              .trim();
 
-          cat =
-            items.find(c => norm(c.slug) === norm(categorySlug)) ||
-            items.find(c => norm(c.slug) === norm(categorySlug.replace(/-and-/g, '-&-'))) ||
-            items.find(c => norm(c.name_en) === norm(nameFromCleanSlug)) ||
-            items.find(c => norm(c.name_hi) === norm(nameFromCleanSlug));
+            cat =
+              items.find((c) => norm(c.slug) === norm(categorySlug)) ||
+              items.find((c) => norm(c.slug) === norm(categorySlug.replace(/-and-/g, '-&-'))) ||
+              items.find((c) => norm(c.name_en) === norm(nameFromCleanSlug)) ||
+              items.find((c) => norm(c.name_hi) === norm(nameFromCleanSlug)) ||
+              null;
+          } catch {
+            // ignore; will be handled by !cat check below
+          }
+        }
+
+        // 3) If we matched via list but it lacks SEO fields, hydrate once via by-slug
+        if (
+          cat &&
+          !(
+            'metaTitle' in cat ||
+            'metaTitle_en' in cat ||
+            'metaTitle_hi' in cat ||
+            'metaDescription' in cat ||
+            'metaDescription_en' in cat ||
+            'metaDescription_hi' in cat
+          ) &&
+          cat.slug
+        ) {
+          try {
+            const res = await api.get(`/categories/by-slug/${cat.slug}`);
+            if (res?.data) cat = res.data;
+          } catch {
+            // ignore; keep minimal cat
+          }
         }
 
         if (!cat) {
@@ -103,8 +129,7 @@ const CategoryPage = ({ categoryName }) => {
       ? (category.name_hi || category.name_en)
       : (category.name_en || category.name_hi);
 
-  const metaDescription =
-    category.metaDescription ||
+  const metaDescriptionFallback =
     `Explore the latest articles, news, and insights in the ${category.name_en} category on Innvibs. Stay updated with our in-depth posts.`;
 
   // ✅ Clean URLs (no /category)
@@ -114,7 +139,7 @@ const CategoryPage = ({ categoryName }) => {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
     name: `${category.name_en} Blogs - Innvibs`,
-    description: (category.metaDescription ?? metaDescription), // DB first
+    description: (category.metaDescription ?? metaDescriptionFallback), // DB first
     url: `https://www.innvibs.com${canonicalPath}`,
   };
 
@@ -127,7 +152,7 @@ const CategoryPage = ({ categoryName }) => {
     ],
   };
 
-  // --- DB-only SEO values (no suffix/prefix); place ABOVE return ---
+  // --- DB-only SEO values (no suffix/prefix) ---
   const isHi = (i18n.language || '').toLowerCase().startsWith('hi');
 
   const metaTitle =

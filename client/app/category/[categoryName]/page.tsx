@@ -1,112 +1,145 @@
 // app/category/[categoryName]/page.tsx
-import type { Metadata } from 'next'
-import { cookies } from 'next/headers'
-import NextDynamic from 'next/dynamic'
+import type { Metadata } from 'next';
+import { cookies } from 'next/headers';
+import NextDynamic from 'next/dynamic';
 
-// Make metadata run per-request
-export const dynamic = 'force-dynamic'
+// Ensure per-request metadata generation
+export const dynamic = 'force-dynamic';
 
 interface CategoryPageProps {
-  params: { categoryName: string }
+  params: { categoryName: string };
 }
 
 type CategoryDto = {
-  slug?: string
-  name?: string
-  name_en?: string
-  name_hi?: string
-  metaTitle?: string
-  metaDescription?: string
-  metaTitle_en?: string
-  metaTitle_hi?: string
-  metaDescription_en?: string
-  metaDescription_hi?: string
-  seo?: { metaTitle?: string; metaDescription?: string }
-}
+  slug?: string;
+  name?: string;
+  name_en?: string;
+  name_hi?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  metaTitle_en?: string;
+  metaTitle_hi?: string;
+  metaDescription_en?: string;
+  metaDescription_hi?: string;
+  seo?: { metaTitle?: string; metaDescription?: string };
+};
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || ''
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE ||
+  (process.env.NODE_ENV !== 'production' ? 'https://api.innvibs.in' : '');
 
 const CategoryPage = NextDynamic(() => import('../../components/CategoryPage'), {
   ssr: false,
   loading: () => <div className="text-center py-20">Loading category…</div>,
-})
+});
 
 function currentLang(): 'en' | 'hi' {
-  const c = cookies()
-  const v = c.get('i18next')?.value || c.get('NEXT_LOCALE')?.value || ''
-  return v.toLowerCase().startsWith('hi') ? 'hi' : 'en'
+  const c = cookies();
+  const v = c.get('i18next')?.value || c.get('NEXT_LOCALE')?.value || '';
+  return v.toLowerCase().startsWith('hi') ? 'hi' : 'en';
 }
 
 async function fetchJson(url: string, lang: 'en' | 'hi') {
   const res = await fetch(url, {
     headers: { 'Accept-Language': lang },
     cache: 'no-store',
-  })
-  if (!res.ok) return null
-  const data = await res.json()
-  return (data?.payload?.data ?? data?.data ?? data) as any
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  return (data?.payload?.data ?? data?.data ?? data) as any;
+}
+
+function hasSeoFields(cat: any): boolean {
+  if (!cat || typeof cat !== 'object') return false;
+  return (
+    'metaTitle' in cat ||
+    'metaTitle_en' in cat ||
+    'metaTitle_hi' in cat ||
+    'metaDescription' in cat ||
+    'metaDescription_en' in cat ||
+    'metaDescription_hi' in cat ||
+    (cat.seo && (cat.seo.metaTitle || cat.seo.metaDescription))
+  );
 }
 
 /**
- * Match the *same* lookup your client uses:
- * 1) try /categories/:slug (and :slug with "-&-" variant)
- * 2) fallback: GET /categories and find by slug or name
+ * Match the client lookup strategy:
+ * 1) try /categories/by-slug/:slug (and -&- variant)
+ * 2) try /categories/:slug (and -&- variant)
+ * 3) fallback: GET /categories and match by slug or name
+ * If fallback result lacks SEO fields, hydrate once via by-slug.
  */
-async function fetchCategory(slug: string, lang: 'en' | 'hi'): Promise<CategoryDto | null> {
-  const candidates = Array.from(new Set([
-    slug,
-    slug.replace(/-and-/g, '-&-'),
-  ]))
+async function fetchCategory(
+  slug: string,
+  lang: 'en' | 'hi'
+): Promise<CategoryDto | null> {
+  const candidates = Array.from(new Set([slug, slug.replace(/-and-/g, '-&-')]));
 
-  // 1) try direct endpoints first
+  // 1) by-slug first
   for (const s of candidates) {
-    const url = `${API_BASE}/api/categories/${encodeURIComponent(s)}?lang=${lang}`
-    const cat = await fetchJson(url, lang)
-    if (cat) return cat
+    const url = `${API_BASE}/api/categories/by-slug/${encodeURIComponent(s)}?lang=${lang}`;
+    const cat = await fetchJson(url, lang);
+    if (cat) return cat as CategoryDto;
   }
 
-  // 2) fallback to list and find
-  const list = await fetchJson(`${API_BASE}/api/categories?lang=${lang}`, lang)
-  const items: CategoryDto[] = Array.isArray(list) ? list : (list?.categories || [])
-  const norm = (x: any) => String(x ?? '').trim().toLowerCase()
+  // 2) /categories/:slug next
+  for (const s of candidates) {
+    const url = `${API_BASE}/api/categories/${encodeURIComponent(s)}?lang=${lang}`;
+    const cat = await fetchJson(url, lang);
+    if (cat) return cat as CategoryDto;
+  }
+
+  // 3) list fallback and match
+  const list = await fetchJson(`${API_BASE}/api/categories?lang=${lang}`, lang);
+  const items: CategoryDto[] = Array.isArray(list) ? list : list?.categories || [];
+  const norm = (x: any) => String(x ?? '').trim().toLowerCase();
 
   const nameFromCleanSlug = slug
     .replace(/-and-/g, ' & ')
     .replace(/-/g, ' ')
     .replace(/\s+/g, ' ')
-    .trim()
+    .trim();
 
-  return (
-    items.find(c => norm(c.slug) === norm(slug)) ||
-    items.find(c => norm(c.slug) === norm(slug.replace(/-and-/g, '-&-'))) ||
-    items.find(c => norm(c.name_en) === norm(nameFromCleanSlug)) ||
-    items.find(c => norm(c.name_hi) === norm(nameFromCleanSlug)) ||
-    null
-  )
+  let cat =
+    items.find((c) => norm(c.slug) === norm(slug)) ||
+    items.find((c) => norm(c.slug) === norm(slug.replace(/-and-/g, '-&-'))) ||
+    items.find((c) => norm(c.name_en) === norm(nameFromCleanSlug)) ||
+    items.find((c) => norm(c.name_hi) === norm(nameFromCleanSlug)) ||
+    null;
+
+  // Hydrate from by-slug if list result lacks SEO fields
+  if (cat && !hasSeoFields(cat) && cat.slug) {
+    const hydrate = await fetchJson(
+      `${API_BASE}/api/categories/by-slug/${encodeURIComponent(cat.slug)}?lang=${lang}`,
+      lang
+    );
+    if (hydrate) cat = hydrate as CategoryDto;
+  }
+
+  return cat;
 }
 
-export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
-  const slug = decodeURIComponent(params.categoryName)
-  const lang = currentLang()
-  const cat = await fetchCategory(slug, lang)
+export async function generateMetadata({
+  params,
+}: CategoryPageProps): Promise<Metadata> {
+  const slug = decodeURIComponent(params.categoryName);
+  const lang = currentLang();
+  const cat = await fetchCategory(slug, lang);
 
-  const fallbackTitle = lang === 'hi' ? 'श्रेणी' : 'Category'
-  const name = (lang === 'hi' ? cat?.name_hi : cat?.name_en) || cat?.name || slug
-
-  // Prefer localized single-field, then suffixed, then fallbacks
+  // DB-only metadata (no prefixes/suffixes)
   const title =
-  cat?.seo?.metaTitle ??
-  cat?.metaTitle ??
-  (lang === 'hi' ? cat?.metaTitle_hi : cat?.metaTitle_en) ??
-  undefined;   // no suffix, no generic
+    cat?.seo?.metaTitle ??
+    cat?.metaTitle ??
+    (lang === 'hi' ? cat?.metaTitle_hi : cat?.metaTitle_en) ??
+    undefined;
 
-const description =
-  cat?.seo?.metaDescription ??
-  cat?.metaDescription ??
-  (lang === 'hi' ? cat?.metaDescription_hi : cat?.metaDescription_en) ??
-  undefined;
+  const description =
+    cat?.seo?.metaDescription ??
+    cat?.metaDescription ??
+    (lang === 'hi' ? cat?.metaDescription_hi : cat?.metaDescription_en) ??
+    undefined;
 
-  const url = `/${slug}` // clean canonical to root form
+  const url = `/${slug}`;
 
   return {
     title,
@@ -124,10 +157,10 @@ const description =
       description,
     },
     alternates: { canonical: url },
-  }
+  };
 }
 
 export default function CategoryPageRoute({ params }: CategoryPageProps) {
-  const categoryName = decodeURIComponent(params.categoryName)
-  return <CategoryPage categoryName={categoryName} />
+  const categoryName = decodeURIComponent(params.categoryName);
+  return <CategoryPage categoryName={categoryName} />;
 }

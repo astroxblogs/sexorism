@@ -1,19 +1,18 @@
 /** @type {import('next').NextConfig} */
 
-// Pick API origin from environment only (Preview/Prod set in Vercel).
-// We *intentionally* do NOT hardcode a fallback to avoid hitting the wrong API.
-const API_ORIGIN =
+// Use env var when provided; otherwise in *development* default to testing API.
+// In production, require the env var (so you don't accidentally hit the wrong API).
+const resolvedApiOrigin =
   process.env.NEXT_PUBLIC_API_BASE ||
-  process.env.NEXT_PUBLIC_API_BASE_URL;
+  (process.env.NODE_ENV !== 'production' ? 'https://api.innvibs.in' : '');
 
-if (!API_ORIGIN) {
-  // Fail fast if the env var is missing in any environment
+if (!resolvedApiOrigin) {
   throw new Error(
-    'Missing NEXT_PUBLIC_API_BASE (or NEXT_PUBLIC_API_BASE_URL). Set it in Vercel envs.'
+    'Missing NEXT_PUBLIC_API_BASE in production. Set it to https://api.innvibs.com (prod) or https://api.innvibs.in (preview).'
   );
 }
 
-const apiBase = API_ORIGIN.replace(/\/$/, ''); // trim trailing slash once
+const apiBase = resolvedApiOrigin.replace(/\/$/, '');
 
 const nextConfig = {
   images: {
@@ -27,18 +26,13 @@ const nextConfig = {
   experimental: { optimizeCss: true },
 
   async rewrites() {
-    return [
-      // Proxy frontend /api → your backend API (Preview uses .in, Prod uses .com)
-      { source: '/api/:path*', destination: `${apiBase}/api/:path*` },
-    ];
+    // Proxy /api → your backend (localhost uses testing API by default)
+    return [{ source: '/api/:path*', destination: `${apiBase}/api/:path*` }];
   },
 
-  // Remove the category redirect while verifying SEO (it can get cached).
-  // You can re-add later if you really want only one URL form.
   async redirects() {
+    // Keep empty while verifying SEO; you already added app/[categoryName]/page.tsx
     return [];
-    // If you re-enable later, prefer a temporary redirect during testing:
-    // return [{ source: '/category/:slug*', destination: '/:slug*', permanent: false }];
   },
 
   async headers() {
