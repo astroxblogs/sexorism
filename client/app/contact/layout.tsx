@@ -8,7 +8,7 @@ const BASE_URL = getBaseUrl();
 export const metadata: Metadata = {
   title: 'Contact Us - Innvibs Blog',
   description:
-    "Get in touch with the Innvibs team. We'd love to hear from you! Contact us for questions, feedback, or collaboration opportunities.",
+    "Get in touch with the Innvibs. We'd love to hear from you! Contact us for questions, feedback, or collaboration opportunities.",
   keywords: [
     'contact us',
     'Innvibs contact',
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     'collaboration',
     'feedback',
   ],
-  authors: [{ name: 'Innvibs Team' }],
+  authors: [{ name: 'Innvibs' }],
   creator: 'Astrox Softech Pvt Ltd',
   publisher: 'Innvibs',
   formatDetection: { email: false, address: false, telephone: false },
@@ -34,12 +34,12 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Contact Us - Innvibs Blog',
     description:
-      "Get in touch with the Innvibs team. We'd love to hear from you! Contact us for questions, feedback, or collaboration opportunities.",
+      "Get in touch with the Innvibs. We'd love to hear from you! Contact us for questions, feedback, or collaboration opportunities.",
     url: '/contact', // resolves against metadataBase
     siteName: 'Innvibs Blog',
     images: [
       {
-        url: '/header.png',
+        url: '/top.png',
         width: 1200,
         height: 630,
         alt: 'Innvibs Blog - Contact Us',
@@ -53,8 +53,8 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Contact Us - Innvibs Blog',
     description:
-      "Get in touch with the Innvibs team. We'd love to hear from you! Contact us for questions, feedback, or collaboration opportunities.",
-    images: ['/header.png'],
+      "Get in touch with the Innvibs. We'd love to hear from you! Contact us for questions, feedback, or collaboration opportunities.",
+    images: ['/top.png'],
     creator: '@innvibs',
   },
 
@@ -87,7 +87,7 @@ export default function ContactLayout({ children }: { children: React.ReactNode 
     '@type': 'Organization',
     name: 'Innvibs',
     url: BASE_URL,
-    logo: `${BASE_URL}/header.png`,
+    logo: `${BASE_URL}/top.png`,
     sameAs: ['https://www.facebook.com/innvibs'],
     parentOrganization: { '@type': 'Organization', name: 'Astrox Softech Pvt Ltd' },
     contactPoint: [

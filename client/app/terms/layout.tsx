@@ -18,7 +18,7 @@ export const metadata: Metadata = {
       'Understand the rules for using Innvibs: acceptable use, IP rights, liability limits, and governing law.',
     url: '/terms', // resolves against metadataBase
     siteName: 'Innvibs',
-    images: [{ url: '/header.png', width: 1200, height: 630, alt: 'Innvibs Terms of Service' }],
+    images: [{ url: '/top.png', width: 1200, height: 630, alt: 'Innvibs Terms of Service' }],
     locale: 'en_US',
     type: 'website',
   },
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     title: 'Terms of Service - Innvibs',
     description:
       'Understand the rules for using Innvibs: acceptable use, IP rights, liability limits, and governing law.',
-    images: ['/header.png'],
+    images: ['/top.png'],
     creator: '@innvibs',
   },
   // You can let robots inherit from root; keeping your explicit config is fine too:
@@ -56,7 +56,7 @@ export default function TermsLayout({ children }: { children: React.ReactNode })
       name: 'Innvibs',
       parentOrganization: { '@type': 'Organization', name: 'Astrox Softech Pvt Ltd' },
       url: BASE_URL,
-      logo: `${BASE_URL}/header.png`,
+      logo: `${BASE_URL}/top.png`,
       sameAs: ['https://www.facebook.com/innvibs'],
       contactPoint: [
         {

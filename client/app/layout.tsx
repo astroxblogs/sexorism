@@ -68,7 +68,7 @@ export const metadata: Metadata = {
     description: 'Discover the world of Lifestyle, Fashion, Travel, Sports, Technology, Astrology, and Vastu Shastra at Innvibs — your trusted destination for daily inspiration, trending ideas, and expert insights. Explore fashion trends, travel guides, health and fitness tips, tech innovations, spiritual wisdom, and vastu-based home solutions. Stay updated, stay inspired — Inner Vibes: Explore Inside, Express Outside.',
     images: [
       {
-        url: '/header.png',
+        url: '/top.png',
         width: 1200,
         height: 630,
         alt: 'Innvibs Blog',
@@ -79,7 +79,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Inner Vibes  - Technology, Travel, Health, Lifestyle, Trends, Sports, Fashion with Vastu & Astro - innvibs.com',
     description: 'Discover the world of Lifestyle, Fashion, Travel, Sports, Technology, Astrology, and Vastu Shastra at Innvibs — your trusted destination for daily inspiration, trending ideas, and expert insights. Explore fashion trends, travel guides, health and fitness tips, tech innovations, spiritual wisdom, and vastu-based home solutions. Stay updated, stay inspired — Inner Vibes: Explore Inside, Express Outside.',
-    images: ['/header.png'],
+    images: ['/top.png'],
     creator: '@innvibs',
   },
   robots: isTestingDomain() ? {
@@ -112,7 +112,7 @@ const organizationSchema = {
   "name": "Innvibs",
   "alternateName": "Innvibs Blog",
   "url":  BASE_URL,
-  "logo": `${BASE_URL}/header.png`,
+  "logo": `${BASE_URL}/top.png`,
   "description": "Your daily source for insightful articles on lifestyle, fashion, technology, travel, sports, astrology, and Vastu Shastra.",
   "foundingDate": "2023",
   "contactPoint": {

@@ -49,7 +49,7 @@ export async function generateMetadata(
         siteName: 'Innvibs Blog',
         images: [
           {
-            url: blog.image || `${siteUrl}/logo.png`,
+            url: blog.image || `${siteUrl}/top.png`,
             width: 1200,
             height: 630,
             alt: blog.title,
@@ -58,14 +58,14 @@ export async function generateMetadata(
         type: 'article',
         publishedTime: blog.date || blog.createdAt,
         modifiedTime: blog.updatedAt,
-        authors: [blog.createdBy || 'Innvibs Team'],
+        authors: [blog.createdBy || 'Innvibs'],
         tags: blog.tags || [],
       },
       twitter: {
         card: 'summary_large_image',
         title: `${blog.title} - Innvibs Blog`,
         description: excerpt,
-        images: [blog.image || `${siteUrl}/logo.png`],
+        images: [blog.image || `${siteUrl}/top.png`],
         creator: '@innvibs',
       },
       robots: {

@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   keywords: [
     'about Innvibs',
     'our mission',
-    'Innvibs team',
+    'Innvibs values',
     'lifestyle blog',
     'fashion technology travel sports astrology vastu',
   ],
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
       'Discover Innvibs: our mission, values, and what we offer across lifestyle, fashion, technology, travel, sports, astrology, and Vastu Shastra.',
     url: '/about',
     siteName: 'Innvibs',
-    images: [{ url: '/header.png', width: 1200, height: 630, alt: 'Innvibs About' }],
+    images: [{ url: '/top.png', width: 1200, height: 630, alt: 'Innvibs About' }],
     locale: 'en_US',
     type: 'website',
   },
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     title: 'About Us - Innvibs',
     description:
       'Discover Innvibs: our mission, values, and what we offer across lifestyle, fashion, technology, travel, sports, astrology, and Vastu Shastra.',
-    images: ['/header.png'],
+    images: ['/top.png'],
     creator: '@innvibs',
   },
 };
@@ -59,7 +59,7 @@ export default function AboutLayout({ children }: { children: React.ReactNode })
       name: 'Innvibs',
       parentOrganization: { '@type': 'Organization', name: 'Astrox Softech Pvt Ltd' },
       url: BASE_URL,
-      logo: `${BASE_URL}/header.png`,
+      logo: `${BASE_URL}/top.png`,
       sameAs: ['https://www.facebook.com/innvibs'],
     },
   };
