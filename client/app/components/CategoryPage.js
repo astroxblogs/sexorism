@@ -1,4 +1,4 @@
-// app/components/CategoryPage.jsx  (use .jsx or .js)
+// app/components/CategoryPage.jsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -21,67 +21,66 @@ const CategoryPage = ({ categoryName }) => {
     let isMounted = true;
 
     const fetchCategoryData = async () => {
-  if (!categorySlug) return;
-  setLoading(true);
-  setError(null);
+      if (!categorySlug) return;
+      setLoading(true);
+      setError(null);
 
-  // slug candidates: keep clean one, try & version
-  const candidates = Array.from(new Set([
-    categorySlug,                                  // e.g. business-and-finance
-    categorySlug.replace(/-and-/g, '-&-'),         // e.g. business-&-finance
-  ]));
+      // slug candidates: keep clean one, try & version
+      const candidates = Array.from(new Set([
+        categorySlug,                                  // e.g. business-and-finance
+        categorySlug.replace(/-and-/g, '-&-'),         // e.g. business-&-finance
+      ]));
 
-  const norm = (s) => String(s || '').trim().toLowerCase();
+      const norm = (s) => String(s || '').trim().toLowerCase();
 
-  try {
-    let cat = null;
-
-    // 1) Try direct slug endpoint with candidates
-    for (const s of candidates) {
       try {
-        const res = await api.get(`/categories/by-slug/${s}`);
-        if (res?.data) {
-          cat = res.data;
-          break;
+        let cat = null;
+
+        // 1) Try direct slug endpoint with candidates
+        for (const s of candidates) {
+          try {
+            const res = await api.get(`/categories/by-slug/${s}`);
+            if (res?.data) {
+              cat = res.data;
+              break;
+            }
+          } catch (_) {
+            // keep trying candidates
+          }
         }
-      } catch (_) {
-        // keep trying candidates
+
+        // 2) Fallback: fetch list and match by slug or name
+        if (!cat) {
+          const listRes = await api.get('/categories');
+          const items = Array.isArray(listRes.data)
+            ? listRes.data
+            : (listRes.data?.categories || []);
+
+          const nameFromCleanSlug = categorySlug
+            .replace(/-and-/g, ' & ')
+            .replace(/-/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+          cat =
+            items.find(c => norm(c.slug) === norm(categorySlug)) ||
+            items.find(c => norm(c.slug) === norm(categorySlug.replace(/-and-/g, '-&-'))) ||
+            items.find(c => norm(c.name_en) === norm(nameFromCleanSlug)) ||
+            items.find(c => norm(c.name_hi) === norm(nameFromCleanSlug));
+        }
+
+        if (!cat) {
+          throw new Error('not-found');
+        }
+
+        if (isMounted) setCategory(cat);
+      } catch (err) {
+        console.error('Error fetching category data:', err);
+        if (isMounted) setError('Category not found.');
+      } finally {
+        if (isMounted) setLoading(false);
       }
-    }
-
-    // 2) Fallback: fetch list and match by slug or name
-    if (!cat) {
-      const listRes = await api.get('/categories');
-      const items = Array.isArray(listRes.data)
-        ? listRes.data
-        : (listRes.data?.categories || []);
-
-      const nameFromCleanSlug = categorySlug
-        .replace(/-and-/g, ' & ')
-        .replace(/-/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-
-      cat =
-        items.find(c => norm(c.slug) === norm(categorySlug)) ||
-        items.find(c => norm(c.slug) === norm(categorySlug.replace(/-and-/g, '-&-'))) ||
-        items.find(c => norm(c.name_en) === norm(nameFromCleanSlug)) ||
-        items.find(c => norm(c.name_hi) === norm(nameFromCleanSlug));
-    }
-
-    if (!cat) {
-      throw new Error('not-found');
-    }
-
-    setCategory(cat);
-  } catch (err) {
-    console.error('Error fetching category data:', err);
-    setError('Category not found.');
-  } finally {
-    setLoading(false);
-  }
-};
-
+    };
 
     fetchCategoryData();
     return () => {
@@ -115,7 +114,7 @@ const CategoryPage = ({ categoryName }) => {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
     name: `${category.name_en} Blogs - Innvibs`,
-    description: metaDescription,
+    description: (category.metaDescription ?? metaDescription), // DB first
     url: `https://www.innvibs.com${canonicalPath}`,
   };
 
@@ -128,30 +127,27 @@ const CategoryPage = ({ categoryName }) => {
     ],
   };
 
+  // --- DB-only SEO values (no suffix/prefix); place ABOVE return ---
+  const isHi = (i18n.language || '').toLowerCase().startsWith('hi');
+
+  const metaTitle =
+    category?.metaTitle ??
+    (isHi ? category?.metaTitle_hi : category?.metaTitle_en) ??
+    undefined; // leave undefined if missing so SEO won't override
+
+  const metaDesc =
+    category?.metaDescription ??
+    (isHi ? category?.metaDescription_hi : category?.metaDescription_en) ??
+    undefined; // leave undefined if missing
+
   return (
     <>
-      // pick meta from DB first, then fallbacks
-// language flag
-const isHi = (i18n.language || '').toLowerCase().startsWith('hi');
-
-// use ONLY DB values (no suffix/prefix)
-const metaTitle =
-  category?.metaTitle ??
-  (isHi ? category?.metaTitle_hi : category?.metaTitle_en) ??
-  undefined;  // if missing, don't override
-
-const metaDesc =
-  category?.metaDescription ??
-  (isHi ? category?.metaDescription_hi : category?.metaDescription_en) ??
-  undefined;  // if missing, don't override
-
-<SEO
-  title={metaTitle}            // will be exactly what’s in DB
-  description={metaDesc}       // will be exactly what’s in DB
-  canonicalUrl={`/${categorySlug}`}
-  schema={[collectionPageSchema, breadcrumbSchema]}
-/>
-
+      <SEO
+        title={metaTitle}
+        description={metaDesc}
+        canonicalUrl={canonicalPath}
+        schema={[collectionPageSchema, breadcrumbSchema]}
+      />
 
       {/* Main feed renders based on current path (HomePage already handles category/tag/search) */}
       <HomePage />
