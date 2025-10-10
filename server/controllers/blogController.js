@@ -238,77 +238,63 @@ const getHomepageBlogs = async (req, res) => {
 // Search blogs
 // ===============================
 const searchBlogs = async (req, res) => {
-    const { q, page = 1, limit = 10 } = req.query;
-    const parsedLimit = parseInt(limit, 10);
-    const parsedPage = parseInt(page, 10);
+  const { q, page = 1, limit = 10 } = req.query;
+  const parsedLimit = parseInt(limit, 10);
+  const parsedPage = parseInt(page, 10);
 
-    if (isNaN(parsedLimit) || parsedLimit <= 0 || isNaN(parsedPage) || parsedPage <= 0 || !q) {
-        return res.status(400).json({ error: 'Invalid parameters or missing search query.' });
-    }
+  if (isNaN(parsedLimit) || parsedLimit <= 0 || isNaN(parsedPage) || parsedPage <= 0 || !q) {
+    return res.status(400).json({ error: 'Invalid parameters or missing search query.' });
+  }
 
-    try {
-        const skip = (parsedPage - 1) * parsedLimit;
-        
-        const regex = new RegExp(q, 'i'); 
-
-        const filter = {
-            $and: [
-                {
-                    $or: [
-                        { title: regex }, { content: regex }, { title_en: regex },
-                        { title_hi: regex }, { content_en: regex }, { content_hi: regex },
-                        { tags: regex }, { category: regex }
-                    ]
-                },
-                {
-                    $or: [{ status: 'published' }, { status: { $exists: false } }]
-                }
-            ]
-        };
-
-        const blogs = await Blog.find(filter)
-            .sort({ date: -1 })
-            .skip(skip)
-            .limit(parsedLimit)
-             // ✅ FIX: Added .select() to ensure excerpt fields are fetched efficiently
-            .select('title_en title_hi content_en content_hi image date category tags slug views likedBy shareCount comments excerpt_en excerpt_hi');
-
-        const blogsWithLikeCount = blogs.map(blog => {
-            const blogObject = blog.toObject();
-            blogObject.likes = blog.likedBy ? blog.likedBy.length : 0;
-            return blogObject;
-        });
-
-        const totalBlogs = await Blog.countDocuments(filter);
-        const totalPages = Math.ceil(totalBlogs / parsedLimit);
-
-        res.json({
-            blogs: blogsWithLikeCount,
-            currentPage: parsedPage,
-            totalPages,
-            totalBlogs
-        });
-    } catch (err) {
-        console.error('Error in searchBlogs:', err);
-        res.status(500).json({ error: 'Failed to perform search.' });
-    }
-};
-// ===============================
-// Get single blog by ID
-// ===============================
-const getBlog = async (req, res) => {
   try {
-    const blog = await Blog.findById(req.params.id)
-      .populate('comments')
-      .select(
-        'title title_en title_hi content content_en content_hi image date category tags slug views comments likes shareCount'
-      );
+    // 🔤 lang detection
+    const qLang = (req.query?.lang || '').toString().toLowerCase();
+    const headerLang = (req.headers['accept-language'] || '').toString().toLowerCase();
+    const lang = (qLang || headerLang.split(',')[0]).split('-')[0] || 'en';
+    const suf = lang === 'en' ? '' : `_${lang}`;
 
-    if (!blog) return res.status(404).json({ error: 'Blog not found' });
+    const skip = (parsedPage - 1) * parsedLimit;
+    const regex = new RegExp(q, 'i');
 
-    res.json(blog);
+    const filter = {
+      $and: [
+        {
+          $or: [
+            { title: regex }, { content: regex },
+            { title_en: regex }, { title_hi: regex },
+            { content_en: regex }, { content_hi: regex },
+            { tags: regex }, { category: regex }
+          ]
+        },
+        { $or: [{ status: 'published' }, { status: { $exists: false } }] }
+      ]
+    };
+
+    const blogs = await Blog.find(filter)
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(parsedLimit)
+      // include base + localized for safe fallback
+      .select('title title_en title_hi content content_en content_hi excerpt excerpt_en excerpt_hi image date category tags slug views likedBy shareCount comments');
+
+    const blogsWithLikeCount = blogs.map(doc => {
+      const b = doc.toObject();
+      b.likes = Array.isArray(b.likedBy) ? b.likedBy.length : (b.likes || 0);
+      // ✅ prefer requested lang -> English -> base
+      b.title   = (suf && b[`title${suf}`])   || b.title_en   || b.title   || b.title_hi;
+      b.excerpt = (suf && b[`excerpt${suf}`]) || b.excerpt_en || b.excerpt || b.excerpt_hi;
+      b.content = (suf && b[`content${suf}`]) || b.content_en || b.content || b.content_hi;
+      b.lang = lang;
+      return b;
+    });
+
+    const totalBlogs = await Blog.countDocuments(filter);
+    const totalPages = Math.ceil(totalBlogs / parsedLimit);
+
+    res.json({ blogs: blogsWithLikeCount, currentPage: parsedPage, totalPages, totalBlogs });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Error in searchBlogs:', err);
+    res.status(500).json({ error: 'Failed to perform search.' });
   }
 };
 
@@ -591,7 +577,7 @@ const generateSocialPreviewHTML = (blog, errorMessage = null, categoryName = nul
         <meta property="og:type" content="website">
         <meta property="og:title" content="${errorMessage || 'Blog Not Found'}">
         <meta property="og:description" content="Visit InnVibs for the latest blogs and insights">
-        <meta property="og:image" content="${baseUrl}/logo.png">
+        <meta property="og:image" content="${baseUrl}/header.png">
         <meta property="og:url" content="${baseUrl}">
         <meta property="og:site_name" content="InnVibs">
 
@@ -599,7 +585,7 @@ const generateSocialPreviewHTML = (blog, errorMessage = null, categoryName = nul
         <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:title" content="${errorMessage || 'Blog Not Found'}">
         <meta name="twitter:description" content="Visit InnVibs for the latest blogs and insights">
-        <meta name="twitter:image" content="${baseUrl}/logo.png">
+        <meta name="twitter:image" content="${baseUrl}/header.png">
       </head>
       <body>
         <h1>${errorMessage || 'Blog Not Found'}</h1>
@@ -628,7 +614,7 @@ const generateSocialPreviewHTML = (blog, errorMessage = null, categoryName = nul
     imageUrl = imageUrl;
   } else {
     // Default image if no blog image
-    imageUrl = `${baseUrl}/logo.png`;
+    imageUrl = `${baseUrl}/header.png`;
   }
 
   // Generate the correct URL based on whether we have a category
@@ -779,25 +765,70 @@ const deleteBlog = async (req, res) => {
 };
 
 // ===============================
-// Export
+// Get single blog by id or slug (universal helper endpoint)
 // ===============================
-// ===============================
-// Export
-// ===============================
+const getBlog = async (req, res) => {
+  try {
+    const lang = getLang(req);
+    const { id, slug } = req.params || {};
+
+    if (!id && !slug) {
+      return res.status(400).json({ error: 'Missing blog identifier (id or slug).' });
+    }
+
+    // If slug is provided, only return published (or legacy without status)
+    const query = slug
+      ? Blog.findOne({
+          slug,
+          $or: [{ status: 'published' }, { status: { $exists: false } }],
+        })
+      : Blog.findById(id);
+
+    const blog = await query
+      .populate('comments')
+      .select(
+        'title title_en title_hi content content_en content_hi image date category tags slug views comments likes shareCount excerpt_en excerpt_hi likedBy status updatedAt'
+      );
+
+    if (!blog) return res.status(404).json({ error: 'Blog not found' });
+
+    const localized = localizeBlog(blog, lang);
+    localized.likes = Array.isArray(localized.likedBy)
+      ? localized.likedBy.length
+      : (localized.likes || 0);
+
+    return res.json(localized);
+  } catch (err) {
+    console.error('Error in getBlog:', err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
 module.exports = {
+  // lists
   getBlogs,
-  getHomepageBlogs, //  <-- ADD THIS LINE
+  getHomepageBlogs,
   getLatestBlogs,
   searchBlogs,
-  getBlog,
+
+  // singles
+  getBlog,                      // ✅ now defined
   getBlogBySlug,
   getBlogByCategoryAndSlug,
   getBlogBySlugHelper,
+
+  // social preview
   getSocialMediaPreview,
+
+  // counters
   incrementViews,
   incrementShares,
+
+  // reactions
   likePost,
   unlikePost,
   addComment,
-  deleteBlog // ✅ ADD THIS LINE
+
+  // admin
+  deleteBlog,
 };

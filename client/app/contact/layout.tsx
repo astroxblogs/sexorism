@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     siteName: 'Innvibs Blog',
     images: [
       {
-        url: '/logo.png',
+        url: '/header.png',
         width: 1200,
         height: 630,
         alt: 'Innvibs Blog - Contact Us',
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     title: 'Contact Us - Innvibs Blog',
     description:
       "Get in touch with the Innvibs team. We'd love to hear from you! Contact us for questions, feedback, or collaboration opportunities.",
-    images: ['/logo.png'],
+    images: ['/header.png'],
     creator: '@innvibs',
   },
 
@@ -87,7 +87,7 @@ export default function ContactLayout({ children }: { children: React.ReactNode 
     '@type': 'Organization',
     name: 'Innvibs',
     url: BASE_URL,
-    logo: `${BASE_URL}/logo.png`,
+    logo: `${BASE_URL}/header.png`,
     sameAs: ['https://www.facebook.com/innvibs'],
     parentOrganization: { '@type': 'Organization', name: 'Astrox Softech Pvt Ltd' },
     contactPoint: [

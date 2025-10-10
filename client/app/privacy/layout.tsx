@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     'personal data',
     'Innvibs privacy',
   ],
-  authors: [{ name: 'Innvibs Team' }],
+  authors: [{ name: 'Innvibs' }],
   creator: 'Astrox Softech Pvt Ltd',
   publisher: 'Innvibs',
   formatDetection: { email: false, address: false, telephone: false },
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
       'Understand how Innvibs collects, uses, shares, and protects your personal information.',
     url: '/privacy',            // resolves against metadataBase
     siteName: 'Innvibs',
-    images: [{ url: '/logo.png', width: 1200, height: 630, alt: 'Innvibs Privacy Policy' }],
+    images: [{ url: '/header.png', width: 1200, height: 630, alt: 'Innvibs Privacy Policy' }],
     locale: 'en_US',
     type: 'website',
   },
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     title: 'Privacy Policy - Innvibs',
     description:
       'Understand how Innvibs collects, uses, shares, and protects your personal information.',
-    images: ['/logo.png'],
+    images: ['/header.png'],
     creator: '@innvibs',
   },
 
@@ -74,7 +74,7 @@ export default function PrivacyLayout({ children }: { children: React.ReactNode 
       name: 'Innvibs',
       parentOrganization: { '@type': 'Organization', name: 'Astrox Softech Pvt Ltd' },
       url: BASE_URL,
-      logo: `${BASE_URL}/logo.png`,
+      logo: `${BASE_URL}/header.png`,
       sameAs: ['https://www.facebook.com/innvibs'],
       contactPoint: [
         {

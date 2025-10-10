@@ -120,9 +120,11 @@ const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLog
 
   return (
     <nav key={lang} className="sticky top-0 z-50 bg-white/90 dark:bg-dark-bg-secondary backdrop-blur supports-[backdrop-filter]:bg-white/70 dark:supports-[backdrop-filter]:bg-dark-bg-secondary shadow">
-      <div className="py-2.5 px-3 sm:px-4 md:px-8 flex flex-col lg:flex-row gap-2 lg:gap-0 lg:justify-between lg:items-center">
+     <div className="py-2.5 px-3 sm:px-4 md:px-8 flex flex-col lg:flex-row gap-2 lg:gap-6 lg:justify-between lg:items-center">
 
-        <div className="flex items-center gap-3 w-full lg:w-auto">
+
+      <div className="flex items-center gap-3 w-full lg:w-auto lg:mr-4">
+
           <button
             onClick={onLogoClick}
             className="flex items-center gap-2 flex-shrink-0 max-w-[120px] sm:max-w-[140px] md:max-w-none"

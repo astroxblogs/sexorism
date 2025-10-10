@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     'lifestyle blog',
     'fashion technology travel sports astrology vastu',
   ],
-  authors: [{ name: 'Innvibs Team' }],
+  authors: [{ name: 'Innvibs' }],
   creator: 'Astrox Softech Pvt Ltd',
   publisher: 'Innvibs',
   formatDetection: { email: false, address: false, telephone: false },
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
       'Discover Innvibs: our mission, values, and what we offer across lifestyle, fashion, technology, travel, sports, astrology, and Vastu Shastra.',
     url: '/about',
     siteName: 'Innvibs',
-    images: [{ url: '/logo.png', width: 1200, height: 630, alt: 'Innvibs About' }],
+    images: [{ url: '/header.png', width: 1200, height: 630, alt: 'Innvibs About' }],
     locale: 'en_US',
     type: 'website',
   },
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     title: 'About Us - Innvibs',
     description:
       'Discover Innvibs: our mission, values, and what we offer across lifestyle, fashion, technology, travel, sports, astrology, and Vastu Shastra.',
-    images: ['/logo.png'],
+    images: ['/header.png'],
     creator: '@innvibs',
   },
 };
@@ -59,7 +59,7 @@ export default function AboutLayout({ children }: { children: React.ReactNode })
       name: 'Innvibs',
       parentOrganization: { '@type': 'Organization', name: 'Astrox Softech Pvt Ltd' },
       url: BASE_URL,
-      logo: `${BASE_URL}/logo.png`,
+      logo: `${BASE_URL}/header.png`,
       sameAs: ['https://www.facebook.com/innvibs'],
     },
   };
