@@ -39,7 +39,7 @@ const CategoryPage = ({ categoryName }) => {
     // 1) Try direct slug endpoint with candidates
     for (const s of candidates) {
       try {
-        const res = await api.get(`/categories/${s}`);
+        const res = await api.get(`/categories/by-slug/${s}`);
         if (res?.data) {
           cat = res.data;
           break;
@@ -139,7 +139,7 @@ const metaTitle =
 const metaDesc =
   category?.metaDescription ||
   (i18n.language === 'hi' ? category?.metaDescription_hi : category?.metaDescription_en) ||
-  metaDescription; // your existing fallback
+  metaDescription;
 
 <SEO
   title={metaTitle}
