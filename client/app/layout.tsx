@@ -176,19 +176,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           />
         </noscript>
 
-        <Providers>
-          <I18nProvider>
-  <Analytics />
-  {/* Add tracker here (once) */}
-  {/* If RouteAwareChrome renders children on route change, tracker can be here or above it */}
-  <NavigationWrapper>
-  {/* <HeaderAd /> */}
-  <GtmTracker />   {/* now imported */}
-  <RouteAwareChrome>{children}</RouteAwareChrome>
-  {/* <FooterAd /> */}
-</NavigationWrapper>
-</I18nProvider>
-        </Providers>
+            {/* ✅ Always render server HTML immediately for crawlers */}
+       <main id="content">{children}</main>
+
+       {/* Optional: mount client-only chrome WITHOUT wrapping the main server content */}
+       <Providers>
+         <I18nProvider>
+           <Analytics />
+           <NavigationWrapper>
+             <GtmTracker />
+             {/* If RouteAwareChrome is required for nav effects, keep it but DON'T wrap children */}
+             {/* <RouteAwareChrome /> */}
+           </NavigationWrapper>
+         </I18nProvider>
+       </Providers>
       </body>
     </html>
   )
