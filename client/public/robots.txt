@@ -1,27 +1,19 @@
-User-agent: *
-Allow: /
+// app/robots.ts
+import type { MetadataRoute } from 'next'
 
-# Block admin and API routes
-Disallow: /admin/
-Disallow: /api/
-Disallow: /_next/
-Disallow: /cms/
-
-# Allow all major search engines
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-# Sitemap location
-Sitemap: https://innvibs.com/sitemap.xml
-
-# Crawl delay for respectful crawling
-Crawl-delay: 1
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: [
+      {
+        userAgent: '*',
+        allow: '/',
+        disallow: ['/cms/', '/admin/', '/api/', '/_next/'],
+      },
+      // If you still want per-bot groups, REPEAT the disallows for each:
+      // { userAgent: 'Googlebot', allow: '/', disallow: ['/cms/', '/admin/', '/api/', '/_next/'] },
+      // { userAgent: 'Bingbot',   allow: '/', disallow: ['/cms/', '/admin/', '/api/', '/_next/'] },
+    ],
+    sitemap: 'https://innvibs.com/sitemap.xml',
+    // (Optionally serve a different sitemap on innvibs.in if needed)
+  }
+}

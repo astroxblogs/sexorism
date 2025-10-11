@@ -11,43 +11,45 @@ export function middleware(request: NextRequest) {
   const url = request.nextUrl
   const { pathname } = url
 
-  // ---------- CMS Auth ----------
-  if (pathname.startsWith('/cms')) {
-    if (pathname === '/cms/login') return NextResponse.next()
+  const isSensitive =
+    pathname.startsWith('/cms') ||
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/api')
 
-    const token = request.cookies.get('token')?.value
-    if (!token) {
-      return NextResponse.redirect(new URL('/cms/login', request.url))
+  // ---------- Sensitive areas: add X-Robots-Tag (and do /cms auth) ----------
+  if (isSensitive) {
+    // /cms auth gate (login allowed without token)
+    if (pathname.startsWith('/cms') && pathname !== '/cms/login') {
+      const token = request.cookies.get('token')?.value
+      if (!token) {
+        const redirect = NextResponse.redirect(new URL('/cms/login', request.url))
+        redirect.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet, noimageindex')
+        return redirect
+      }
     }
-    return NextResponse.next()
+
+    const res = NextResponse.next()
+    res.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet, noimageindex')
+    return res
   }
 
-  // ---------- Skip assets ----------
+  // ---------- Skip static assets ----------
   if (/\.[a-z0-9]+$/i.test(pathname)) return NextResponse.next()
 
   const segments = pathname.split('/').filter(Boolean)
 
-  // 1️⃣ Redirect /category/... → clean URL (308)
-  if (segments[0] === 'category') {
-    if (segments.length >= 2) {
-      const dest = '/' + segments.slice(1).join('/')
-      return NextResponse.redirect(new URL(dest, request.url), 308)
-    }
-    return NextResponse.redirect(new URL('/', request.url), 308)
-  }
-
-  // 2️⃣ Rewrite clean URLs → /category/*
+  // ---------- Rewrite clean URLs → /category/*
   if (segments.length === 1 && !RESERVED.has(segments[0])) {
-    const category = decodeURIComponent(segments[0]) // ✅ decode, don’t re-encode
+    const category = decodeURIComponent(segments[0])
     const rewriteUrl = url.clone()
-    rewriteUrl.pathname = `/category/${category}`   // ✅ plain path, no encodeURIComponent
+    rewriteUrl.pathname = `/category/${category}`
     return NextResponse.rewrite(rewriteUrl)
   }
 
   if (segments.length === 2 && !RESERVED.has(segments[0])) {
-    const [category, blogSlug] = segments.map(decodeURIComponent) // ✅ decode both
+    const [category, blogSlug] = segments.map(decodeURIComponent)
     const rewriteUrl = url.clone()
-    rewriteUrl.pathname = `/category/${category}/${blogSlug}`     // ✅ no encoding
+    rewriteUrl.pathname = `/category/${category}/${blogSlug}`
     return NextResponse.rewrite(rewriteUrl)
   }
 
@@ -55,5 +57,12 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next|api|static|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp|css|js|map)).*)'],
+  // Ensure sensitive routes always pass through middleware (to set X-Robots-Tag),
+  // plus your general matcher for app routes.
+  matcher: [
+    '/cms/:path*',
+    '/admin/:path*',
+    '/api/:path*',
+    '/((?!_next|api|static|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp|css|js|map)).*)',
+  ],
 }
