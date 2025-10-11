@@ -55,7 +55,7 @@ const currentLang = i18n?.resolvedLanguage || i18n?.language || 'en';
                 {items.map((blog, idx) => {
                     const categorySlug = blog.category ? slugify(blog.category) : 'uncategorized';
                     const blogSlug = blog.slug || blog._id || 'unknown';
-                    const blogUrl = `/category/${categorySlug}/${blogSlug}`;
+                    const blogUrl = `/${categorySlug}/${blogSlug}`;
 
                     console.log('DEBUG (SidebarLatest): Rendering blog item:', blog);
 

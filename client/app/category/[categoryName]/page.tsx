@@ -2,9 +2,8 @@
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import NextDynamic from 'next/dynamic';
-import Link from 'next/link';
 
-// Ensure per-request metadata generation
+// Ensure per-request rendering
 export const dynamic = 'force-dynamic';
 
 interface CategoryPageProps {
@@ -31,7 +30,7 @@ const API_BASE =
   (process.env.NODE_ENV !== 'production' ? 'https://api.innvibs.in' : '');
 
 const CategoryPage = NextDynamic(() => import('../../components/CategoryPage'), {
-  // allow SSR so initial HTML is present for crawlers
+  ssr: false,
   loading: () => <div className="text-center py-20">Loading category…</div>,
 });
 
@@ -42,48 +41,22 @@ function currentLang(): 'en' | 'hi' {
 }
 
 async function fetchJson(url: string, lang: 'en' | 'hi') {
-  const res = await fetch(url, {
-    headers: { 'Accept-Language': lang },
-    cache: 'no-store',
-  });
+  const res = await fetch(url, { headers: { 'Accept-Language': lang }, cache: 'no-store' });
   if (!res.ok) return null;
   const data = await res.json();
   return (data?.payload?.data ?? data?.data ?? data) as any;
 }
 
-function hasSeoFields(cat: any): boolean {
-  if (!cat || typeof cat !== 'object') return false;
-  return (
-    'metaTitle' in cat ||
-    'metaTitle_en' in cat ||
-    'metaTitle_hi' in cat ||
-    'metaDescription' in cat ||
-    'metaDescription_en' in cat ||
-    'metaDescription_hi' in cat ||
-    (cat.seo && (cat.seo.metaTitle || cat.seo.metaDescription))
-  );
-}
-
-/**
- * Match the client lookup strategy:
- * 1) try /categories/by-slug/:slug (and -&- variant)
- * 2) try /categories/:slug (and -&- variant)
- * 3) fallback: GET /categories and match by slug or name
- * If fallback result lacks SEO fields, hydrate once via by-slug.
- */
 async function fetchCategory(slug: string, lang: 'en' | 'hi'): Promise<CategoryDto | null> {
   const candidates = Array.from(new Set([slug, slug.replace(/-and-/g, '-&-')]));
 
-  // 1) Try /categories/:slug first (since /by-slug is 404 on .in)
+  // Try /categories/:slug first
   for (const s of candidates) {
-    const bySlug = await fetchJson(
-      `${API_BASE}/api/categories/${encodeURIComponent(s)}?lang=${lang}`,
-      lang
-    );
+    const bySlug = await fetchJson(`${API_BASE}/api/categories/${encodeURIComponent(s)}?lang=${lang}`, lang);
     if (bySlug) return bySlug as CategoryDto;
   }
 
-  // 2) Fallback to list and match
+  // Fallback: list & match
   const list = await fetchJson(`${API_BASE}/api/categories?lang=${lang}`, lang);
   const items: any[] = Array.isArray(list) ? list : list?.categories || [];
   const norm = (x: any) => String(x ?? '').trim().toLowerCase();
@@ -101,42 +74,11 @@ async function fetchCategory(slug: string, lang: 'en' | 'hi'): Promise<CategoryD
     items.find((c) => norm(c.name_hi) === norm(nameFromCleanSlug)) ||
     null;
 
-  // 3) If we matched via list, hydrate by ID to get full SEO
   if (cat && cat._id) {
     const hydrated = await fetchJson(`${API_BASE}/api/categories/${cat._id}?lang=${lang}`, lang);
     if (hydrated) cat = hydrated as CategoryDto;
   }
-
   return cat;
-}
-
-// --- helpers for the server-rendered list ---
-function stripHtml(html: string): string {
-  return (html || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
-}
-
-function excerptOf(blog: any, n = 160): string {
-  const raw =
-    blog?.excerpt ||
-    blog?.summary ||
-    stripHtml(blog?.content || blog?.html || '');
-  return raw.length > n ? raw.slice(0, n) + '…' : raw;
-}
-
-function canonicalPath(catSlug: string | undefined, blogSlug: string | undefined): string {
-  if (!catSlug || !blogSlug) return '#';
-  return `/${encodeURIComponent(catSlug)}/${encodeURIComponent(blogSlug)}`;
-}
-
-async function fetchCategoryBlogs(catForQuery: string, lang: 'en' | 'hi') {
-  // Map "And" to "&" if your API expects the ampersand form
-  const queryCategory = catForQuery.replace(/\bAnd\b/gi, '&');
-  const url = `${API_BASE}/api/blogs?category=${encodeURIComponent(queryCategory)}&page=1&limit=10&lang=${lang}`;
-  const res = await fetch(url, { cache: 'no-store', headers: { 'Accept-Language': lang } });
-  if (!res.ok) return [];
-  const json = await res.json();
-  const blogs = json?.blogs ?? json?.data ?? json?.payload?.data ?? json;
-  return Array.isArray(blogs) ? blogs : [];
 }
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
@@ -144,7 +86,6 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   const lang = currentLang();
   const cat = await fetchCategory(slug, lang);
 
-  // DB-only metadata (no prefixes/suffixes)
   const title =
     cat?.seo?.metaTitle ??
     cat?.metaTitle ??
@@ -162,96 +103,48 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   return {
     title,
     description,
-    openGraph: {
-      title,
-      description,
-      url,
-      type: 'website',
-      siteName: 'Innvibs',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-    },
+    openGraph: { title, description, url, type: 'website', siteName: 'Innvibs' },
+    twitter: { card: 'summary_large_image', title, description },
     alternates: { canonical: url },
   };
+}
+
+function excerptFromHtml(html: string, len = 160) {
+  const text = (html || '').replace(/<[^>]*>/g, '');
+  return text.length > len ? text.slice(0, len) + '…' : text;
 }
 
 export default async function CategoryPageRoute({ params }: CategoryPageProps) {
   const categoryName = decodeURIComponent(params.categoryName);
   const lang = currentLang();
-  const category = await fetchCategory(categoryName, lang);
-  const isHi = lang === 'hi';
 
-  if (!category) {
-    return <div className="container mx-auto p-6 text-center">Category not found.</div>;
-  }
-
-  // Prefer explicit cat slug/name for API query; fall back to slug/param
-  const catForQuery =
-    category.name_en ||
-    category.name ||
-    category.slug ||
-    categoryName;
-
-  const posts = await fetchCategoryBlogs(catForQuery, lang);
-  const first = posts.slice(0, 10);
+  // --- SSR shell (JS-off only) ---
+  const list =
+    (await fetchJson(
+      `${API_BASE}/api/blogs?category=${encodeURIComponent(
+        categoryName.replace(/-and-/g, '-&-')
+      )}&limit=10&lang=${lang}`,
+      lang
+    )) || [];
+  const posts: any[] = Array.isArray(list?.blogs) ? list.blogs : Array.isArray(list) ? list : [];
 
   return (
     <>
-      {/* 1) Server-rendered HTML list for crawlers/AdSense */}
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10">
-        <section aria-labelledby="cat-heading" className="mb-10">
-          <h1 id="cat-heading" className="sr-only">
-            {category?.name_en || category?.name || categoryName}
-          </h1>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {first.map((b: any, idx: number) => {
-              const href = canonicalPath(category.slug, b?.slug || b?.blogSlug);
-              const title = b?.title || 'Untitled';
-              const img = b?.image || b?.coverImage || null;
-              const alt = title;
-              const text = excerptOf(b);
-
-              return (
-                <article
-                  key={b?._id || b?.id || `${href}-${idx}`}
-                  className="border border-gray-200/60 dark:border-gray-700/60 rounded-lg p-4 bg-white dark:bg-gray-900"
-                >
-                  {img ? (
-                    <div className="mb-3">
-                      {/* Do not lazy-load the very first image for better LCP */}
-                      <img
-                        src={img}
-                        alt={alt}
-                        width={1200}
-                        height={630}
-                        {...(idx > 0 ? { loading: 'lazy' } : {})}
-                        className="w-full h-auto rounded-md"
-                      />
-                    </div>
-                  ) : null}
-
-                  <h2 className="text-lg font-semibold mb-2">
-                    <Link href={href} prefetch>
-                      {title}
-                    </Link>
-                  </h2>
-
-                  {text ? (
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{text}</p>
-                  ) : null}
-                </article>
-              );
-            })}
-          </div>
+      <noscript>
+        <section>
+          <h1>Category: {categoryName}</h1>
+          {posts.slice(0, 10).map((p) => (
+            <article key={p._id || p.slug}>
+              <h2>{p?.title}</h2>
+              {p?.image ? <img src={p.image} alt={p.title} /> : null}
+              <p>{excerptFromHtml(p?.content || p?.excerpt || '')}</p>
+            </article>
+          ))}
         </section>
-      </main>
+      </noscript>
 
-      {/* 2) Existing interactive client widget */}
-      <CategoryPage category={category} isHi={isHi} />
+      {/* Your existing client Category UI, unchanged */}
+      <CategoryPage categoryName={categoryName} />
     </>
   );
 }

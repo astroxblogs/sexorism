@@ -31,12 +31,24 @@ const nextConfig = {
   },
 
   async redirects() {
-    // Keep empty while verifying SEO; you already added app/[categoryName]/page.tsx
-    return [];
+    // 301 legacy `/category/...` → clean `/{category}/{post}` (and category list)
+    return [
+      {
+        source: '/category/:categoryName/:blogSlug',
+        destination: '/:categoryName/:blogSlug',
+        permanent: true,
+      },
+      {
+        source: '/category/:categoryName',
+        destination: '/:categoryName',
+        permanent: true,
+      },
+    ];
   },
 
   async headers() {
     return [
+      // CORS headers only for the proxied API path
       {
         source: '/api/:path*',
         headers: [
@@ -45,6 +57,7 @@ const nextConfig = {
           { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' },
         ],
       },
+      // Security headers for app pages (kept minimal to avoid UI regressions)
       {
         source: '/(.*)',
         headers: [
