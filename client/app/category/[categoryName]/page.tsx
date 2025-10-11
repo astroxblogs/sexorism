@@ -157,5 +157,6 @@ export default async function CategoryPageRoute({ params }: CategoryPageProps) {
   const categoryName = decodeURIComponent(params.categoryName);
   const lang = currentLang();
 const category = await fetchCategory(categoryName, lang);
-return <CategoryPage category={category} />;
+const isHi = lang === 'hi';
+return <CategoryPage category={category} isHi={isHi} />;
 }
