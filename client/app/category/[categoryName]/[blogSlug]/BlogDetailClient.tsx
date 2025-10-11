@@ -6,10 +6,8 @@ import BlogDetail from '../../../components/BlogDetail';
 import { getBlogByCategoryAndSlug } from '../../../lib/api';
 
 interface BlogDetailClientProps {
-  params: {
-    categoryName: string;
-    blogSlug: string;
-  };
+  params: { categoryName: string; blogSlug: string };
+  blog?: any; // 👈 add this
 }
 
 /** Turn clean URL slugs into the exact category string your API expects. */
@@ -29,34 +27,37 @@ function categorySlugToApiName(slug: string) {
     .join(' ');
 }
 
-export default function BlogDetailClient({ params }: BlogDetailClientProps) {
-  const [blog, setBlog] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+export default function BlogDetailClient({ params, blog: initialBlog }: BlogDetailClientProps) {
+
+const [blog, setBlog] = useState<any>(initialBlog ?? null);
+const [loading, setLoading] = useState(!initialBlog);
+
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchBlog = async () => {
-      try {
-        setLoading(true);
 
-        // 👇 normalize the category slug for the API
-        const categoryForApi = categorySlugToApiName(params.categoryName);
+  if (initialBlog) return; // already have data from SSR
 
-        const blogData = await getBlogByCategoryAndSlug(categoryForApi, params.blogSlug);
-        setBlog(blogData);
-      } catch (err) {
-        console.error('Error fetching blog:', err);
-        setError('Blog not found');
-      } finally {
-        setLoading(false);
-      }
-    };
+useEffect(() => {
+  if (initialBlog) return; // ✅ skip client fetch if SSR gave us data
 
-    if (params.categoryName && params.blogSlug) {
-      fetchBlog();
+  const fetchBlog = async () => {
+    try {
+      setLoading(true);
+      const categoryForApi = categorySlugToApiName(params.categoryName);
+      const blogData = await getBlogByCategoryAndSlug(categoryForApi, params.blogSlug);
+      setBlog(blogData);
+    } catch (err) {
+      console.error('Error fetching blog:', err);
+      setError('Blog not found');
+    } finally {
+      setLoading(false);
     }
-  }, [params.categoryName, params.blogSlug]);
+  };
+
+  if (params.categoryName && params.blogSlug) fetchBlog();
+}, [initialBlog, params.categoryName, params.blogSlug]);
+
 
   if (loading) {
     return (

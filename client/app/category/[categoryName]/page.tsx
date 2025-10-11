@@ -29,7 +29,7 @@ const API_BASE =
   (process.env.NODE_ENV !== 'production' ? 'https://api.innvibs.in' : '');
 
 const CategoryPage = NextDynamic(() => import('../../components/CategoryPage'), {
-  ssr: false,
+  // allow SSR so initial HTML is present for crawlers
   loading: () => <div className="text-center py-20">Loading category…</div>,
 });
 
@@ -153,7 +153,9 @@ export async function generateMetadata({
   };
 }
 
-export default function CategoryPageRoute({ params }: CategoryPageProps) {
+export default async function CategoryPageRoute({ params }: CategoryPageProps) {
   const categoryName = decodeURIComponent(params.categoryName);
-  return <CategoryPage categoryName={categoryName} />;
+  const lang = currentLang();
+const category = await fetchCategory(categoryName, lang);
+return <CategoryPage category={category} />;
 }

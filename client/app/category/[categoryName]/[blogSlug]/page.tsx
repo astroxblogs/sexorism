@@ -2,19 +2,28 @@ import { Metadata } from 'next';
 import { headers } from 'next/headers';
 import BlogDetailClient from './BlogDetailClient';
 
+// ✅ Helper
 const normalizeCategoryForApi = (s: string) =>
   decodeURIComponent(s || '')
     .toLowerCase()
-    .replace(/-and-/g, '-&-') // URL “and” → API “&”
-    .replace(/%26/g, '&');    // tolerate encoded &
+    .replace(/-and-/g, '-&-')
+    .replace(/%26/g, '&');
 
-// --- replace only this function ---
+// ✅ Fetch single blog server-side
+async function getBlog(category: string, slug: string) {
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.innvibs.in';
+  const res = await fetch(`${API_BASE}/api/blogs/${category}/${slug}`, {
+    cache: 'no-store', // you can replace with { next: { revalidate: 600 } } for ISR
+  });
+  if (!res.ok) throw new Error(`Failed to fetch blog: ${res.status}`);
+  return res.json();
+}
+
+// ✅ Metadata (you already did this perfectly)
 export async function generateMetadata(
   { params }: { params: { categoryName: string; blogSlug: string } }
 ): Promise<Metadata> {
   const categoryForApi = normalizeCategoryForApi(params.categoryName);
-
-  // env + host
   const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://api.innvibs.in';
   const siteUrlEnv = process.env.NEXT_PUBLIC_SITE_URL;
   const host = headers().get('host') || 'www.innvibs.in';
@@ -28,15 +37,11 @@ export async function generateMetadata(
       `${API_BASE}/api/blogs/${categoryForApi}/${params.blogSlug}`,
       { cache: 'no-store' }
     );
-
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
     const blog = await res.json();
 
-    // build excerpt from HTML (simple)
     const textContent = (blog?.content || '').replace(/<[^>]*>/g, '');
-    const excerpt =
-      textContent.slice(0, 160) + (textContent.length > 160 ? '…' : '');
+    const excerpt = textContent.slice(0, 160) + (textContent.length > 160 ? '…' : '');
 
     return {
       title: `${blog.title} - Innvibs Blog`,
@@ -90,7 +95,6 @@ export async function generateMetadata(
   }
 }
 
-
 interface BlogDetailPageProps {
   params: {
     categoryName: string;
@@ -98,6 +102,32 @@ interface BlogDetailPageProps {
   };
 }
 
-export default function BlogDetailPageRoute({ params }: BlogDetailPageProps) {
-  return <BlogDetailClient params={params} />;
+// ✅ Actual Page (Server-Side Rendered)
+export default async function BlogDetailPageRoute({ params }: BlogDetailPageProps) {
+  const categoryForApi = normalizeCategoryForApi(params.categoryName);
+  const blog = await getBlog(categoryForApi, params.blogSlug);
+
+  if (!blog) {
+    return <div className="container mx-auto p-6 text-center">Blog not found.</div>;
+  }
+
+  // ✅ Render content directly into HTML
+  return (
+    <article className="max-w-3xl mx-auto px-4 py-10 prose lg:prose-lg">
+      <h1 className="text-3xl font-bold mb-4">{blog.title}</h1>
+      <p className="text-sm text-gray-500 mb-8">
+        {blog.createdBy ? `By ${blog.createdBy}` : 'Innvibs'} •{' '}
+        {new Date(blog.createdAt).toLocaleDateString()}
+      </p>
+      <img
+        src={blog.image || '/top.png'}
+        alt={blog.title}
+        className="rounded-lg mb-8 w-full"
+        loading="lazy"
+      />
+      <div dangerouslySetInnerHTML={{ __html: blog.content }} />
+      {/* Optional client features like share/like can stay */}
+     <BlogDetailClient params={params} blog={blog} />
+    </article>
+  );
 }
