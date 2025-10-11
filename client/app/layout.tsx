@@ -15,6 +15,10 @@ import I18nProvider from './components/I18nProvider'
 import React from 'react'
 import RouteAwareChrome from './RouteAwareChrome' // ✅ you had this
 
+import LangSync from './components/LangSync';
+
+
+
 const BASE_URL = getBaseUrl();
 const inter = Inter({ subsets: ['latin'] })
 
@@ -163,9 +167,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
+
+
+
+
       </head>
 
-      <body className={inter.className}>
+            <body className={inter.className}>
         {/* ✅ Required GTM noscript fallback — must be the first thing in <body> */}
         <noscript>
           <iframe
@@ -176,20 +184,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           />
         </noscript>
 
-        <Providers>
-          <I18nProvider>
-  <Analytics />
-  {/* Add tracker here (once) */}
-  {/* If RouteAwareChrome renders children on route change, tracker can be here or above it */}
-  <NavigationWrapper>
-  {/* <HeaderAd /> */}
-  <GtmTracker />   {/* now imported */}
-  <RouteAwareChrome>{children}</RouteAwareChrome>
-  {/* <FooterAd /> */}
-</NavigationWrapper>
-</I18nProvider>
-        </Providers>
+        {/* ⬇️ i18n must wrap Providers so any child can use useTranslation safely */}
+        <I18nProvider>
+          {/* ⬇️ keep API language synced with i18n, but do it in a tiny client component */}
+          <LangSync />
+
+          <Providers>
+            <Analytics />
+            <NavigationWrapper>
+              {/* <HeaderAd /> */}
+              <GtmTracker />
+              <RouteAwareChrome>{children}</RouteAwareChrome>
+              {/* <FooterAd /> */}
+            </NavigationWrapper>
+          </Providers>
+        </I18nProvider>
       </body>
+
     </html>
   )
 }

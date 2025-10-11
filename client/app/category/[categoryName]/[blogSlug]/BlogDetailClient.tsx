@@ -6,8 +6,10 @@ import BlogDetail from '../../../components/BlogDetail';
 import { getBlogByCategoryAndSlug } from '../../../lib/api';
 
 interface BlogDetailClientProps {
-  params: { categoryName: string; blogSlug: string };
-  blog?: any; // 👈 add this
+  params: {
+    categoryName: string;
+    blogSlug: string;
+  };
 }
 
 /** Turn clean URL slugs into the exact category string your API expects. */
@@ -27,37 +29,34 @@ function categorySlugToApiName(slug: string) {
     .join(' ');
 }
 
-export default function BlogDetailClient({ params, blog: initialBlog }: BlogDetailClientProps) {
-
-const [blog, setBlog] = useState<any>(initialBlog ?? null);
-const [loading, setLoading] = useState(!initialBlog);
-
+export default function BlogDetailClient({ params }: BlogDetailClientProps) {
+  const [blog, setBlog] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
+  useEffect(() => {
+    const fetchBlog = async () => {
+      try {
+        setLoading(true);
 
-  if (initialBlog) return; // already have data from SSR
+        // 👇 normalize the category slug for the API
+        const categoryForApi = categorySlugToApiName(params.categoryName);
 
-useEffect(() => {
-  if (initialBlog) return; // ✅ skip client fetch if SSR gave us data
+        const blogData = await getBlogByCategoryAndSlug(categoryForApi, params.blogSlug);
+        setBlog(blogData);
+      } catch (err) {
+        console.error('Error fetching blog:', err);
+        setError('Blog not found');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const fetchBlog = async () => {
-    try {
-      setLoading(true);
-      const categoryForApi = categorySlugToApiName(params.categoryName);
-      const blogData = await getBlogByCategoryAndSlug(categoryForApi, params.blogSlug);
-      setBlog(blogData);
-    } catch (err) {
-      console.error('Error fetching blog:', err);
-      setError('Blog not found');
-    } finally {
-      setLoading(false);
+    if (params.categoryName && params.blogSlug) {
+      fetchBlog();
     }
-  };
-
-  if (params.categoryName && params.blogSlug) fetchBlog();
-}, [initialBlog, params.categoryName, params.blogSlug]);
-
+  }, [params.categoryName, params.blogSlug]);
 
   if (loading) {
     return (

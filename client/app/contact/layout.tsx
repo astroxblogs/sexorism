@@ -1,10 +1,12 @@
 // app/contact/layout.tsx
 import type { Metadata } from 'next';
 import Script from 'next/script';
-import { getBaseUrl } from '..//lib/site'; // <- ensure lib/site.ts exists as shared earlier
+import { getBaseUrl } from '../lib/site'; // <- ensure lib/site.ts exists as shared earlier
 
 const BASE_URL = getBaseUrl();
+export const dynamic = 'force-dynamic'
 
+export const revalidate = 0
 export const metadata: Metadata = {
   title: 'Contact Us - Innvibs Blog',
   description:

@@ -1,6 +1,10 @@
 import { Metadata } from 'next';
 import SearchClient from './SearchClient';
 
+
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export const metadata: Metadata = {
   title: "Search Results - Innvibs",
   description: "Search for articles on Innvibs blog. Find the latest insights on technology, lifestyle, fashion, and more.",

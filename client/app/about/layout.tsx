@@ -4,6 +4,8 @@ import Script from 'next/script';
 import { getBaseUrl } from '../lib/site';
 
 const BASE_URL = getBaseUrl();
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export const metadata: Metadata = {
   title: 'About Us - Innvibs',

@@ -2,6 +2,7 @@
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import NextDynamic from 'next/dynamic';
+import Link from 'next/link';
 
 // Ensure per-request metadata generation
 export const dynamic = 'force-dynamic';
@@ -11,6 +12,7 @@ interface CategoryPageProps {
 }
 
 type CategoryDto = {
+  _id?: string;
   slug?: string;
   name?: string;
   name_en?: string;
@@ -101,20 +103,43 @@ async function fetchCategory(slug: string, lang: 'en' | 'hi'): Promise<CategoryD
 
   // 3) If we matched via list, hydrate by ID to get full SEO
   if (cat && cat._id) {
-    const hydrated = await fetchJson(
-      `${API_BASE}/api/categories/${cat._id}?lang=${lang}`,
-      lang
-    );
+    const hydrated = await fetchJson(`${API_BASE}/api/categories/${cat._id}?lang=${lang}`, lang);
     if (hydrated) cat = hydrated as CategoryDto;
   }
 
   return cat;
 }
 
+// --- helpers for the server-rendered list ---
+function stripHtml(html: string): string {
+  return (html || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+}
 
-export async function generateMetadata({
-  params,
-}: CategoryPageProps): Promise<Metadata> {
+function excerptOf(blog: any, n = 160): string {
+  const raw =
+    blog?.excerpt ||
+    blog?.summary ||
+    stripHtml(blog?.content || blog?.html || '');
+  return raw.length > n ? raw.slice(0, n) + '…' : raw;
+}
+
+function canonicalPath(catSlug: string | undefined, blogSlug: string | undefined): string {
+  if (!catSlug || !blogSlug) return '#';
+  return `/${encodeURIComponent(catSlug)}/${encodeURIComponent(blogSlug)}`;
+}
+
+async function fetchCategoryBlogs(catForQuery: string, lang: 'en' | 'hi') {
+  // Map "And" to "&" if your API expects the ampersand form
+  const queryCategory = catForQuery.replace(/\bAnd\b/gi, '&');
+  const url = `${API_BASE}/api/blogs?category=${encodeURIComponent(queryCategory)}&page=1&limit=10&lang=${lang}`;
+  const res = await fetch(url, { cache: 'no-store', headers: { 'Accept-Language': lang } });
+  if (!res.ok) return [];
+  const json = await res.json();
+  const blogs = json?.blogs ?? json?.data ?? json?.payload?.data ?? json;
+  return Array.isArray(blogs) ? blogs : [];
+}
+
+export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   const slug = decodeURIComponent(params.categoryName);
   const lang = currentLang();
   const cat = await fetchCategory(slug, lang);
@@ -156,7 +181,77 @@ export async function generateMetadata({
 export default async function CategoryPageRoute({ params }: CategoryPageProps) {
   const categoryName = decodeURIComponent(params.categoryName);
   const lang = currentLang();
-const category = await fetchCategory(categoryName, lang);
-const isHi = lang === 'hi';
-return <CategoryPage category={category} isHi={isHi} />;
+  const category = await fetchCategory(categoryName, lang);
+  const isHi = lang === 'hi';
+
+  if (!category) {
+    return <div className="container mx-auto p-6 text-center">Category not found.</div>;
+  }
+
+  // Prefer explicit cat slug/name for API query; fall back to slug/param
+  const catForQuery =
+    category.name_en ||
+    category.name ||
+    category.slug ||
+    categoryName;
+
+  const posts = await fetchCategoryBlogs(catForQuery, lang);
+  const first = posts.slice(0, 10);
+
+  return (
+    <>
+      {/* 1) Server-rendered HTML list for crawlers/AdSense */}
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10">
+        <section aria-labelledby="cat-heading" className="mb-10">
+          <h1 id="cat-heading" className="sr-only">
+            {category?.name_en || category?.name || categoryName}
+          </h1>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {first.map((b: any, idx: number) => {
+              const href = canonicalPath(category.slug, b?.slug || b?.blogSlug);
+              const title = b?.title || 'Untitled';
+              const img = b?.image || b?.coverImage || null;
+              const alt = title;
+              const text = excerptOf(b);
+
+              return (
+                <article
+                  key={b?._id || b?.id || `${href}-${idx}`}
+                  className="border border-gray-200/60 dark:border-gray-700/60 rounded-lg p-4 bg-white dark:bg-gray-900"
+                >
+                  {img ? (
+                    <div className="mb-3">
+                      {/* Do not lazy-load the very first image for better LCP */}
+                      <img
+                        src={img}
+                        alt={alt}
+                        width={1200}
+                        height={630}
+                        {...(idx > 0 ? { loading: 'lazy' } : {})}
+                        className="w-full h-auto rounded-md"
+                      />
+                    </div>
+                  ) : null}
+
+                  <h2 className="text-lg font-semibold mb-2">
+                    <Link href={href} prefetch>
+                      {title}
+                    </Link>
+                  </h2>
+
+                  {text ? (
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{text}</p>
+                  ) : null}
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      </main>
+
+      {/* 2) Existing interactive client widget */}
+      <CategoryPage category={category} isHi={isHi} />
+    </>
+  );
 }
