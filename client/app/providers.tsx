@@ -27,10 +27,11 @@ function getConsentFromCookie(): ConsentState {
 }
 function setConsentCookie(val: Exclude<ConsentState, 'unset'>) {
   try {
-    const oneYear = 365 * 24 * 60 * 60;
-    document.cookie = `innvibs_consent=${val}; Max-Age=${oneYear}; Path=/; SameSite=Lax`;
+    const fifteenDays = 15 * 24 * 60 * 60; // 15 days in seconds
+    document.cookie = `innvibs_consent=${val}; Max-Age=${fifteenDays}; Path=/; SameSite=Lax`;
   } catch {}
 }
+
 
 // Lazy create noscript iframe only after consent
 function renderGtmNoscript() {
