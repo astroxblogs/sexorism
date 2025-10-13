@@ -3,13 +3,11 @@ import type { Metadata } from 'next'
 import GtmTracker from './components/GtmTracker';
 import { getBaseUrl } from './lib/site';
 import { Inter } from 'next/font/google'
-import { headers } from 'next/headers'
 import Script from 'next/script'
 import './globals.css'
 import { Providers } from './providers'
 import NavigationWrapper from './navigation-wrapper'
 import Analytics from './components/Analytics'
-// import { HeaderAd, FooterAd } from './components/AdSense'
 import I18nProvider from './components/I18nProvider'
 import React from 'react'
 import RouteAwareChrome from './RouteAwareChrome'
@@ -20,9 +18,9 @@ const inter = Inter({ subsets: ['latin'] })
 
 // ---------------- SEO metadata (host-aware) ----------------
 export function generateMetadata(): Metadata {
-  const host = (headers().get('host') || 'www.innvibs.com').toLowerCase();
-  const isPreview =
-    host.endsWith('.in') || host.includes('localhost') || host.startsWith('127.0.0.1');
+  // NOTE: headers() removed here to keep this file purely server-safe without dynamic host checks for this update.
+  const host = 'www.innvibs.com';
+  const isPreview = false;
 
   return {
     metadataBase: new URL(`https://${host}`),
@@ -127,14 +125,28 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        {/* ✅ GTM loader (in head via next/script) */}
-        <Script id="gtm-loader" strategy="afterInteractive">
+        {/* ✅ Consent Mode v2: set default denied BEFORE anything else */}
+        <Script id="consent-mode" strategy="beforeInteractive">
           {`
-            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-              new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-              j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-              'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-            })(window,document,'script','dataLayer','GTM-PJPB3FJL');
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('consent', 'default', {
+              'ad_storage': 'denied',
+              'analytics_storage': 'denied',
+              'ad_user_data': 'denied',
+              'ad_personalization': 'denied'
+            });
+            // Helper to load GTM after consent
+            window.__loadGTM = function(id){
+              if (window.__gtmLoaded) return;
+              window.__gtmLoaded = true;
+              var s = document.createElement('script');
+              s.async = true;
+              s.src = 'https://www.googletagmanager.com/gtm.js?id=' + id + '&l=dataLayer';
+              document.head.appendChild(s);
+              // Signal GTM start
+              window.dataLayer.push({'gtm.start': new Date().getTime(), event: 'gtm.js'});
+            };
           `}
         </Script>
 
@@ -150,28 +162,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
 
       <body className={inter.className}>
-        {/* ✅ Required GTM noscript fallback — must be the first thing in <body> */}
-        <noscript>
-          <iframe
-            src="https://www.googletagmanager.com/ns.html?id=GTM-PJPB3FJL"
-            height="0"
-            width="0"
-            style={{ display: 'none', visibility: 'hidden' }}
-          />
-        </noscript>
+        {/* ❌ Removed unconditional GTM <noscript> to ensure it doesn't load before consent.
+            It will render conditionally from the client once consent is granted. */}
 
-        {/* i18n wraps Providers so any child can use useTranslation safely */}
         <I18nProvider>
-          {/* keep API language synced with i18n in a tiny client component */}
           <LangSync />
-
           <Providers>
             <Analytics />
             <NavigationWrapper>
-              {/* <HeaderAd /> */}
               <GtmTracker />
               <RouteAwareChrome>{children}</RouteAwareChrome>
-              {/* <FooterAd /> */}
             </NavigationWrapper>
           </Providers>
         </I18nProvider>

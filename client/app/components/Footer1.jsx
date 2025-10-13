@@ -33,7 +33,6 @@ export default function BalancedMonumentFooter() {
     { labelKey: "category.vastu_shastra", value: "Vastu Shastra" },
   ];
 
-
   const categoryLinks = {
     titleKey: "footer.categories_title",
     links: blogCategories.map(cat => ({
@@ -47,7 +46,6 @@ export default function BalancedMonumentFooter() {
       titleKey: "footer.company_title",
       links: [
         { nameKey: "footer.about_us", path: "/about" },
-        
         { nameKey: "footer.contact", path: "/contact" },
       ],
     },
@@ -57,17 +55,21 @@ export default function BalancedMonumentFooter() {
       links: [
         { nameKey: "footer.privacy_policy", path: "/privacy" },
         { nameKey: "footer.terms_of_service", path: "/terms" },
+
+        // --- NEW (compliance): external “Ad choices” links (no visual change, same list style)
+        { name: "Ad choices", external: true, href: "https://adssettings.google.com" },
+        { name: "About Ads (US DAA)", external: true, href: "https://optout.aboutads.info" },
+        { name: "NAI Opt-Out", external: true, href: "https://optout.networkadvertising.org" },
       ],
     },
   ];
 
   const socialLinks = [
-  { name: "LinkedIn", icon: <FaLinkedin />, url: "https://linkedin.com", colorClass: "text-[#0077B5]" },
-  { name: "Twitter", icon: <FaTwitter />, url: "https://twitter.com", colorClass: "text-[#1DA1F2]" },
-  { name: "Instagram", icon: <FaInstagram />, url: "https://instagram.com", colorClass: "text-pink-500" },
-  { name: "Facebook", icon: <FaFacebook />, url: "https://www.facebook.com/innvibs", colorClass: "text-[#1877F2]" },
-];
-
+    { name: "LinkedIn", icon: <FaLinkedin />, url: "https://linkedin.com", colorClass: "text-[#0077B5]" },
+    { name: "Twitter", icon: <FaTwitter />, url: "https://twitter.com", colorClass: "text-[#1DA1F2]" },
+    { name: "Instagram", icon: <FaInstagram />, url: "https://instagram.com", colorClass: "text-pink-500" },
+    { name: "Facebook", icon: <FaFacebook />, url: "https://www.facebook.com/innvibs", colorClass: "text-[#1877F2]" },
+  ];
 
   return (
     <footer className="bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800">
@@ -87,18 +89,17 @@ export default function BalancedMonumentFooter() {
           />
         </div>
 
-       {/* --- Tagline --- */}
-<div className="mb-6 md:mb-8">
-  <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 max-w-2xl leading-relaxed">
-    <span className="block">
-      {t('footer.tagline_line1', 'Inner Vibes — Explore Inside, Express Outside')}
-    </span>
-    <span className="block">
-      {t('footer.tagline_line2', 'A curated space for insights, stories, and ideas that matter.')}
-    </span>
-  </p>
-</div>
-
+        {/* --- Tagline --- */}
+        <div className="mb-6 md:mb-8">
+          <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 max-w-2xl leading-relaxed">
+            <span className="block">
+              {t('footer.tagline_line1', 'Inner Vibes — Explore Inside, Express Outside')}
+            </span>
+            <span className="block">
+              {t('footer.tagline_line2', 'A curated space for insights, stories, and ideas that matter.')}
+            </span>
+          </p>
+        </div>
 
         {/* --- Sections Grid --- */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-y-5 gap-x-6">
@@ -110,11 +111,24 @@ export default function BalancedMonumentFooter() {
               <ul className="space-y-2">
                 {section.links.map((link) => (
                   <li key={link.nameKey || link.name}>
-                    <Link
-                      href={link.path}
-                      className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors duration-200">
-                      {t(link.nameKey || link.name)}
-                    </Link>
+                    {link.external ? (
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors duration-200"
+                        aria-label={link.name}
+                      >
+                        {link.name}
+                      </a>
+                    ) : (
+                      <Link
+                        href={link.path}
+                        className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors duration-200"
+                      >
+                        {t(link.nameKey || link.name)}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -137,20 +151,21 @@ export default function BalancedMonumentFooter() {
                 type="submit"
                 className="bg-violet-600 text-white p-2.5 rounded-r-md hover:bg-violet-700 transition-colors"
                 aria-label={t('footer.subscribe_aria_label')}
-                title={t('footer.subscribe_title')}>
+                title={t('footer.subscribe_title')}
+              >
                 <FaArrowRight />
               </button>
             </form>
           </div>
         </div>
 
-       {/* --- Bottom Bar --- */}
-<div className="mt-6 pt-4 md:mt-8 md:pt-5 border-t border-gray-200 dark:border-gray-800 
-                flex flex-col sm:flex-row justify-between items-center text-center sm:text-left gap-3">
-  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-0">
-    © {new Date().getFullYear()} <span className="font-semibold text-gray-700 dark:text-gray-200">Inner Vibes</span><br />
-    Powered by <span className="font-medium text-emerald-600 dark:text-emerald-400">Astrox Softech Pvt. Ltd.</span> — All Rights Reserved.
-  </p>
+        {/* --- Bottom Bar --- */}
+        <div className="mt-6 pt-4 md:mt-8 md:pt-5 border-t border-gray-200 dark:border-gray-800 
+                        flex flex-col sm:flex-row justify-between items-center text-center sm:text-left gap-3">
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-0">
+            © {new Date().getFullYear()} <span className="font-semibold text-gray-700 dark:text-gray-200">Inner Vibes</span><br />
+            Powered by <span className="font-medium text-emerald-600 dark:text-emerald-400">Astrox Softech Pvt. Ltd.</span> — All Rights Reserved.
+          </p>
           <div className="flex items-center gap-3">
             {socialLinks.map((social) => (
               <a
@@ -159,7 +174,8 @@ export default function BalancedMonumentFooter() {
                 target="_blank"
                 rel="noopener noreferrer"
                 title={social.name}
-                className={`${social.colorClass} hover:opacity-80 transition-colors text-lg`}>
+                className={`${social.colorClass} hover:opacity-80 transition-colors text-lg`}
+              >
                 {social.icon}
               </a>
             ))}
@@ -167,7 +183,8 @@ export default function BalancedMonumentFooter() {
             <button
               onClick={toggleTheme}
               title={t('theme_toggle.toggle_theme_title')}
-              className="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center gap-2 text-sm">
+              className="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center gap-2 text-sm"
+            >
               {theme === "light" ? <FaMoon /> : <FaSun />}
               <span className="hidden sm:inline">
                 {theme === "light" ? t('theme_toggle.dark') : t('theme_toggle.light')} {t('theme_toggle.mode')}
