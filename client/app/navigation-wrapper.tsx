@@ -24,7 +24,7 @@ const NavigationWrapper: React.FC<NavigationWrapperProps> = ({ children }) => {
     setIsClient(true)
   }, [])
 
-  const standalonePages = ['/about', '/contact', '/privacy', '/terms']
+const standalonePages = ['/about', '/contact', '/privacy', '/terms', '/sitemap'];
   const adminPages = ['/cms/admin-dashboard', '/cms/login', '/cms']
   const isStandalonePage = isClient && pathname && standalonePages.includes(pathname)
   const isAdminPage = isClient && pathname && adminPages.some(page => pathname.startsWith(page))
@@ -77,7 +77,8 @@ const NavigationWrapper: React.FC<NavigationWrapperProps> = ({ children }) => {
         />
       )}
 
-      <main className="flex-1 overflow-y-auto">
+ <main className="block w-full min-h-[200px] bg-[rgba(255,0,0,0.03)]">
+
         {children}
       </main>
 

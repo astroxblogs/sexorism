@@ -1,16 +1,16 @@
-// app/RouteAwareChrome.tsx
+// client/app/RouteAwareChrome.tsx
 'use client';
 
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import Breadcrumbs from './components/Breadcrumbs';
-import MinimalFooter from './components/MinimalFooter'; // <- adjust path if your footer lives elsewhere
+import MinimalFooter from './components/MinimalFooter';
 
 const HIDE_ON = new Set(['/contact', '/privacy', '/terms', '/about']);
 
-function normalize(pathname: string) {
-  if (pathname.length > 1 && pathname.endsWith('/')) return pathname.slice(0, -1);
-  return pathname;
+function normalize(p: string) {
+  if (p.length > 1 && p.endsWith('/')) return p.slice(0, -1);
+  return p;
 }
 
 export default function RouteAwareChrome({ children }: { children: React.ReactNode }) {

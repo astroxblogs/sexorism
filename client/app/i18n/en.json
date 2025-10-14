@@ -115,7 +115,8 @@
         "email_aria_label": "Email for newsletter subscription",
         "subscribe_aria_label": "Subscribe to newsletter",
         "subscribe_title": "Subscribe",
-        "copyright": "© {{year}} {{appName}}"
+        "copyright": "© {{year}} {{appName}}",
+        "sitemap": "Sitemap"
     },
     "page_titles": {
         "tag_page": "Blogs for #{{tag}} - innvibs"

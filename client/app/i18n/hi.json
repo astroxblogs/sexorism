@@ -115,7 +115,8 @@
     "email_aria_label": "न्यूज़लेटर सदस्यता के लिए ईमेल",
     "subscribe_aria_label": "न्यूज़लेटर की सदस्यता लें",
     "subscribe_title": "सदस्यता लें",
-    "copyright": "© {{year}} {{appName}}"
+    "copyright": "© {{year}} {{appName}}",
+    "sitemap": "साइटमैप"
   },
   "page_titles": {
     "tag_page": "#{{tag}} के लिए ब्लॉग - innvibs"

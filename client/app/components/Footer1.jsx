@@ -55,6 +55,7 @@ export default function BalancedMonumentFooter() {
       links: [
         { nameKey: "footer.privacy_policy", path: "/privacy" },
         { nameKey: "footer.terms_of_service", path: "/terms" },
+        { nameKey: "footer.sitemap", path: "/sitemap" },
 
         // --- NEW (compliance): external “Ad choices” links (no visual change, same list style)
         { name: "Ad choices", external: true, href: "https://adssettings.google.com" },
@@ -109,28 +110,45 @@ export default function BalancedMonumentFooter() {
                 {t(section.titleKey)}
               </h3>
               <ul className="space-y-2">
-                {section.links.map((link) => (
-                  <li key={link.nameKey || link.name}>
-                    {link.external ? (
-                      <a
-                        href={link.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors duration-200"
-                        aria-label={link.name}
-                      >
-                        {link.name}
-                      </a>
-                    ) : (
-                      <Link
-                        href={link.path}
-                        className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors duration-200"
-                      >
-                        {t(link.nameKey || link.name)}
-                      </Link>
-                    )}
-                  </li>
-                ))}
+                {section.links
+                  .filter(Boolean)
+                  .map((link) => {
+                    const isExternal =
+                      !!link?.external && typeof link?.href === 'string' && link.href.length > 0;
+                    const hasInternal =
+                      !isExternal && typeof link?.path === 'string' && link.path.length > 0;
+
+                    if (!isExternal && !hasInternal) {
+                      if (typeof window !== 'undefined') {
+                        // eslint-disable-next-line no-console
+                        console.warn('[Footer] Skipping invalid link item:', link);
+                      }
+                      return null;
+                    }
+
+                    return (
+                      <li key={link?.nameKey || link?.name}>
+                        {isExternal ? (
+                          <a
+                            href={link.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors duration-200"
+                            aria-label={link.name}
+                          >
+                            {link.name}
+                          </a>
+                        ) : (
+                          <Link
+                            href={link.path}
+                            className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors duration-200"
+                          >
+                            {t(link?.nameKey || link?.name)}
+                          </Link>
+                        )}
+                      </li>
+                    );
+                  })}
               </ul>
             </div>
           ))}

@@ -12,6 +12,12 @@ const CategoryPage = ({ categoryName }) => {
 
   // Ensure we have a decoded slug
   const categorySlug = decodeURIComponent(categoryName || '');
+  
+  // Treat these as NON-category routes (prevents /api/categories/sitemap)
+  const RESERVED_SLUGS = new Set([
+    'sitemap', 'tag', 'search', 'about', 'contact', 'privacy', 'terms', 'admin', 'cms'
+  ]);
+
 
   const [category, setCategory] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -21,7 +27,15 @@ const CategoryPage = ({ categoryName }) => {
     let isMounted = true;
 
     const fetchCategoryData = async () => {
-      if (!categorySlug) return;
+         // Skip entirely on reserved/non-category routes
+     if (!categorySlug || RESERVED_SLUGS.has(categorySlug)) {
+        if (isMounted) {
+          setLoading(false);
+          setError(null);     // don't show "Category not found." on /sitemap
+          setCategory(null);
+        }
+        return;
+      }
       setLoading(true);
       setError(null);
 
@@ -106,9 +120,10 @@ if (
     };
   }, [categorySlug]);
 
-  if (!categorySlug) {
-    return <div className="text-center py-20 text-lg dark:text-gray-200">Loading…</div>;
+   if (!categorySlug || RESERVED_SLUGS.has(categorySlug)) {
+  return null;
   }
+  
   if (loading) {
     return <div className="text-center py-20 dark:text-gray-200">Loading category…</div>;
   }

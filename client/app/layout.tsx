@@ -172,6 +172,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <NavigationWrapper>
               <GtmTracker />
               <RouteAwareChrome>{children}</RouteAwareChrome>
+            
             </NavigationWrapper>
           </Providers>
         </I18nProvider>

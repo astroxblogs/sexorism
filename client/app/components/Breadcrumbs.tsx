@@ -30,19 +30,9 @@ const CATEGORY_DISPLAY_MAP: Record<string, string> = {
 
 /** Top-level routes that are NOT categories */
 const RESERVED_TOP_LEVEL = new Set([
-  '',           // root
-  'tag',
-  'search',
-  'about',
-  'contact',
-  'privacy',
-  'terms',
-  'admin',
-  'cms',
-  '_next',
-  'api',
-  'static',
-])
+  '', 'tag', 'search', 'about', 'contact', 'privacy', 'terms', 'admin', 'cms', 'sitemap'
+]);
+
 
 /** Title-case words (simple, predictable) */
 function toTitleCase(s: string) {
@@ -50,6 +40,11 @@ function toTitleCase(s: string) {
     .split(' ')
     .map(w => (w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : w))
     .join(' ')
+}
+
+function truncateLabel(s: string, max = 60) {
+  if (!s) return '';
+  return s.length <= max ? s : s.slice(0, max).trimEnd() + '…';
 }
 
 /** Format a category slug to a nice display label */
@@ -131,6 +126,7 @@ export default function Breadcrumbs() {
       contact: 'Contact',
       privacy: 'Privacy Policy',
       terms: 'Terms of Service',
+      sitemap: 'Sitemap', // ← added
     }
 
     if (pageNames[first]) {

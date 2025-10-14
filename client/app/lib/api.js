@@ -21,6 +21,18 @@ function hasRefreshToken() {
   }
 }
 
+
+// Normalize category names to your clean route slugs
+export const toCategorySlug = (v) =>
+  String(v || '')
+    .toLowerCase()
+    .replace(/ & /g, '-&-')
+    .replace(/\s+/g, '-')
+    .replace(/&/g, '-')        // safety: if "&" appears without spaces
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+
 const api = axios.create({
   baseURL: '/api',
   withCredentials: true,
@@ -337,6 +349,37 @@ export const getBlogByCategoryAndSlug = async (
     throw error;
   }
 };
+
+
+// Get categories for public pages, normalized to { name, slug }
+export const getPublicCategoryList = async ({ lang, signal } = {}) => {
+  const res = await api.get('/categories' + (lang ? `?lang=${lang}` : ''), {
+    signal,
+    headers: lang ? { 'Accept-Language': lang } : undefined,
+  });
+
+  const raw = res.data?.payload?.data ?? res.data?.data ?? res.data ?? [];
+  if (!Array.isArray(raw)) return [];
+
+  return raw
+    .map((c) => {
+      const name =
+        c?.name ??
+        c?.displayName ??
+        c?.name_en ??
+        c?.name_hi ??
+        c?.label ??
+        c?.title ??
+        c?.categoryName ??
+        '';
+
+      const slug = toCategorySlug(c?.slug ?? name);
+      return name && slug ? { name, slug } : null;
+    })
+    .filter(Boolean);
+};
+
+
 
 
 /**

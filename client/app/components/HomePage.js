@@ -25,9 +25,10 @@ const toSlug = (text) =>
     .replace(/^-+|-+$/g, '');
 
 // ✅ reserved top-level routes (so we can detect clean category paths)
-const RESERVED_TOP_LEVEL = new Set([
-  '', 'tag', 'search', 'about', 'contact', 'privacy', 'terms', 'admin', 'cms', '_next', 'api', 'static'
-]);
+ const RESERVED_TOP_LEVEL = new Set([
+   '', 'tag', 'search', 'about', 'contact', 'privacy', 'terms', 'admin', 'cms', '_next', 'api', 'static',
+  'sitemap'
+ ]);
 
 const HomePage = () => {
   const { t, i18n } = useTranslation();
@@ -45,7 +46,7 @@ const HomePage = () => {
   const segments = (pathname || '').split('/').filter(Boolean);
 
   // routes that are NOT categories
-  const RESERVED = new Set(['tag', 'search', 'about', 'contact', 'privacy', 'terms', 'admin', 'cms']);
+ const RESERVED = new Set(['tag', 'search', 'about', 'contact', 'privacy', 'terms', 'admin', 'cms', 'sitemap']);
 
   // legacy? /category/:slug
   const isLegacyCategory = segments[0] === 'category' && !!segments[1];
