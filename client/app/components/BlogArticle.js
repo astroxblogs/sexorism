@@ -66,7 +66,20 @@ const BlogArticle = ({
             blogId={blog._id}
             blogSlug={blog.slug}
             title={blog.title}
-            url={typeof window !== "undefined" ? `${window.location.origin}/category/${blog.category ? blog.category : 'uncategorized'}/${blog.slug}` : ""}
+            
+            url={
+  typeof window !== "undefined"
+    ? `${window.location.origin}/${(blog.category || 'uncategorized')
+        .toString()
+        .trim()
+        .toLowerCase()
+        .replace(/&/g, ' and ')
+        .replace(/\s+/g, ' ')
+        .replace(/\s/g, '-')
+        .replace(/-+/g, '-')}/${blog.slug}`
+    : ""
+}
+
             initialShareCount={getShareCount(blog._id)}
           />
         </div>

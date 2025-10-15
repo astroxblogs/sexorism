@@ -6,8 +6,8 @@ const path = require('path');
 // Config (host-aware, clean URLs, pulls data from your API)
 // ------------------------------------------------------------------
 const SITE_BASE =
-  process.env.SITEMAP_BASE_URL ||
   process.env.NEXT_PUBLIC_SITE_URL ||
+  process.env.SITEMAP_BASE_URL ||
   'https://www.innvibs.com';
 
 const API_BASE =
@@ -43,7 +43,11 @@ async function fetchCategories() {
     const list = await getJson(`${API_BASE}/api/categories`);
     const items = Array.isArray(list) ? list : list?.categories || [];
     // Prefer slug; fall back to name fields, then slugify
-    return items.map((c) => c.slug || slugifyCategory(c.name_en || c.name_hi || c.name || 'category'));
+
+     return items.map((c) =>
+      slugifyCategory(c.slug || c.name_en || c.name_hi || c.name || 'category')
+    );
+
   } catch (e) {
     console.warn('[sitemap] categories fetch failed:', e.message);
     return [];

@@ -33,8 +33,27 @@ const ShareButton = ({
   primary = true,
   showCountOnIcon = false,
 }) => {
-  const shareUrl =
-    url || (typeof window !== "undefined" ? window.location.href : "");
+  
+  const shareUrl = useMemo(() => {
+  if (url) return url;
+  if (typeof window === "undefined") return "";
+  const href = window.location.href;
+  try {
+    const u = new URL(href);
+    const parts = u.pathname.split('/').filter(Boolean);
+    // Normalize legacy /category/<category>/<slug> → /<category>/<slug>
+    if (parts[0] === 'category' && parts.length >= 3) {
+      const legacyCategory = parts[1];
+      const slug = parts[2];
+      u.pathname = `/${legacyCategory}/${slug}`;
+      return u.toString();
+    }
+    return href;
+  } catch {
+    return href;
+  }
+}, [url]);
+
   const { getShareCount, incrementShareCount } = useShare();
 
   const [open, setOpen] = useState(false);

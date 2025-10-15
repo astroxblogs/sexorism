@@ -15,14 +15,8 @@ interface BlogDetailClientProps {
 /** Turn clean URL slugs into the exact category string your API expects. */
 function categorySlugToApiName(slug: string) {
   const s = decodeURIComponent(slug || '').trim().toLowerCase();
-
-  // support both "-and-" and "-&-" URL forms → " & "
   const withAmp = s.replace(/-and-/g, ' & ').replace(/-&-/g, ' & ');
-
-  // remaining hyphens → spaces
   const spaced = withAmp.replace(/-/g, ' ').replace(/\s+/g, ' ').trim();
-
-  // Title-case words so it matches your category names in DB (e.g. "Health & Wellness")
   return spaced
     .split(' ')
     .map(w => (w ? w[0].toUpperCase() + w.slice(1) : w))
@@ -35,12 +29,25 @@ export default function BlogDetailClient({ params }: BlogDetailClientProps) {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
+  // 🔁 Soft-rewrite old path to new clean URL in-place (no UI impact)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const desiredPath = `/${params.categoryName}/${params.blogSlug}`;
+      const isLegacy = window.location.pathname.startsWith('/category/');
+      if (isLegacy && window.location.pathname !== desiredPath) {
+        // Use replace so history doesn't add another entry
+        router.replace(desiredPath);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.categoryName, params.blogSlug]);
+
   useEffect(() => {
     const fetchBlog = async () => {
       try {
         setLoading(true);
 
-        // 👇 normalize the category slug for the API
+        // normalize the category slug for the API
         const categoryForApi = categorySlugToApiName(params.categoryName);
 
         const blogData = await getBlogByCategoryAndSlug(categoryForApi, params.blogSlug);
