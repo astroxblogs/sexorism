@@ -15,6 +15,18 @@ if (!resolvedApiOrigin) {
 const apiBase = resolvedApiOrigin.replace(/\/$/, '');
 
 const nextConfig = {
+  // ✅ i18n: enable English/Hindi with stable default; we’ll handle navigation in middleware
+  i18n: {
+    locales: ['en', 'hi'],
+    defaultLocale: 'en',
+    // avoid unexpected auto-redirects; we’ll explicitly route via URL/cookie
+    localeDetection: false,
+    domains: [
+    { domain: 'innvibs.com', defaultLocale: 'en' },
+    { domain: 'hindi.innvibs.com', defaultLocale: 'hi' } // optional, future
+  ]
+  },
+
   images: {
     domains: ['res.cloudinary.com'],
     formats: ['image/webp', 'image/avif'],

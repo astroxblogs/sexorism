@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
-import { cookies } from 'next/headers';
 import { Suspense } from 'react';
-import BlogDetailClient from './BlogDetailClient';
+import BlogDetailClient from '../../../../category/[categoryName]/[blogSlug]/BlogDetailClient';
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE ||
@@ -11,16 +10,13 @@ const API_BASE =
 const normalizeCategoryForApi = (s: string) =>
   decodeURIComponent(s || '')
     .toLowerCase()
-    .replace(/-and-/g, '-&-') // URL “and” → API “&”
-    .replace(/%26/g, '&'); // tolerate encoded &
+    .replace(/-and-/g, '-&-')
+    .replace(/%26/g, '&');
 
-function currentLang(): 'en' | 'hi' {
-  const c = cookies();
-  const v = c.get('i18next')?.value || c.get('NEXT_LOCALE')?.value || '';
-  return v.toLowerCase().startsWith('hi') ? 'hi' : 'en';
+function stripHtml(html: string) {
+  return (html || '').replace(/<[^>]*>/g, '');
 }
 
-// --- REPLACED generateMetadata (standardized env + safer fields) ---
 export async function generateMetadata({
   params,
 }: {
@@ -32,7 +28,7 @@ export async function generateMetadata({
   const host = headers().get('host') || 'www.innvibs.in';
   const siteUrl = siteUrlEnv || `https://${host}`;
 
-  // Canonicals & hreflang targets
+  const urlCurrent = `${siteUrl}/hi/${params.categoryName}/${params.blogSlug}`;
   const urlEn = `${siteUrl}/${params.categoryName}/${params.blogSlug}`;
   const urlHi = `${siteUrl}/hi/${params.categoryName}/${params.blogSlug}`;
 
@@ -47,38 +43,35 @@ export async function generateMetadata({
 
     const blog = await res.json();
 
-    // 🔹 Prefer EN SEO fields for the EN page, with sensible fallbacks
     const titleRaw =
-      blog?.metaTitle_en || blog?.title_en || blog?.title || 'Innvibs Blog';
-
+      blog?.metaTitle_hi || blog?.title_hi || blog?.metaTitle_en || blog?.title;
     const descRaw =
-      blog?.metaDescription_en ||
-      (blog?.content_en || blog?.content || '')
-        .replace(/<[^>]*>/g, '')
-        .slice(0, 160);
+      blog?.metaDescription_hi ||
+      stripHtml(blog?.content_hi || blog?.content_en || blog?.content || '').slice(0, 160);
 
-    const title = `${titleRaw} - Innvibs Blog`;
+    const title = titleRaw ? `${titleRaw} - Innvibs Blog` : 'Innvibs Blog';
     const description =
-      descRaw || 'Read the latest blog posts and articles on Innvibs';
+      (descRaw || 'Read the latest blog posts and articles on Innvibs') +
+      (descRaw && descRaw.length >= 160 ? '…' : '');
 
     return {
       title,
       description,
       alternates: {
-        canonical: urlEn,
+        canonical: urlCurrent,
         languages: { en: urlEn, hi: urlHi },
       },
       openGraph: {
         title,
         description,
-        url: urlEn,
+        url: urlCurrent,
         siteName: 'Innvibs Blog',
         images: [
           {
             url: blog?.image || `${siteUrl}/top.png`,
             width: 1200,
             height: 630,
-            alt: titleRaw,
+            alt: titleRaw || 'Innvibs',
           },
         ],
         type: 'article',
@@ -107,61 +100,49 @@ export async function generateMetadata({
       },
     };
   } catch (e) {
-    console.error('Error fetching blog metadata:', e);
+    console.error('Error fetching blog metadata (hi route):', e);
     return {
       title: 'Blog Post - Innvibs',
       description: 'Read the latest blog posts and articles on Innvibs',
       alternates: {
-        canonical: urlEn,
+        canonical: urlCurrent,
         languages: { en: urlEn, hi: urlHi },
       },
     };
   }
 }
 
-
-function safeHtml(html: string) {
-  // keep as-is; server just passes through to <noscript> article
-  return html || '';
-}
-
 interface BlogDetailPageProps {
-  params: {
-    categoryName: string;
-    blogSlug: string;
-  };
+  params: { categoryName: string; blogSlug: string };
 }
 
-// Keep route-level dynamic rendering to avoid caching pitfalls
 export const dynamic = 'force-dynamic';
 
-export default async function BlogDetailPageRoute({ params }: BlogDetailPageProps) {
-  const lang = currentLang();
+export default async function BlogDetailHiPage({ params }: BlogDetailPageProps) {
   const categoryForApi = normalizeCategoryForApi(params.categoryName);
 
-  // --- SSR shell (JS-off article) ---
   let blog: any = null;
   try {
     const res = await fetch(
       `${API_BASE}/api/blogs/${encodeURIComponent(categoryForApi)}/${encodeURIComponent(
         params.blogSlug
-      )}?lang=${lang}`,
+      )}`,
       { cache: 'no-store' }
     );
     if (res.ok) blog = await res.json();
-  } catch {
-    // swallow; SSR shell is best-effort
-  }
+  } catch {}
+
+  const ssrTitle = blog?.title_hi || blog?.title_en || blog?.title || 'Blog';
+  const ssrContent = blog?.content_hi || blog?.content_en || blog?.content || '';
 
   return (
     <>
-      {/* Visible for crawlers/JS-off; does not change your interactive UI */}
       <noscript>
         {blog ? (
           <article>
-            <h1>{blog.title}</h1>
-            {blog?.image ? <img src={blog.image} alt={blog.title} /> : null}
-            <div dangerouslySetInnerHTML={{ __html: safeHtml(blog.content || blog.body || '') }} />
+            <h1>{ssrTitle}</h1>
+            {blog?.image ? <img src={blog.image} alt={ssrTitle} /> : null}
+            <div dangerouslySetInnerHTML={{ __html: ssrContent }} />
           </article>
         ) : (
           <article>
@@ -171,9 +152,8 @@ export default async function BlogDetailPageRoute({ params }: BlogDetailPageProp
         )}
       </noscript>
 
-      {/* Your existing interactive client detail page, unchanged */}
       <Suspense fallback={<div className="text-center py-20">Loading...</div>}>
-        <BlogDetailClient params={params} />
+        <BlogDetailClient params={{ categoryName: params.categoryName, blogSlug: params.blogSlug }} />
       </Suspense>
     </>
   );

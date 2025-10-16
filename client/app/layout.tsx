@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-
+import { cookies } from 'next/headers';
 import GtmTracker from './components/GtmTracker';
 import { getBaseUrl } from './lib/site';
 import { Inter } from 'next/font/google'
@@ -122,8 +122,11 @@ const websiteSchema = {
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // read cookie set by middleware to control <html lang>
+const locale = (cookies().get('NEXT_LOCALE')?.value || 'en').startsWith('hi') ? 'hi' : 'en';
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <head>
         {/* ✅ Consent Mode v2: set default denied BEFORE anything else */}
         <Script id="consent-mode" strategy="beforeInteractive">

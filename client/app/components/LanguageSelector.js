@@ -11,13 +11,32 @@ const LanguageSelector = () => {
 
     const [open, setOpen] = useState(false);
    const router = useRouter()
+
+
  const changeLanguage = async (newLang) => {
-  await i18n.changeLanguage(newLang)
-  setApiLanguage(newLang)        // make axios send ?lang + Accept-Language
-  localStorage.setItem('lang', newLang)
-   setOpen(false)
-   router.refresh()               // re-fetch data in App Router
- }
+  await i18n.changeLanguage(newLang);
+  setApiLanguage(newLang);                 // keep your API lang wiring
+  localStorage.setItem('lang', newLang);
+  setOpen(false);
+
+  // 🔁 Update the URL to /hi/... or back to root while preserving path, query, hash
+  const { pathname, search, hash } = window.location;
+  const isHindi = pathname.startsWith('/hi/');
+  let nextPath = pathname;
+
+  if (newLang === 'hi') {
+    nextPath = isHindi ? pathname : `/hi${pathname === '/' ? '' : pathname}`;
+  } else {
+    // newLang === 'en'
+    nextPath = isHindi ? pathname.replace(/^\/hi/, '') || '/' : pathname || '/';
+  }
+
+  const nextUrl = `${nextPath}${search || ''}${hash || ''}`;
+  // Use Router so App Router + middleware run (sets NEXT_LOCALE cookie server-side)
+  router.push(nextUrl);
+  router.refresh();
+};
+
 
     // Open dropdown smoothly on hover; close when mouse leaves the wrapper
     const hoverTimer = useRef(null);

@@ -83,31 +83,47 @@ async function fetchCategory(slug: string, lang: 'en' | 'hi'): Promise<CategoryD
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   const slug = decodeURIComponent(params.categoryName);
-  const lang = currentLang();
+
+  // Force EN for the EN route’s metadata (content UI remains unchanged)
+  const lang: 'en' | 'hi' = 'en';
   const cat = await fetchCategory(slug, lang);
 
+  // Prefer EN SEO fields with sensible fallbacks
   const title =
     cat?.seo?.metaTitle ??
     cat?.metaTitle ??
-    (lang === 'hi' ? cat?.metaTitle_hi : cat?.metaTitle_en) ??
+    cat?.metaTitle_en ??
+    cat?.name_en ??
+    cat?.name ??
     undefined;
 
   const description =
     cat?.seo?.metaDescription ??
     cat?.metaDescription ??
-    (lang === 'hi' ? cat?.metaDescription_hi : cat?.metaDescription_en) ??
+    cat?.metaDescription_en ??
     undefined;
 
-  const url = `/${slug}`;
+  // Absolute URLs for canonical + hreflang
+  const host = (typeof window === 'undefined'
+    ? (require('next/headers') as any).headers().get('host')
+    : window.location.host) || 'www.innvibs.in';
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || `https://${host}`).replace(/\/$/, '');
+
+  const urlEn = `${siteUrl}/${slug}`;
+  const urlHi = `${siteUrl}/hi/${slug}`;
 
   return {
     title,
     description,
-    openGraph: { title, description, url, type: 'website', siteName: 'Innvibs' },
+    openGraph: { title, description, url: urlEn, type: 'website', siteName: 'Innvibs' },
     twitter: { card: 'summary_large_image', title, description },
-    alternates: { canonical: url },
+    alternates: {
+      canonical: urlEn,
+      languages: { en: urlEn, hi: urlHi },
+    },
   };
 }
+
 
 function excerptFromHtml(html: string, len = 160) {
   const text = (html || '').replace(/<[^>]*>/g, '');

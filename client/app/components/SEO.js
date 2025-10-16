@@ -26,6 +26,17 @@ const SEO = ({ title, description, canonicalUrl, schema }) => {
 
   const schemaArray = Array.isArray(schema) ? schema : schema ? [schema] : [];
 
+
+// derive locale for OG from cookie or path (no UI change)
+let ogLocale = 'en_US';
+try {
+  const cookieMatch = typeof document !== 'undefined' && document.cookie.match(/(?:^|;\s*)NEXT_LOCALE=(hi|en)/i);
+  const fromCookie = cookieMatch && cookieMatch[1]?.toLowerCase();
+  const pathIsHi = typeof window !== 'undefined' && window.location?.pathname?.startsWith('/hi/');
+  if (fromCookie === 'hi' || pathIsHi) ogLocale = 'hi_IN';
+} catch {}
+
+
   return (
     <Head>
       {/* Render ONLY when provided so we don't override server tags */}
@@ -44,6 +55,9 @@ const SEO = ({ title, description, canonicalUrl, schema }) => {
       )}
       {fullCanonicalUrl && <meta property="og:url" content={fullCanonicalUrl} />}
       <meta property="og:type" content="website" />
+      
+      {<meta property="og:locale" content={ogLocale} />}
+
 
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />

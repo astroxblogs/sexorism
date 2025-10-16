@@ -100,10 +100,18 @@ async function generateSitemap() {
     )
     .join('\n');
 
+const hiHomeXml = urlEntry(`${SITE_BASE}/hi`, nowIso, 'weekly', '1.0');
+
   // Category listing pages: /{categorySlug}
   const categoryXml = categories
     .map((cat) => urlEntry(`${SITE_BASE}/${cat}`, nowIso, 'weekly', '0.7'))
     .join('\n');
+
+
+  
+const categoryHiXml = categories
+  .map((cat) => urlEntry(`${SITE_BASE}/hi/${cat}`, nowIso, 'weekly', '0.7'))
+  .join('\n');
 
   // Blog detail pages: /{categorySlug}/{blogSlug}
   const blogXml = blogs
@@ -118,13 +126,33 @@ async function generateSitemap() {
     )
     .join('\n');
 
-  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+
+const blogHiXml = blogs
+  .filter((b) => b.categorySlug && b.blogSlug)
+  .map((b) =>
+    urlEntry(
+      `${SITE_BASE}/hi/${b.categorySlug}/${b.blogSlug}`,
+      new Date(b.updatedAt).toISOString(),
+      'monthly',
+      '0.6'
+    )
+  )
+  .join('\n');
+
+
+
+// In the sitemap template string, add the 3 new lines where shown
+const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset
   xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${staticXml}
+${hiHomeXml}
 ${categoryXml}
+${categoryHiXml}
 ${blogXml}
+${blogHiXml}
 </urlset>`;
+
 
   const outPath = path.join(__dirname, '../public/sitemap.xml');
   fs.writeFileSync(outPath, sitemap, 'utf8');
