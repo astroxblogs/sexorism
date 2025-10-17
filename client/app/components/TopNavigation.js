@@ -23,7 +23,11 @@ const toSlug = (text) => String(text || '')
 
 const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLogoClick, categories }) => {
   const { t, i18n } = useTranslation();
-  const lang = i18n?.resolvedLanguage || i18n?.language || 'en';
+  const lang = (i18n?.resolvedLanguage || i18n?.language || 'en').toLowerCase();
+
+ const basePrefix = ''; // no /hi prefix anymore
+
+
   const router = useRouter();
 
   const [showSearchInput, setShowSearchInput] = useState(false);
@@ -89,9 +93,9 @@ const handlePrev = () => {
     if (typeof onCategoryChange === 'function') onCategoryChange(slug);
 
     if (slug && slug !== 'all') {
-      router.push(`/${slug}`);
+     router.push(`${basePrefix}/${slug}`);
     } else {
-      router.push('/');
+     router.push(basePrefix || '/');
     }
   };
 
@@ -130,7 +134,7 @@ const handlePrev = () => {
   };
 
   return (
-    <nav key={lang} className="sticky top-0 z-50 bg-white/90 dark:bg-dark-bg-secondary backdrop-blur supports-[backdrop-filter]:bg-white/70 dark:supports-[backdrop-filter]:bg-dark-bg-secondary shadow">
+    <nav className="sticky top-0 z-50 bg-white/90 dark:bg-dark-bg-secondary backdrop-blur supports-[backdrop-filter]:bg-white/70 dark:supports-[backdrop-filter]:bg-dark-bg-secondary shadow">
      <div className="py-2.5 px-3 sm:px-4 md:px-8 flex flex-col lg:flex-row gap-2 lg:gap-6 lg:justify-between lg:items-center">
 
 

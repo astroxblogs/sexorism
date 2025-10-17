@@ -21,64 +21,70 @@ function currentLang(): 'en' | 'hi' {
 }
 
 // --- REPLACED generateMetadata (standardized env + safer fields) ---
+// ⛏️ replace entire generateMetadata with this language-aware version:
 export async function generateMetadata({
   params,
 }: {
   params: { categoryName: string; blogSlug: string };
 }): Promise<Metadata> {
+  const lang = currentLang();
   const categoryForApi = normalizeCategoryForApi(params.categoryName);
 
-  const siteUrlEnv = process.env.NEXT_PUBLIC_SITE_URL;
   const host = headers().get('host') || 'www.innvibs.in';
-  const siteUrl = siteUrlEnv || `https://${host}`;
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || `https://${host}`).replace(/\/$/, '');
 
-  // Canonicals & hreflang targets
   const urlEn = `${siteUrl}/${params.categoryName}/${params.blogSlug}`;
   const urlHi = `${siteUrl}/hi/${params.categoryName}/${params.blogSlug}`;
+  const canonical = lang === 'hi' ? urlHi : urlEn;
 
   try {
     const res = await fetch(
       `${API_BASE}/api/blogs/${encodeURIComponent(categoryForApi)}/${encodeURIComponent(
         params.blogSlug
-      )}`,
-      { cache: 'no-store' }
+      )}?lang=${lang}`,
+      { cache: 'no-store', headers: { 'Accept-Language': lang } }
     );
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     const blog = await res.json();
 
-    // 🔹 Prefer EN SEO fields for the EN page, with sensible fallbacks
-    const titleRaw =
-      blog?.metaTitle_en || blog?.title_en || blog?.title || 'Innvibs Blog';
+    // prefer localized fields
+    const titleBase =
+      (lang === 'hi'
+        ? blog?.metaTitle_hi || blog?.title_hi
+        : blog?.metaTitle_en || blog?.title_en || blog?.metaTitle || blog?.title) ||
+      'Innvibs Blog';
 
-    const descRaw =
-      blog?.metaDescription_en ||
-      (blog?.content_en || blog?.content || '')
-        .replace(/<[^>]*>/g, '')
-        .slice(0, 160);
+    const descBase =
+      (lang === 'hi'
+        ? blog?.metaDescription_hi ||
+          (blog?.content_hi || '').replace(/<[^>]*>/g, '').slice(0, 160)
+        : blog?.metaDescription_en ||
+          blog?.metaDescription ||
+          (blog?.content_en || blog?.content || '').replace(/<[^>]*>/g, '').slice(0, 160)) ||
+      'Read the latest blog posts and articles on Innvibs';
 
-    const title = `${titleRaw} - Innvibs Blog`;
-    const description =
-      descRaw || 'Read the latest blog posts and articles on Innvibs';
+    const title = `${titleBase} - Innvibs Blog`;
+    const description = descBase;
 
     return {
       title,
       description,
       alternates: {
-        canonical: urlEn,
+        canonical,
         languages: { en: urlEn, hi: urlHi },
       },
       openGraph: {
         title,
         description,
-        url: urlEn,
+        url: canonical,
         siteName: 'Innvibs Blog',
         images: [
           {
             url: blog?.image || `${siteUrl}/top.png`,
             width: 1200,
             height: 630,
-            alt: titleRaw,
+            alt: titleBase,
           },
         ],
         type: 'article',
@@ -112,12 +118,13 @@ export async function generateMetadata({
       title: 'Blog Post - Innvibs',
       description: 'Read the latest blog posts and articles on Innvibs',
       alternates: {
-        canonical: urlEn,
+        canonical,
         languages: { en: urlEn, hi: urlHi },
       },
     };
   }
 }
+
 
 
 function safeHtml(html: string) {
@@ -173,7 +180,7 @@ export default async function BlogDetailPageRoute({ params }: BlogDetailPageProp
 
       {/* Your existing interactive client detail page, unchanged */}
       <Suspense fallback={<div className="text-center py-20">Loading...</div>}>
-        <BlogDetailClient params={params} />
+      <BlogDetailClient key={lang} params={params} />
       </Suspense>
     </>
   );

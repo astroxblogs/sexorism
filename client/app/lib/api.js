@@ -23,14 +23,13 @@ function hasRefreshToken() {
 
 
 // Normalize category names to your clean route slugs
-export const toCategorySlug = (v) =>
-  String(v || '')
-    .toLowerCase()
-    .replace(/ & /g, '-&-')
-    .replace(/\s+/g, '-')
-    .replace(/&/g, '-')        // safety: if "&" appears without spaces
-    .replace(/-+/g, '-')
-    .replace(/^-+|-+$/g, '');
+export const toCategorySlug = (text) => String(text || '')
+  .toLowerCase()
+  .replace(/\s*&\s*/g, '-and-')  // preserve "&" as "-and-"
+  .replace(/\s+/g, '-')          // spaces → hyphen
+  .replace(/[^a-z0-9\-]/g, '')   // keep a–z, 0–9 and hyphen only
+  .replace(/-+/g, '-')           // collapse hyphens
+  .replace(/^-+|-+$/g, '');      // trim
 
 
 const api = axios.create({
@@ -58,21 +57,25 @@ api.interceptors.request.use(
        config.url.startsWith('/subscribers'));
 
     if (isPublic) {
-      const lng = activeLang || 'en';
+      // Robust language source: setApiLanguage() → cookie → localStorage → 'en'
+      let lng = activeLang;
+      if (!lng && typeof document !== 'undefined') {
+        const m = document.cookie.match(/(?:^|;\s*)NEXT_LOCALE=(hi|en)/i);
+        if (m && m[1]) lng = m[1].toLowerCase();
+        if (!lng) {
+          try { lng = (localStorage.getItem('lang') || '').toLowerCase(); } catch {}
+        }
+      }
+      if (lng !== 'hi') lng = 'en';
+
       config.headers['Accept-Language'] = lng;
 
-      // add ?lang=xx if missing
-      if (config.method?.toLowerCase() === 'get') {
+      if ((config.method || 'get').toLowerCase() === 'get') {
         const url = new URL(config.url, 'http://dummy');
         if (!url.searchParams.has('lang')) url.searchParams.set('lang', lng);
-        config.url = url.pathname + '?' + url.searchParams.toString();
-      }
-
-      // DEBUG (remove later)
-      if (!config.headers['x-lang-logged']) {
-        // log only once per request
-        config.headers['x-lang-logged'] = '1';
-        console.log('[api] GET', config.url, 'Accept-Language:', lng);
+        // Preserve path + query exactly; avoids double "?" or stripping params
+        const qs = url.searchParams.toString();
+        config.url = qs ? `${url.pathname}?${qs}` : url.pathname;
       }
     }
 
@@ -80,6 +83,7 @@ api.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
+
 
 
 // responses

@@ -10,18 +10,53 @@ const Home = NextDynamic(() => import('./components/HomePage.js'), {
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export const metadata: Metadata = {
-  title: 'Inner Vibes  - Technology, Travel, Health, Lifestyle, Trends, Sports, Fashion with Vastu & Astro - innvibs.com',
-  description: ' Discover the world of Lifestyle, Fashion, Travel, Sports, Technology, Astrology, and Vastu Shastra at Innvibs — your trusted destination for daily inspiration, trending ideas, and expert insights. Explore fashion trends, travel guides, health and fitness tips, tech innovations, spiritual wisdom, and vastu-based home solutions. Stay updated, stay inspired — Inner Vibes: Explore Inside, Express Outside.',
-  // ✅ add this:
-  alternates: {
-    canonical: '/',
-    languages: {
-      en: '/',
-      hi: '/hi',
+// ⛏️ replace this:
+// export const metadata: Metadata = { ... }
+
+// ✅ with this:
+export async function generateMetadata(): Promise<Metadata> {
+  const lang = currentLang(); // reads NEXT_LOCALE/i18next cookie
+  const isHi = lang === 'hi';
+
+  const title_en =
+    'Inner Vibes  - Technology, Travel, Health, Lifestyle, Trends, Sports, Fashion with Vastu & Astro - innvibs.com';
+  const desc_en =
+    ' Discover the world of Lifestyle, Fashion, Travel, Sports, Technology, Astrology, and Vastu Shastra at Innvibs — your trusted destination for daily inspiration, trending ideas, and expert insights. Explore fashion trends, travel guides, health and fitness tips, tech innovations, spiritual wisdom, and vastu-based home solutions. Stay updated, stay inspired — Inner Vibes: Explore Inside, Express Outside.';
+
+  const title_hi =
+    'Inner vibes— टेक्नोलॉजी, ट्रैवल, हेल्थ, लाइफस्टाइल, ट्रेंड्स, स्पोर्ट्स, फैशन, वास्तु व ज्योतिष - innvibs.com';
+  const desc_hi =
+    'लाइफस्टाइल, फैशन, ट्रैवल, स्पोर्ट्स, टेक्नोलॉजी, ज्योतिष और वास्तु शास्त्र पर रोज़ाना प्रेरक कंटेंट, ट्रेंडिंग आइडियाज़ और विशेषज्ञ इनसाइट्स — Innvibs पर पढ़ें।';
+
+  const title = isHi ? title_hi : title_en;
+  const description = isHi ? desc_hi : desc_en;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: isHi ? '/hi' : '/',
+      siteName: 'Innvibs Blog',
+      images: [{ url: '/top.png', width: 1200, height: 630, alt: 'Innvibs Blog' }],
+      locale: isHi ? 'hi_IN' : 'en_US',
+      type: 'website',
     },
-  },
-};
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['/top.png'],
+      creator: '@innvibs',
+    },
+    alternates: {
+      canonical: isHi ? '/hi' : '/',
+      languages: { en: '/', hi: '/hi' },
+    },
+  };
+}
+
 
 
    
@@ -80,7 +115,7 @@ export default async function HomePage() {
 
       {/* Your existing client UI remains exactly the same */}
       <Suspense fallback={<div className="text-center py-20">Loading...</div>}>
-        <Home />
+        <Home key={lang} />
       </Suspense>
     </>
   );

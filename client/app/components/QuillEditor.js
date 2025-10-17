@@ -20,14 +20,14 @@ const quillEditorStyles = `
     border-bottom-right-radius: 0.5rem;
     /* ✅ IMPORTANT: Ensure the overall container takes up vertical space */
     /* This might be necessary if parent containers restrict height */
-    min-height: 800px; /* Adjust this to match your desired editor height */ 
+    // min-height: 450px; /* Adjust this to match your desired editor height */ 
   }
 
   .admin-quill-editor .ql-editor {
     /* ✅ KEY FIX: Set both height and min-height to your desired fixed size */
     /* This creates a fixed-height scrollable area */
-    height: 800px; /* Explicitly set the height you want */
-    min-height: 800px; /* Ensure it doesn't shrink */
+    height: auto; /* Explicitly set the height you want */
+    // min-height: auto; /* Ensure it doesn't shrink */
     overflow-y: auto; /* Enable vertical scrolling */
     padding-bottom: 1rem; /* Add some padding at the bottom for better typing experience */
   }

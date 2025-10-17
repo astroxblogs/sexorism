@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback, memo } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
+
 import BlogList from './BlogList';
 import HeroCarousel from './HeroCarousel.jsx';
 import SidebarSection from './SidebarSection.jsx';

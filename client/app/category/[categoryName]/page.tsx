@@ -1,6 +1,6 @@
 // app/category/[categoryName]/page.tsx
 import type { Metadata } from 'next';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import NextDynamic from 'next/dynamic';
 
 // Ensure per-request rendering
@@ -52,7 +52,10 @@ async function fetchCategory(slug: string, lang: 'en' | 'hi'): Promise<CategoryD
 
   // Try /categories/:slug first
   for (const s of candidates) {
-    const bySlug = await fetchJson(`${API_BASE}/api/categories/${encodeURIComponent(s)}?lang=${lang}`, lang);
+    const bySlug = await fetchJson(
+      `${API_BASE}/api/categories/${encodeURIComponent(s)}?lang=${lang}`,
+      lang
+    );
     if (bySlug) return bySlug as CategoryDto;
   }
 
@@ -84,46 +87,48 @@ async function fetchCategory(slug: string, lang: 'en' | 'hi'): Promise<CategoryD
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   const slug = decodeURIComponent(params.categoryName);
 
-  // Force EN for the EN route’s metadata (content UI remains unchanged)
-  const lang: 'en' | 'hi' = 'en';
+  // read language from cookie for SSR metadata
+  const lang = currentLang();
+
   const cat = await fetchCategory(slug, lang);
 
-  // Prefer EN SEO fields with sensible fallbacks
+  // prefer localized SEO fields
   const title =
-    cat?.seo?.metaTitle ??
-    cat?.metaTitle ??
-    cat?.metaTitle_en ??
-    cat?.name_en ??
+    (lang === 'hi'
+      ? cat?.seo?.metaTitle ?? cat?.metaTitle_hi
+      : cat?.seo?.metaTitle ?? cat?.metaTitle_en ?? cat?.metaTitle) ??
+    (lang === 'hi' ? cat?.name_hi : cat?.name_en) ??
     cat?.name ??
     undefined;
 
   const description =
-    cat?.seo?.metaDescription ??
-    cat?.metaDescription ??
-    cat?.metaDescription_en ??
+    (lang === 'hi'
+      ? cat?.seo?.metaDescription ?? cat?.metaDescription_hi
+      : cat?.seo?.metaDescription ?? cat?.metaDescription_en ?? cat?.metaDescription) ??
     undefined;
 
-  // Absolute URLs for canonical + hreflang
-  const host = (typeof window === 'undefined'
-    ? (require('next/headers') as any).headers().get('host')
-    : window.location.host) || 'www.innvibs.in';
+  // absolute URLs (no /hi alternates in the no-prefix model)
+  const host = headers().get('host') || 'www.innvibs.in';
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || `https://${host}`).replace(/\/$/, '');
-
-  const urlEn = `${siteUrl}/${slug}`;
-  const urlHi = `${siteUrl}/hi/${slug}`;
+  const canonical = `${siteUrl}/${slug}`;
 
   return {
     title,
     description,
-    openGraph: { title, description, url: urlEn, type: 'website', siteName: 'Innvibs' },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      type: 'website',
+      siteName: 'Innvibs',
+    },
     twitter: { card: 'summary_large_image', title, description },
     alternates: {
-      canonical: urlEn,
-      languages: { en: urlEn, hi: urlHi },
+      canonical,
+      // no hreflang alternates since we removed /hi prefix
     },
   };
 }
-
 
 function excerptFromHtml(html: string, len = 160) {
   const text = (html || '').replace(/<[^>]*>/g, '');
@@ -159,8 +164,8 @@ export default async function CategoryPageRoute({ params }: CategoryPageProps) {
         </section>
       </noscript>
 
-      {/* Your existing client Category UI, unchanged */}
-      <CategoryPage categoryName={categoryName} />
+      {/* Your existing client Category UI, re-mounts on language change */}
+      <CategoryPage key={lang} categoryName={categoryName} />
     </>
   );
 }

@@ -18,41 +18,64 @@ const inter = Inter({ subsets: ['latin'] })
 
 // ---------------- SEO metadata (host-aware) ----------------
 export function generateMetadata(): Metadata {
-  // NOTE: headers() removed here to keep this file purely server-safe without dynamic host checks for this update.
   const host = 'www.innvibs.com';
   const isPreview = false;
+
+  // 👇 read locale cookie here too (same logic you already use in <html lang>)
+  const localeCookie =
+    (cookies().get('NEXT_LOCALE')?.value || 'en').startsWith('hi') ? 'hi' : 'en';
+
+  const titleDefault_en =
+    'Inner Vibes  - Technology, Travel, Health, Lifestyle, Trends, Sports, Fashion with Vastu & Astro - innvibs.com';
+  const desc_en =
+    'Discover the world of Lifestyle, Fashion, Travel, Sports, Technology, Astrology, and Vastu Shastra at Innvibs — your trusted destination for daily inspiration, trending ideas, and expert insights. Explore fashion trends, travel guides, health and fitness tips, tech innovations, spiritual wisdom, and vastu-based home solutions. Stay updated, stay inspired — Inner Vibes: Explore Inside, Express Outside.';
+
+  // ✅ Hindi defaults used only when browsing under /hi (page-level metadata can still override)
+  const titleDefault_hi =
+    'Inner vibes — टेक्नोलॉजी, ट्रैवल, हेल्थ, लाइफस्टाइल, ट्रेंड्स, स्पोर्ट्स, फैशन, वास्तु व ज्योतिष - innvibs.com';
+  const desc_hi =
+    'लाइफस्टाइल, फैशन, ट्रैवल, स्पोर्ट्स, टेक्नोलॉजी, ज्योतिष और वास्तु शास्त्र पर रोज़ाना प्रेरक कंटेंट, ट्रेंडिंग आइडियाज़ और विशेषज्ञ इनसाइट्स — Innvibs पर पढ़ें।';
+
+  const isHi = localeCookie === 'hi';
+  const titleDefault = isHi ? titleDefault_hi : titleDefault_en;
+  const descDefault = isHi ? desc_hi : desc_en;
 
   return {
     metadataBase: new URL(`https://${host}`),
     title: {
-      default:
-        'Inner Vibes  - Technology, Travel, Health, Lifestyle, Trends, Sports, Fashion with Vastu & Astro - innvibs.com',
-      template: '%s | Innvibs Blog'
+      default: titleDefault,
+      template: '%s | Innvibs Blog',
     },
-    description:
-      'Discover the world of Lifestyle, Fashion, Travel, Sports, Technology, Astrology, and Vastu Shastra at Innvibs — your trusted destination for daily inspiration, trending ideas, and expert insights. Explore fashion trends, travel guides, health and fitness tips, tech innovations, spiritual wisdom, and vastu-based home solutions. Stay updated, stay inspired — Inner Vibes: Explore Inside, Express Outside.',
-    keywords: ['blog', 'lifestyle', 'fashion', 'technology', 'travel', 'sports', 'astrology', 'vastu shastra', 'articles', 'insights'],
+    description: descDefault,
+    keywords: [
+      'blog',
+      'lifestyle',
+      'fashion',
+      'technology',
+      'travel',
+      'sports',
+      'astrology',
+      'vastu shastra',
+      'articles',
+      'insights',
+    ],
     authors: [{ name: 'Innvibs' }],
     creator: 'Astrox Softech Pvt Ltd',
     publisher: 'Innvibs',
     formatDetection: { email: false, address: false, telephone: false },
     openGraph: {
       type: 'website',
-      locale: 'en_US',
+      locale: isHi ? 'hi_IN' : 'en_US', // 👈 language-aware
       url: '/',
       siteName: 'Innvibs Blog',
-      title:
-        'Inner Vibes  - Technology, Travel, Health, Lifestyle, Trends, Sports, Fashion with Vastu & Astro - innvibs.com',
-      description:
-        'Discover the world of Lifestyle, Fashion, Travel, Sports, Technology, Astrology, and Vastu Shastra at Innvibs — your trusted destination for daily inspiration, trending ideas, and expert insights. Explore fashion trends, travel guides, health and fitness tips, tech innovations, spiritual wisdom, and vastu-based home solutions. Stay updated, stay inspired — Inner Vibes: Explore Inside, Express Outside.',
+      title: titleDefault,
+      description: descDefault,
       images: [{ url: '/top.png', width: 1200, height: 630, alt: 'Innvibs Blog' }],
     },
     twitter: {
       card: 'summary_large_image',
-      title:
-        'Inner Vibes  - Technology, Travel, Health, Lifestyle, Trends, Sports, Fashion with Vastu & Astro - innvibs.com',
-      description:
-        'Discover the world of Lifestyle, Fashion, Travel, Sports, Technology, Astrology, and Vastu Shastra at Innvibs — your trusted destination for daily inspiration, trending ideas, and expert insights. Explore fashion trends, travel guides, health and fitness tips, tech innovations, spiritual wisdom, and vastu-based home solutions. Stay updated, stay inspired — Inner Vibes: Explore Inside, Express Outside.',
+      title: titleDefault,
+      description: descDefault,
       images: ['/top.png'],
       creator: '@innvibs',
     },
@@ -74,10 +97,11 @@ export function generateMetadata(): Metadata {
           },
         },
     verification: {
-      google: 'your-google-verification-code', // TODO: replace with real code
+      google: 'your-google-verification-code',
     },
   };
 }
+
 
 // ---------------- JSON-LD Schemas ----------------
 const organizationSchema = {

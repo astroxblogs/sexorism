@@ -5,22 +5,27 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from 'react-i18next';
 
 export default function CategoryNav({ activeCategory, onCategoryChange, categories = [] }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const basePrefix = ''; // no /hi prefix anymore
+
   const scrollRef = useRef(null);
   const itemRefs = useRef([]);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+// Prefix links with /hi when Hindi is active; English stays unprefixed
+
+
   const normalize = (s) => String(s || '').trim().toLowerCase();
-  const toSlug = (v) =>
-    String(v || '')
-      .toLowerCase()
-      .replace(/ & /g, '-&-')
-      .replace(/\s+/g, '-')
-      .replace(/&/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-+|-+$/g, '');
+  const toSlug = (text) => String(text || '')
+  .toLowerCase()
+  .replace(/\s*&\s*/g, '-and-')  // match TopNavigation behavior
+  .replace(/\s+/g, '-')          // spaces → hyphen
+  .replace(/[^a-z0-9\-&]/g, '')  // allow a–z, 0–9, -, &
+  .replace(/-+/g, '-')           // collapse multiple hyphens
+  .replace(/^-+|-+$/g, '');      // trim hyphens
+
 
   const visibleCategories = categories.filter(
     (c) => normalize(c.value) !== 'categories' && normalize(c.label) !== 'categories'
@@ -105,7 +110,7 @@ export default function CategoryNav({ activeCategory, onCategoryChange, categori
                 {visibleCategories.map((cat) => (
                   <li key={toSlug(cat.value)}>
                     <Link
-                      href={`/${toSlug(cat.value)}`}
+                     href={`${basePrefix}/${toSlug(cat.value)}`}
                       onClick={() => handleCategoryClick(cat.value)}
                       className={`block w-full text-left px-4 py-2 text-sm transition-colors ${
                         activeCategory === cat.value
@@ -154,7 +159,7 @@ export default function CategoryNav({ activeCategory, onCategoryChange, categori
           {visibleCategories.map((cat, idx) => (
             <Link
               key={toSlug(cat.value)}
-              href={`/${toSlug(cat.value)}`}
+              href={`${basePrefix}/${toSlug(cat.value)}`}
               ref={(el) => (itemRefs.current[idx] = el)}
               onClick={() => handleCategoryClick(cat.value)}
               className={`
