@@ -1,7 +1,5 @@
 /** @type {import('next').NextConfig} */
 
-// Use env var when provided; otherwise in *development* default to testing API.
-// In production, require the env var (so you don't accidentally hit the wrong API).
 const resolvedApiOrigin =
   process.env.NEXT_PUBLIC_API_BASE ||
   (process.env.NODE_ENV !== 'production' ? 'https://api.innvibs.in' : '');
@@ -15,16 +13,11 @@ if (!resolvedApiOrigin) {
 const apiBase = resolvedApiOrigin.replace(/\/$/, '');
 
 const nextConfig = {
-  // ✅ i18n: enable English/Hindi with stable default; we’ll handle navigation in middleware
+  // ⛔ Turn OFF Next’s locale routing. We manage /hi via our own URL + cookie.
   i18n: {
-    locales: ['en', 'hi'],
+    locales: ['en'],
     defaultLocale: 'en',
-    // avoid unexpected auto-redirects; we’ll explicitly route via URL/cookie
     localeDetection: false,
-    domains: [
-    { domain: 'innvibs.com', defaultLocale: 'en' },
-    { domain: 'hindi.innvibs.com', defaultLocale: 'hi' } // optional, future
-  ]
   },
 
   images: {
@@ -38,29 +31,26 @@ const nextConfig = {
   experimental: { optimizeCss: true },
 
   async rewrites() {
-    // Proxy /api → your backend (localhost uses testing API by default)
-    return [{ source: '/api/:path*', destination: `${apiBase}/api/:path*` }];
+    return [
+      // API proxy
+      { source: '/api/:path*', destination: `${apiBase}/api/:path*` },
+
+      // ✅ Our Hindi aliases — these rely on our existing pages
+      { source: '/hi', destination: '/' },
+      { source: '/hi/:categoryName', destination: '/category/:categoryName' },
+      { source: '/hi/:categoryName/:blogSlug', destination: '/category/:categoryName/:blogSlug' },
+    ];
   },
 
   async redirects() {
-    // 301 legacy `/category/...` → clean `/{category}/{post}` (and category list)
     return [
-      {
-        source: '/category/:categoryName/:blogSlug',
-        destination: '/:categoryName/:blogSlug',
-        permanent: true,
-      },
-      {
-        source: '/category/:categoryName',
-        destination: '/:categoryName',
-        permanent: true,
-      },
+      { source: '/category/:categoryName/:blogSlug', destination: '/:categoryName/:blogSlug', permanent: true },
+      { source: '/category/:categoryName', destination: '/:categoryName', permanent: true },
     ];
   },
 
   async headers() {
     return [
-      // CORS headers only for the proxied API path
       {
         source: '/api/:path*',
         headers: [
@@ -69,7 +59,6 @@ const nextConfig = {
           { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' },
         ],
       },
-      // Security headers for app pages (kept minimal to avoid UI regressions)
       {
         source: '/(.*)',
         headers: [

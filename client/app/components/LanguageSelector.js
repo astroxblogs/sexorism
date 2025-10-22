@@ -1,58 +1,53 @@
-'use client'
+'use client';
 
 import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useRouter } from 'next/navigation'
-import { setApiLanguage } from '../lib/api'
-
-const ONE_YEAR = 60 * 60 * 24 * 365;
+import { useRouter } from 'next/navigation';
+import { setApiLanguage } from '../lib/api';
 
 const LanguageSelector = () => {
   const { i18n, t } = useTranslation();
-  const [open, setOpen] = useState(false);
   const router = useRouter();
+  const [open, setOpen] = useState(false);
 
-  const setLocaleCookie = (lang) => {
-    // Write a client-visible cookie so SSR can read it in middleware/layout
-    document.cookie = `NEXT_LOCALE=${lang}; Max-Age=${ONE_YEAR}; Path=/; SameSite=Lax`;
+  const changeLanguage = async (newLang) => {
+    const v = newLang === 'hi' ? 'hi' : 'en';
+
+    // 1) Instant UI switch
+    await i18n.changeLanguage(v);
+
+    // 2) Persist for SSR/API
+    const ONE_YEAR = 60 * 60 * 24 * 365;
+    document.cookie = `NEXT_LOCALE=${v}; Max-Age=${ONE_YEAR}; Path=/; SameSite=Lax`;
+    try { localStorage.setItem('lang', v); } catch {}
+    setApiLanguage(v);
+
+    setOpen(false);
+
+    // 3) Single soft navigation with prefix/strip logic
+    const { pathname, search, hash } = window.location;
+    const isHiNow = pathname === '/hi' || pathname.startsWith('/hi/');
+    let nextPath;
+
+    if (v === 'hi') {
+      nextPath = isHiNow ? pathname : (pathname === '/' ? '/hi' : `/hi${pathname}`);
+    } else {
+      nextPath = isHiNow ? (pathname.slice(3) || '/') : pathname; // remove '/hi'
+    }
+
+    router.replace(`${nextPath}${search || ''}${hash || ''}`, { scroll: false });
   };
 
- const changeLanguage = async (newLang) => {
-  await i18n.changeLanguage(newLang);
-  setApiLanguage(newLang);
-  localStorage.setItem('lang', newLang);
-  setOpen(false);
-
-  // Set cookie for SSR
-  const ONE_YEAR = 60 * 60 * 24 * 365;
-  document.cookie = `NEXT_LOCALE=${newLang === 'hi' ? 'hi' : 'en'}; Max-Age=${ONE_YEAR}; Path=/; SameSite=Lax`;
-
-  // Stay on the same path — just refresh so SSR picks the new lang
-  try {
-    router.refresh();
-  } catch {
-    // fallback
-    window.location.reload();
-  }
-};
-
-  // Open/close on hover (unchanged)
+  // hover open/close (unchanged)
   const hoverTimer = useRef(null);
-  const handleMouseEnter = () => {
-    clearTimeout(hoverTimer.current);
-    setOpen(true);
-  };
+  const handleMouseEnter = () => { clearTimeout(hoverTimer.current); setOpen(true); };
   const handleMouseLeave = () => {
     clearTimeout(hoverTimer.current);
     hoverTimer.current = setTimeout(() => setOpen(false), 150);
   };
 
   return (
-    <div
-      className="relative language-selector"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
+    <div className="relative language-selector" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <button
         type="button"
         onClick={() => setOpen(!open)}
@@ -66,10 +61,7 @@ const LanguageSelector = () => {
       </button>
 
       {open && (
-        <ul
-          className="absolute z-50 mt-1 w-36 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg overflow-hidden"
-          role="listbox"
-        >
+        <ul className="absolute z-50 mt-1 w-36 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg overflow-hidden" role="listbox">
           <li>
             <button
               className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { marked } from 'marked';
 import { useTranslation } from 'react-i18next';
+import { makeBlogLink } from '../lib/paths';
 
 const slugify = (text) => {
     return text
@@ -16,8 +17,11 @@ const slugify = (text) => {
 
 const HeroCarousel = ({ blogs }) => {
     const { i18n, t } = useTranslation();
-    const currentLang = i18n.language;
+ const currentLang = i18n?.resolvedLanguage || i18n?.language || 'en';
+const basePrefix = String(currentLang).toLowerCase().startsWith('hi') ? '/hi' : '';
+
     const [currentIndex, setCurrentIndex] = useState(0);
+    const locale = String(currentLang || 'en').toLowerCase().startsWith('hi') ? 'hi' : 'en';
     const [imageLoaded, setImageLoaded] = useState(false);
 
     const getLocalizedContent = (field, blogData, lang) => {
@@ -74,21 +78,32 @@ const HeroCarousel = ({ blogs }) => {
 
                 <div className="relative z-10 h-full flex items-end pointer-events-none">
                     <div className="p-4 sm:p-6 md:p-8 w-full max-w-[720px] pointer-events-auto">
-                       
-                        <Link href={`/${currentBlog?.category ? slugify(currentBlog.category) : 'uncategorized'}/${currentBlog?.slug || currentBlog?._id}`} className="block">
-    <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight drop-shadow">
-        {title}
-    </h2>
-</Link>
+
+                        <Link
+                            href={makeBlogLink(
+                                locale,
+                                currentBlog?.category ? slugify(currentBlog.category) : 'uncategorized',
+                                currentBlog?.slug || currentBlog?._id
+                            )}
+                            className="block"
+                        >
+                            <h2 className="text-white text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight drop-shadow">
+                                {title}
+                            </h2>
+                        </Link>
                         <p className="mt-3 text-gray-200 text-sm sm:text-base line-clamp-3">
                             {excerpt}
                         </p>
-  <Link
-   href={`/${currentBlog?.category ? slugify(currentBlog.category) : 'uncategorized'}/${currentBlog?.slug || currentBlog?._id}`}
-    className="inline-block mt-4 px-4 py-2 rounded-md bg-white/90 text-gray-900 text-sm font-semibold hover:bg-white"
- >
-    {t('blog_card.read_more')}
-</Link>
+                        +  <Link
+                            href={makeBlogLink(
+                                locale,
+                                currentBlog?.category ? slugify(currentBlog.category) : 'uncategorized',
+                                currentBlog?.slug || currentBlog?._id
+                            )}
+                            className="inline-block mt-4 px-4 py-2 rounded-md bg-white/90 text-gray-900 text-sm font-semibold hover:bg-white"
+                        >
+                            {t('blog_card.read_more')}
+                        </Link>
                     </div>
                 </div>
 
@@ -113,7 +128,7 @@ const HeroCarousel = ({ blogs }) => {
         </section>
     );
 };
- 
+
 export default HeroCarousel;
 
 

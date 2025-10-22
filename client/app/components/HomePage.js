@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback, memo } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-
+import { makeCategoryLink } from '../lib/paths';
 import BlogList from './BlogList';
 import HeroCarousel from './HeroCarousel.jsx';
 import SidebarSection from './SidebarSection.jsx';
@@ -26,10 +26,10 @@ const toSlug = (text) =>
     .replace(/^-+|-+$/g, '');
 
 // ✅ reserved top-level routes (so we can detect clean category paths)
- const RESERVED_TOP_LEVEL = new Set([
-   '', 'tag', 'search', 'about', 'contact', 'privacy', 'terms', 'admin', 'cms', '_next', 'api', 'static',
+const RESERVED_TOP_LEVEL = new Set([
+  '','hi', 'tag', 'search', 'about', 'contact', 'privacy', 'terms', 'admin', 'cms', '_next', 'api', 'static',
   'sitemap'
- ]);
+]);
 
 const HomePage = () => {
   const { t, i18n } = useTranslation();
@@ -39,15 +39,23 @@ const HomePage = () => {
   const searchParams = useSearchParams();
   const blogContext = useBlogs();
   const blogs = blogContext?.blogs || [];
-  const setBlogs = blogContext?.setBlogs || (() => { });
+  const setBlogs = blogContext?.setBlogs || (() => {});
   const featuredBlogs = blogContext?.featuredBlogs || [];
-  const setFeaturedBlogs = blogContext?.setFeaturedBlogs || (() => { });
+  const setFeaturedBlogs = blogContext?.setFeaturedBlogs || (() => {});
 
+  // ========= Locale-aware path normalization =========
+  // Treat /hi and /hi/... as if they were / and /... for internal routing,
+  // while still building links with the /hi prefix.
+  const rawPath = pathname || '/';
+  const isHindi = rawPath === '/hi' || rawPath.startsWith('/hi/');
+  const pathForRouting = isHindi ? (rawPath.slice(3) || '/') : rawPath; // '/hi' -> '/', '/hi/tech' -> '/tech'
+  const basePrefix = isHindi ? '/hi' : '';
+const locale = isHindi ? 'hi' : 'en';
   // ===== CATEGORY DETECTION (supports both legacy /category/:slug and clean /:slug) =====
-  const segments = (pathname || '').split('/').filter(Boolean);
+  const segments = (pathForRouting || '').split('/').filter(Boolean);
 
   // routes that are NOT categories
- const RESERVED = new Set(['tag', 'search', 'about', 'contact', 'privacy', 'terms', 'admin', 'cms', 'sitemap']);
+  const RESERVED = new Set([ 'hi', 'tag', 'search', 'about', 'contact', 'privacy', 'terms', 'admin', 'cms', 'sitemap']);
 
   // legacy? /category/:slug
   const isLegacyCategory = segments[0] === 'category' && !!segments[1];
@@ -81,11 +89,9 @@ const HomePage = () => {
     categoryFromUrl ||
     'all';
 
-
-
   // ===== TAG DETECTION =====
-  const isTagPage = pathname.startsWith('/tag/');
-  const tagFromUrl = isTagPage ? pathname.split('/tag/')[1] : null;
+  const isTagPage = pathForRouting.startsWith('/tag/');
+  const tagFromUrl = isTagPage ? pathForRouting.split('/tag/')[1] : null;
 
   const convertSlugToLabel = (slug) => {
     if (!slug) return '';
@@ -168,15 +174,12 @@ const HomePage = () => {
     fetchFeaturedBlogs();
   }, [lang]);
 
-
-  // refetch when language changes
-
   // ===== SIDEBAR DATA =====
   useEffect(() => {
     let isMounted = true;
 
     const buildHomeSidebar = async () => {
-      if (sidebarSections.length > 0) return;
+      // if (sidebarSections.length > 0) return;
 
       try {
         const catRes = await api.get('/categories');
@@ -356,14 +359,14 @@ const HomePage = () => {
     ? t('general.search_results_for', { query: searchQuery })
     : isCategoryView
       ? t('general.blogs_in_category', {
-        category: t(
-          `category.${String(activeCategory)
-            .toLowerCase()
-            .replace(/ & /g, '_')
-            .replace(/\s+/g, '_')}`,
-          { defaultValue: activeCategory }
-        )
-      })
+          category: t(
+            `category.${String(activeCategory)
+              .toLowerCase()
+              .replace(/ & /g, '_')
+              .replace(/\s+/g, '_')}`,
+            { defaultValue: activeCategory }
+          )
+        })
       : isTagView
         ? `Curated #${activeTag} Reads`
         : '';
@@ -377,12 +380,12 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen">
-     <SEO
-  title="Inner Vibes: Technology, Travel, Health, Lifestyle, Trends, Sports, Fashion with Vastu & Astro"
-  description="Explore technology, travel, health & wellness, lifestyle trends, sports and fashion—plus Vastu & astrology insights. Fresh stories daily from Innvibs."
-  canonicalUrl="/"
-  schema={[organizationSchema, websiteSchema]}
-/>
+      <SEO
+        title="Inner Vibes: Technology, Travel, Health, Lifestyle, Trends, Sports, Fashion with Vastu & Astro"
+        description="Explore technology, travel, health & wellness, lifestyle trends, sports and fashion—plus Vastu & astrology insights. Fresh stories daily from Innvibs."
+        canonicalUrl={basePrefix || '/'} 
+        schema={[organizationSchema, websiteSchema]}
+      />
 
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
@@ -391,34 +394,32 @@ const HomePage = () => {
             {!isSearchView && !isCategoryView && !isTagView && featuredBlogs.length > 0 && (
               <HeroCarousel blogs={featuredBlogs} />
             )}
-{!isSearchView && !isCategoryView && !isTagView && (
-  <div className="text-center md:text-left mt-4 md:mt-6">
-    <motion.h1
-      className="text-lg sm:text-xl md:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white tracking-tight leading-snug md:leading-tight"
-      variants={textVariants}
-      initial="hidden"
-      animate="visible"
-    >
-      {t('homepage.welcome_title', 'Welcome to Innvibs Blogs')}
-    </motion.h1>
+            {!isSearchView && !isCategoryView && !isTagView && (
+              <div className="text-center md:text-left mt-4 md:mt-6">
+                <motion.h1
+                  className="text-lg sm:text-xl md:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white tracking-tight leading-snug md:leading-tight"
+                  variants={textVariants}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  {t('homepage.welcome_title', 'Welcome to Innvibs Blogs')}
+                </motion.h1>
 
-    <motion.p
-      className="mt-2 text-xs sm:text-sm md:text-base lg:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto md:mx-0"
-      variants={taglineVariants}
-      initial="hidden"
-      animate="visible"
-    >
-      <span className="block">
-        {t('homepage.tagline_line1', 'Inner Vibes — Explore Inside, Express Outside')}
-      </span>
-      <span className="block">
-        {t('homepage.tagline_line2', 'Your daily dose of insights into technology and more.')}
-      </span>
-    </motion.p>
-  </div>
-)}
-
-
+                <motion.p
+                  className="mt-2 text-xs sm:text-sm md:text-base lg:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto md:mx-0"
+                  variants={taglineVariants}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  <span className="block">
+                    {t('homepage.tagline_line1', 'Inner Vibes — Explore Inside, Express Outside')}
+                  </span>
+                  <span className="block">
+                    {t('homepage.tagline_line2', 'Your daily dose of insights into technology and more.')}
+                  </span>
+                </motion.p>
+              </div>
+            )}
 
             {showDynamicPageTitle && (
               <h2 className="text-2xl md:text-3xl font-bold mb-2 text-gray-900 dark:text-white capitalize">
@@ -462,9 +463,9 @@ const HomePage = () => {
                       title={sec.title}
                       items={sec.items}
                       onViewMore={() => {
-                        // ✅ push clean URL without /category and keep "&" as -&-
+                        // ✅ push clean URL and keep /hi when Hindi
                         const slug = toSlug(sec.title);
-                        router.push(`/${slug}`);
+                        router.push(makeCategoryLink(locale, slug));
                       }}
                     />
                   ))}

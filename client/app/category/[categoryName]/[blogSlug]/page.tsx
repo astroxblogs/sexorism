@@ -20,8 +20,6 @@ function currentLang(): 'en' | 'hi' {
   return v.toLowerCase().startsWith('hi') ? 'hi' : 'en';
 }
 
-// --- REPLACED generateMetadata (standardized env + safer fields) ---
-// ⛏️ replace entire generateMetadata with this language-aware version:
 export async function generateMetadata({
   params,
 }: {
@@ -30,7 +28,7 @@ export async function generateMetadata({
   const lang = currentLang();
   const categoryForApi = normalizeCategoryForApi(params.categoryName);
 
-  const host = headers().get('host') || 'www.innvibs.in';
+  const host = headers().get('host');
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || `https://${host}`).replace(/\/$/, '');
 
   const urlEn = `${siteUrl}/${params.categoryName}/${params.blogSlug}`;
@@ -48,7 +46,6 @@ export async function generateMetadata({
 
     const blog = await res.json();
 
-    // prefer localized fields
     const titleBase =
       (lang === 'hi'
         ? blog?.metaTitle_hi || blog?.title_hi
@@ -72,7 +69,7 @@ export async function generateMetadata({
       description,
       alternates: {
         canonical,
-        languages: { en: urlEn, hi: urlHi },
+        languages: { en: urlEn, 'x-default': urlEn, hi: urlHi },
       },
       openGraph: {
         title,
@@ -119,16 +116,13 @@ export async function generateMetadata({
       description: 'Read the latest blog posts and articles on Innvibs',
       alternates: {
         canonical,
-        languages: { en: urlEn, hi: urlHi },
+        languages: { en: urlEn, 'x-default': urlEn, hi: urlHi },
       },
     };
   }
 }
 
-
-
 function safeHtml(html: string) {
-  // keep as-is; server just passes through to <noscript> article
   return html || '';
 }
 
@@ -139,14 +133,12 @@ interface BlogDetailPageProps {
   };
 }
 
-// Keep route-level dynamic rendering to avoid caching pitfalls
 export const dynamic = 'force-dynamic';
 
 export default async function BlogDetailPageRoute({ params }: BlogDetailPageProps) {
   const lang = currentLang();
   const categoryForApi = normalizeCategoryForApi(params.categoryName);
 
-  // --- SSR shell (JS-off article) ---
   let blog: any = null;
   try {
     const res = await fetch(
@@ -162,7 +154,6 @@ export default async function BlogDetailPageRoute({ params }: BlogDetailPageProp
 
   return (
     <>
-      {/* Visible for crawlers/JS-off; does not change your interactive UI */}
       <noscript>
         {blog ? (
           <article>
@@ -178,7 +169,6 @@ export default async function BlogDetailPageRoute({ params }: BlogDetailPageProp
         )}
       </noscript>
 
-      {/* Your existing interactive client detail page, unchanged */}
       <Suspense fallback={<div className="text-center py-20">Loading...</div>}>
       <BlogDetailClient key={lang} params={params} />
       </Suspense>

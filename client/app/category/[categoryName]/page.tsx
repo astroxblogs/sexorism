@@ -108,7 +108,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
     undefined;
 
   // absolute URLs (no /hi alternates in the no-prefix model)
-  const host = headers().get('host') || 'www.innvibs.in';
+  const host = headers().get('host') ;
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || `https://${host}`).replace(/\/$/, '');
   const canonical = `${siteUrl}/${slug}`;
 

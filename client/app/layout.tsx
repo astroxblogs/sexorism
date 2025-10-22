@@ -150,7 +150,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 const locale = (cookies().get('NEXT_LOCALE')?.value || 'en').startsWith('hi') ? 'hi' : 'en';
 
   return (
-    <html lang={locale}>
+   <html lang={locale} suppressHydrationWarning>
       <head>
         {/* ✅ Consent Mode v2: set default denied BEFORE anything else */}
         <Script id="consent-mode" strategy="beforeInteractive">

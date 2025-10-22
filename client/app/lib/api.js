@@ -71,11 +71,17 @@ api.interceptors.request.use(
       config.headers['Accept-Language'] = lng;
 
       if ((config.method || 'get').toLowerCase() === 'get') {
-        const url = new URL(config.url, 'http://dummy');
+        // If config.url is relative, normalize with a dummy base; if absolute, use as-is
+        const isAbsolute = /^https?:\/\//i.test(config.url || '');
+        const url = new URL(config.url, isAbsolute ? undefined : 'http://dummy');
         if (!url.searchParams.has('lang')) url.searchParams.set('lang', lng);
         // Preserve path + query exactly; avoids double "?" or stripping params
         const qs = url.searchParams.toString();
-        config.url = qs ? `${url.pathname}?${qs}` : url.pathname;
+      if (isAbsolute) {
+         config.url = qs ? `${url.origin}${url.pathname}?${qs}` : `${url.origin}${url.pathname}`;
+       } else {
+         config.url = qs ? `${url.pathname}?${qs}` : url.pathname;
+        }
       }
     }
 
@@ -332,9 +338,11 @@ export const addComment = async (blogId, commentData) => {
 export const getBlogByCategoryAndSlug = async (
   categoryName,
   slug,
-  { lang, signal } = {}
+  lang, // Accept lang as the third parameter directly
+  options = {}
 ) => {
   try {
+    const { signal } = options;
     const params = new URLSearchParams();
     if (lang) params.set('lang', lang);
 
@@ -342,6 +350,7 @@ export const getBlogByCategoryAndSlug = async (
       `/blogs/${encodeURIComponent(categoryName)}/${encodeURIComponent(slug)}` +
       (params.toString() ? `?${params.toString()}` : '');
 
+    // The interceptor also adds these, but being explicit here is safer.
     const response = await api.get(url, {
       signal,
       headers: lang ? { 'Accept-Language': lang } : undefined,

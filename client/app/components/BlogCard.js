@@ -8,8 +8,10 @@ import ShareButton from "./ShareButton.jsx";
 import { useTranslation } from "react-i18next";
 import { getCategoryClasses } from "../lib/categoryColors.js";
 import { useShare } from "../context/ShareContext.js";
+import { makeBlogLink } from '../lib/paths';
 
-const slugify = (text) => {
+// UPDATED: Using the standardized toSlug function for consistency.
+const toSlug = (text) => {
   if (!text) return '';
   return text
     .toLowerCase()
@@ -23,6 +25,8 @@ const slugify = (text) => {
 const BlogCard = ({ blog, onLikeUpdate, searchQuery, visitorId }) => {
   const { i18n, t } = useTranslation();
   const currentLang = i18n?.resolvedLanguage || i18n?.language || 'en';
+  const basePrefix = String(currentLang).toLowerCase().startsWith('hi') ? '/hi' : '';
+  const locale = String(currentLang).toLowerCase().startsWith('hi') ? 'hi' : 'en';
   const { setInitialShareCount } = useShare();
 
   useEffect(() => {
@@ -67,12 +71,11 @@ const BlogCard = ({ blog, onLikeUpdate, searchQuery, visitorId }) => {
     return highlightedText;
   };
 
-  const generateBlogUrl = () => {
-    const categorySlug = blog?.category ? slugify(blog.category) : 'uncategorized';
+ const generateBlogUrl = () => {
+    const categorySlug = blog?.category ? toSlug(blog.category) : 'uncategorized';
     const blogSlug = blog?.slug || blog?._id || '';
-    return `/${categorySlug}/${blogSlug}`;
-  };
-
+    return makeBlogLink(locale, categorySlug, blogSlug);
+ };
   const blogUrl = generateBlogUrl();
 
   const siteUrl =

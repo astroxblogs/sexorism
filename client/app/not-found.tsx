@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { cookies } from 'next/headers'
+
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
@@ -13,7 +15,11 @@ export const metadata: Metadata = {
   },
 }
 
-export default function NotFound() {
+
+ export default function NotFound() {
+  const localeCookie = (cookies().get('NEXT_LOCALE')?.value || 'en').toLowerCase();
+  const basePrefix = localeCookie.startsWith('hi') ? '/hi' : '';
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 flex items-center justify-center px-4">
       <div className="max-w-md w-full text-center">
@@ -32,7 +38,7 @@ export default function NotFound() {
 
         <div className="space-y-4">
           <Link
-            href="/"
+            href={basePrefix || '/'} 
             className="block w-full bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
           >
             Go to Homepage
@@ -40,13 +46,13 @@ export default function NotFound() {
 
           <div className="grid grid-cols-2 gap-4">
             <Link
-              href="/search"
+              href={`${basePrefix}/search`}
               className="block bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold py-3 px-6 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               Search Articles
             </Link>
             <Link
-              href="/about"
+              href={`${basePrefix}/about`}
               className="block bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold py-3 px-6 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               About Us

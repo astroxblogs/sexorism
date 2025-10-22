@@ -1,31 +1,32 @@
-import React, { useRef, useEffect, useState, useCallback } from "react";
-import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useRef, useEffect, useState, useCallback } from 'react';
+import Link from 'next/link';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { makeCategoryLink } from '../lib/paths';
+
+// ADDED: Using a consistent, more robust slug helper.
+const toSlug = (text) =>
+  String(text || '')
+    .toLowerCase()
+    .replace(/\s*&\s*/g, '-and-')
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9\-&]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
 
 export default function CategoryNav({ activeCategory, onCategoryChange, categories = [] }) {
   const { t, i18n } = useTranslation();
-  const basePrefix = ''; // no /hi prefix anymore
-
+  const lang = (i18n?.resolvedLanguage || i18n?.language || 'en').toLowerCase();
+  const basePrefix = lang.startsWith('hi') ? '/hi' : '';
+ const locale = lang.startsWith('hi') ? 'hi' : 'en';
   const scrollRef = useRef(null);
   const itemRefs = useRef([]);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-// Prefix links with /hi when Hindi is active; English stays unprefixed
-
-
   const normalize = (s) => String(s || '').trim().toLowerCase();
-  const toSlug = (text) => String(text || '')
-  .toLowerCase()
-  .replace(/\s*&\s*/g, '-and-')  // match TopNavigation behavior
-  .replace(/\s+/g, '-')          // spaces → hyphen
-  .replace(/[^a-z0-9\-&]/g, '')  // allow a–z, 0–9, -, &
-  .replace(/-+/g, '-')           // collapse multiple hyphens
-  .replace(/^-+|-+$/g, '');      // trim hyphens
-
 
   const visibleCategories = categories.filter(
     (c) => normalize(c.value) !== 'categories' && normalize(c.label) !== 'categories'
@@ -36,17 +37,17 @@ export default function CategoryNav({ activeCategory, onCategoryChange, categori
     if (!el) return;
     const isScrollable = el.scrollWidth > el.clientWidth;
     setShowLeftArrow(isScrollable && el.scrollLeft > 1);
-    setShowRightArrow(isScrollable && (el.scrollWidth - el.clientWidth - el.scrollLeft > 1));
+    setShowRightArrow(isScrollable && el.scrollWidth - el.clientWidth - el.scrollLeft > 1);
   }, []);
 
   useEffect(() => {
     const el = scrollRef.current;
     checkArrows();
-    el?.addEventListener("scroll", checkArrows);
-    window.addEventListener("resize", checkArrows);
+    el?.addEventListener('scroll', checkArrows);
+    window.addEventListener('resize', checkArrows);
     return () => {
-      el?.removeEventListener("scroll", checkArrows);
-      window.removeEventListener("resize", checkArrows);
+      el?.removeEventListener('scroll', checkArrows);
+      window.removeEventListener('resize', checkArrows);
     };
   }, [checkArrows]);
 
@@ -58,7 +59,7 @@ export default function CategoryNav({ activeCategory, onCategoryChange, categori
     const scrollEl = scrollRef.current;
     if (itemEl && scrollEl) {
       const scrollAmount = itemEl.offsetLeft - scrollEl.offsetWidth / 2 + itemEl.offsetWidth / 2;
-      scrollEl.scrollTo({ left: scrollAmount, behavior: "smooth" });
+      scrollEl.scrollTo({ left: scrollAmount, behavior: 'smooth' });
     }
   };
 
@@ -66,18 +67,15 @@ export default function CategoryNav({ activeCategory, onCategoryChange, categori
     const el = scrollRef.current;
     if (!el) return;
     const scrollAmount = el.clientWidth * 0.8;
-    el.scrollBy({
-      left: direction === "left" ? -scrollAmount : scrollAmount,
-      behavior: "smooth",
-    });
+    el.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
   };
 
-  const activeObj = visibleCategories.find(c => c.value === activeCategory);
-  const activeLabel =
-    t(
-      `category.${String(activeObj?.value || '').toLowerCase().replace(/ & /g, '_').replace(/\s+/g, '_').replace(/&/g, '_')}`,
-      { defaultValue: activeObj?.label || t('navigation.browse', 'Browse') }
-    );
+  // ADDED: Correctly define activeObj and activeLabel to fix ReferenceError.
+  const activeObj = visibleCategories.find((c) => toSlug(c.value) === toSlug(activeCategory));
+  const activeLabel = activeObj
+    ? t(`category.${toSlug(activeObj.value).replace(/-/g, '_')}`, { defaultValue: activeObj.label })
+    : t('category.all', { defaultValue: 'All' });
+
 
   return (
     <div className="w-full bg-background py-2 border-b dark:border-gray-800">
@@ -107,16 +105,19 @@ export default function CategoryNav({ activeCategory, onCategoryChange, categori
               className="absolute left-0 right-0 mt-2 rounded-md border border-gray-200 bg-white shadow-lg dark:bg-gray-900 dark:border-gray-700 z-20"
             >
               <ul className="py-2">
-                {visibleCategories.map((cat) => (
+                {/* FIXED: Added `idx` to the map to fix the ref assignment bug. */}
+                {visibleCategories.map((cat, idx) => (
                   <li key={toSlug(cat.value)}>
                     <Link
-                     href={`${basePrefix}/${toSlug(cat.value)}`}
-                      onClick={() => handleCategoryClick(cat.value)}
-                      className={`block w-full text-left px-4 py-2 text-sm transition-colors ${
-                        activeCategory === cat.value
-                          ? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white"
-                          : "text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
-                      }`}
+                       key={toSlug(cat.value)}
+                        href={makeCategoryLink(locale, toSlug(cat.value))}
+                        ref={(el) => (itemRefs.current[idx] = el)}
+                        onClick={() => handleCategoryClick(cat.value)}
+                        className={`block w-full text-left px-4 py-2 text-sm transition-colors ${
+                          toSlug(activeCategory) === toSlug(cat.value)
+                            ? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white"
+                            : "text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
+                        }`}
                     >
                       {t(
                         `category.${String(cat.value).toLowerCase().replace(/ & /g, '_').replace(/\s+/g, '_').replace(/&/g, '_')}`,
@@ -159,13 +160,13 @@ export default function CategoryNav({ activeCategory, onCategoryChange, categori
           {visibleCategories.map((cat, idx) => (
             <Link
               key={toSlug(cat.value)}
-              href={`${basePrefix}/${toSlug(cat.value)}`}
+              href={makeCategoryLink(locale, toSlug(cat.value))}
               ref={(el) => (itemRefs.current[idx] = el)}
               onClick={() => handleCategoryClick(cat.value)}
               className={`
                 flex-shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition-colors duration-200
                 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2
-                ${activeCategory === cat.value
+                ${toSlug(activeCategory) === toSlug(cat.value)
                   ? "bg-gray-900 text-white dark:bg-gray-50 dark:text-gray-900"
                   : "text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800"
                 }

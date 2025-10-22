@@ -3,6 +3,8 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
+import { makeCategoryLink } from '../lib/paths'
 
 interface BreadcrumbItem {
   label: string
@@ -30,9 +32,8 @@ const CATEGORY_DISPLAY_MAP: Record<string, string> = {
 
 /** Top-level routes that are NOT categories */
 const RESERVED_TOP_LEVEL = new Set([
-  '', 'tag', 'search', 'about', 'contact', 'privacy', 'terms', 'admin', 'cms', 'sitemap'
+  '', 'hi', 'tag', 'search', 'about', 'contact', 'privacy', 'terms', 'admin', 'cms', 'sitemap'
 ]);
-
 
 /** Title-case words (simple, predictable) */
 function toTitleCase(s: string) {
@@ -74,6 +75,10 @@ function formatTagLabelFromSlug(rawSlug: string): string {
 export default function Breadcrumbs() {
   const [isClient, setIsClient] = useState(false)
   const pathname = usePathname()
+  const { i18n } = useTranslation()
+  const lang = (i18n?.resolvedLanguage || i18n?.language || 'en').toLowerCase()
+  const basePrefix = lang.startsWith('hi') ? '/hi' : ''
+   const locale = lang.startsWith('hi') ? 'hi' : 'en'
 
   useEffect(() => {
     setIsClient(true)
@@ -82,36 +87,39 @@ export default function Breadcrumbs() {
   if (!isClient || !pathname) return null
 
   const generateBreadcrumbs = (): BreadcrumbItem[] => {
-    const breadcrumbs: BreadcrumbItem[] = [{ label: 'Home', href: '/' }]
+    const breadcrumbs: BreadcrumbItem[] = [{ label: 'Home', href: basePrefix || '/' }]
     const pathSegments = pathname.split('/').filter(Boolean)
     if (pathSegments.length === 0) return breadcrumbs
 
-    // ----- Legacy support: /category/... -----
-    if (pathSegments[0] === 'category') {
-      if (pathSegments.length >= 2) {
-        const categorySlug = pathSegments[1]
+    // ----- Legacy support: /category/... (and /hi/category/...)
+    const startsAt = pathSegments[0] === 'hi' ? 1 : 0
+    const firstSeg = pathSegments[startsAt]
+
+    if (firstSeg === 'category') {
+      if (pathSegments.length >= startsAt + 2) {
+        const categorySlug = pathSegments[startsAt + 1]
         const categoryLabel = formatCategoryLabelFromSlug(categorySlug)
 
         // /category/[categoryName]
-        if (pathSegments.length === 2) {
+        if (pathSegments.length === startsAt + 2) {
           breadcrumbs.push({ label: categoryLabel })
           return breadcrumbs
         }
 
         // /category/[categoryName]/[blogSlug] -> show only Home > Category
-        if (pathSegments.length >= 3) {
-          breadcrumbs.push({ label: categoryLabel, href: `/${categorySlug}` }) // link to clean URL
+        if (pathSegments.length >= startsAt + 3) {
+         breadcrumbs.push({ label: categoryLabel, href: makeCategoryLink(locale, categorySlug) }) // clean, locale-safe
           return breadcrumbs
         }
       }
     }
 
     // ----- Clean URL mode -----
-    const first = pathSegments[0]
+    const first = pathSegments[0] === 'hi' ? pathSegments[1] : pathSegments[0]
 
     if (first === 'tag') {
       // Tag breadcrumb: Home > {tag}
-      const tagLabel = formatTagLabelFromSlug(pathSegments[1] || '')
+      const tagLabel = formatTagLabelFromSlug(pathSegments[pathSegments[0] === 'hi' ? 2 : 1] || '')
       breadcrumbs.push({ label: tagLabel })
       return breadcrumbs
     }
@@ -126,7 +134,7 @@ export default function Breadcrumbs() {
       contact: 'Contact',
       privacy: 'Privacy Policy',
       terms: 'Terms of Service',
-      sitemap: 'Sitemap', // ← added
+      sitemap: 'Sitemap',
     }
 
     if (pageNames[first]) {
@@ -135,21 +143,19 @@ export default function Breadcrumbs() {
     }
 
     // If not reserved, treat as category slug
-    if (!RESERVED_TOP_LEVEL.has(first)) {
-      const categorySlug = first
+    if (!RESERVED_TOP_LEVEL.has(first || '')) {
+      const categorySlug = first || ''
       const categoryLabel = formatCategoryLabelFromSlug(categorySlug)
 
-      if (pathSegments.length === 1) {
-        // /[categorySlug]
+      if ((pathSegments[0] === 'hi' ? pathSegments.length === 2 : pathSegments.length === 1)) {
+        // /[categorySlug]  or  /hi/[categorySlug]
         breadcrumbs.push({ label: categoryLabel })
         return breadcrumbs
       }
 
-      if (pathSegments.length >= 2) {
-        // /[categorySlug]/[blogSlug] -> show only Home > Category (no title)
-        breadcrumbs.push({ label: categoryLabel, href: `/${categorySlug}` })
-        return breadcrumbs
-      }
+      // /[categorySlug]/[blogSlug]   or   /hi/[categorySlug]/[blogSlug]
+     breadcrumbs.push({ label: categoryLabel, href: makeCategoryLink(locale, categorySlug) })
+      return breadcrumbs
     }
 
     return breadcrumbs

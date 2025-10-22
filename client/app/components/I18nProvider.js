@@ -1,48 +1,60 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { I18nextProvider } from 'react-i18next';
 import i18n from '../i18n';
-import en from '../i18n/en.json';
-import hi from '../i18n/hi.json';
-
-// We will lazy-load react-i18next on the client only.
-let initialized = false;
 
 export default function I18nProvider({ children }) {
-  const [I18nextProvider, setI18nextProvider] = useState(null);
+  const [i18nInstance, setI18nInstance] = useState(null);
 
   useEffect(() => {
-    let mounted = true;
-
-    // Dynamically import react-i18next ONLY on the client
-    (async () => {
-      const { I18nextProvider: Provider, initReactI18next } = await import('react-i18next');
-
-      if (!initialized && !i18n.isInitialized) {
-        await i18n
-          .use(initReactI18next)
-          .init({
-            resources: { en: { translation: en }, hi: { translation: hi } },
-            lng: (typeof window !== 'undefined' && localStorage.getItem('lang')) || 'en',
-            fallbackLng: 'en',
-            interpolation: { escapeValue: false },
-            react: { useSuspense: false },
-          });
-        initialized = true;
+     // Initialize i18n on client side
+    if (typeof window !== 'undefined' && !i18n.isInitialized) {
+      // Prefer the server-set cookie (set by middleware) so /hi boots in Hindi,
+      // then fall back to localStorage, then 'en'.
+      let initialLng = 'en';
+      try {
+        const m = document.cookie.match(/(?:^|;\s*)NEXT_LOCALE=(hi|en)/i);
+        if (m && m[1]) initialLng = m[1].toLowerCase();
+      } catch {}
+      if (!initialLng) {
+        try { initialLng = (localStorage.getItem('lang') || 'en').toLowerCase(); } catch {}
       }
+      if (initialLng !== 'hi') initialLng = 'en';
 
-      if (mounted) setI18nextProvider(() => Provider);
-    })();
-
-    return () => {
-      mounted = false;
-    };
+      i18n.init({
+        resources: {
+          en: { translation: require('../i18n/en.json') },
+          hi: { translation: require('../i18n/hi.json') }
+        },
+        lng: initialLng,
+        fallbackLng: 'en',
+        interpolation: {
+          escapeValue: false
+        },
+        react: {
+          useSuspense: false
+        }
+      }).then(() => {
+        // Persist chosen language so client-only transitions stay aligned
+        try { localStorage.setItem('lang', i18n.language || initialLng); } catch {}
+        // Mirror to cookie for consistency with middleware
+        try {
+         document.cookie = `NEXT_LOCALE=${i18n.language || initialLng}; Path=/; Max-Age=${60*60*24*365}; SameSite=Lax`;
+        } catch {}
+        setI18nInstance(i18n);
+      });
+    } else {
+      setI18nInstance(i18n);
+    }
   }, []);
 
-  // ✅ Never block initial render (good for SSR/crawlers).
-  // If the provider isn't ready yet, just render children;
-  // components using useTranslation will hydrate once Provider is mounted.
-  if (!I18nextProvider) return <>{children}</>;
+   // Avoid any UI flash before i18n is ready
+  if (!i18nInstance) return null;
 
-  return <I18nextProvider i18n={i18n}>{children}</I18nextProvider>;
+  return (
+    <I18nextProvider i18n={i18nInstance}>
+      {children}
+    </I18nextProvider>
+  );
 }

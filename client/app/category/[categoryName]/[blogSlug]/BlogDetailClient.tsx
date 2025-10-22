@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from 'react-i18next'; // ADDED: For language detection
 import BlogDetail from '../../../components/BlogDetail';
 import { getBlogByCategoryAndSlug } from '../../../lib/api';
 
@@ -29,28 +30,34 @@ export default function BlogDetailClient({ params }: BlogDetailClientProps) {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  // 🔁 Soft-rewrite old path to new clean URL in-place (no UI impact)
+  // ADDED: Get current language from i18next
+  const { i18n } = useTranslation();
+  const lang = (i18n?.resolvedLanguage || i18n?.language || 'en').toLowerCase();
+  const basePrefix = lang.startsWith('hi') ? '/hi' : '';
+
+  // UPDATED: Soft-rewrite is now locale-aware
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const desiredPath = `/${params.categoryName}/${params.blogSlug}`;
+      const desiredPath = `${basePrefix}/${params.categoryName}/${params.blogSlug}`;
+      // Also check if the current path lacks the prefix when it should have one
+      const needsPrefix = basePrefix && !window.location.pathname.startsWith(basePrefix);
       const isLegacy = window.location.pathname.startsWith('/category/');
-      if (isLegacy && window.location.pathname !== desiredPath) {
-        // Use replace so history doesn't add another entry
+
+      if (isLegacy || needsPrefix) {
         router.replace(desiredPath);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.categoryName, params.blogSlug]);
+  }, [params.categoryName, params.blogSlug, basePrefix, router]);
 
+  // UPDATED: Data fetching is now locale-aware
   useEffect(() => {
     const fetchBlog = async () => {
       try {
         setLoading(true);
-
-        // normalize the category slug for the API
         const categoryForApi = categorySlugToApiName(params.categoryName);
-
-        const blogData = await getBlogByCategoryAndSlug(categoryForApi, params.blogSlug);
+        
+        // Pass the current language to the API call
+        const blogData = await getBlogByCategoryAndSlug(categoryForApi, params.blogSlug, lang);
         setBlog(blogData);
       } catch (err) {
         console.error('Error fetching blog:', err);
@@ -63,7 +70,7 @@ export default function BlogDetailClient({ params }: BlogDetailClientProps) {
     if (params.categoryName && params.blogSlug) {
       fetchBlog();
     }
-  }, [params.categoryName, params.blogSlug]);
+  }, [params.categoryName, params.blogSlug, lang]); // ADDED: `lang` dependency to re-fetch on language change
 
   if (loading) {
     return (
@@ -90,7 +97,8 @@ export default function BlogDetailClient({ params }: BlogDetailClientProps) {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Blog Not Found</h1>
           <p className="text-gray-600 dark:text-gray-400 mb-8">The blog post you're looking for doesn't exist.</p>
           <button
-            onClick={() => router.push('/')}
+            // UPDATED: "Go Home" button is now locale-aware
+            onClick={() => router.push(basePrefix || '/')}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium"
           >
             Go Home

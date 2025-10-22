@@ -36,6 +36,7 @@ const BlogArticle = ({
   getShareCount,
   currentLang
 }) => {
+  const basePrefix = String(currentLang || '').startsWith('hi') ? '/hi' : '';
   const displayTitle = blog?.title ?? getLocalizedContent('title', blog, currentLang);
   const displayContent = blog?.content ?? getLocalizedContent('content', blog, currentLang);
   const rawContentHtml = marked.parse(displayContent);
@@ -43,6 +44,17 @@ const BlogArticle = ({
   const coverImage = blog.image?.trim() || 'https://placehold.co/800x400/666/fff?text=No+Image';
   const cleanAltTitle = createSafeAltText(displayTitle);
   const visitorId = getVisitorId();
+
+  const categorySlug = (blog.category || 'uncategorized')
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/\s+/g, ' ')
+    .replace(/\s/g, '-')
+    .replace(/-+/g, '-');
+
+  const postPath = `${basePrefix}/${categorySlug}/${blog.slug}`;
 
   return (
     <>
@@ -66,20 +78,11 @@ const BlogArticle = ({
             blogId={blog._id}
             blogSlug={blog.slug}
             title={blog.title}
-            
             url={
-  typeof window !== "undefined"
-    ? `${window.location.origin}/${(blog.category || 'uncategorized')
-        .toString()
-        .trim()
-        .toLowerCase()
-        .replace(/&/g, ' and ')
-        .replace(/\s+/g, ' ')
-        .replace(/\s/g, '-')
-        .replace(/-+/g, '-')}/${blog.slug}`
-    : ""
-}
-
+              typeof window !== "undefined"
+                ? `${window.location.origin}${postPath}`
+                : ""
+            }
             initialShareCount={getShareCount(blog._id)}
           />
         </div>

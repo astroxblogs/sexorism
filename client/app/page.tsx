@@ -67,7 +67,8 @@ const API_BASE =
 
 function currentLang(): 'en' | 'hi' {
   const c = cookies();
-  const v = c.get('i18next')?.value || c.get('NEXT_LOCALE')?.value || '';
+   // Prefer middleware-set cookie; fall back to i18next
+  const v = c.get('NEXT_LOCALE')?.value || c.get('i18next')?.value || '';
   return v.toLowerCase().startsWith('hi') ? 'hi' : 'en';
 }
 
@@ -115,7 +116,7 @@ export default async function HomePage() {
 
       {/* Your existing client UI remains exactly the same */}
       <Suspense fallback={<div className="text-center py-20">Loading...</div>}>
-        <Home key={lang} />
+       <Home key={`home-${lang}`} />
       </Suspense>
     </>
   );

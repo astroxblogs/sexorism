@@ -1,33 +1,31 @@
-'use client'
+'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { makeCategoryLink } from '../lib/paths';
 
 import ThemeToggle from './ThemeToggle';
 import LanguageSelector from './LanguageSelector';
 import { useTranslation } from 'react-i18next';
 
-import {
-  Search, X, ChevronLeft, ChevronRight, ChevronDown
-} from 'lucide-react';
-import { motion, AnimatePresence } from "framer-motion";
+import { Search, X, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-// ✅ Helper: make a clean, consistent slug (keeps "&" as -&-)
-const toSlug = (text) => String(text || '')
-  .toLowerCase()
- .replace(/\s*&\s*/g, '-and-')  // preserve & safely
-  .replace(/\s+/g, '-')         // spaces → hyphen
-  .replace(/[^a-z0-9\-&]/g, '') // allow a–z, 0–9, -, &
-  .replace(/-+/g, '-')          // collapse multiple hyphens
-  .replace(/^-+|-+$/g, '');     // trim hyphens
+// slug helper
+const toSlug = (text) =>
+  String(text || '')
+    .toLowerCase()
+    .replace(/\s*&\s*/g, '-and-')
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9\-&]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
 
 const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLogoClick, categories }) => {
   const { t, i18n } = useTranslation();
   const lang = (i18n?.resolvedLanguage || i18n?.language || 'en').toLowerCase();
-
- const basePrefix = ''; // no /hi prefix anymore
-
-
+  const basePrefix = lang.startsWith('hi') ? '/hi' : ''; // ✅ prefix when Hindi
+const locale = lang.startsWith('hi') ? 'hi' : 'en';
   const router = useRouter();
 
   const [showSearchInput, setShowSearchInput] = useState(false);
@@ -39,64 +37,56 @@ const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLog
   const [showRightArrow, setShowRightArrow] = useState(false);
 
   const checkArrows = useCallback(() => {
-  const el = scrollRef.current;
-  if (!el) return;
-
-  // more robust thresholds to avoid rounding issues
-  const isScrollable = el.scrollWidth - el.clientWidth > 1;
-  const atStart = el.scrollLeft <= 1;
-  const atEnd = el.scrollWidth - el.clientWidth - el.scrollLeft <= 1;
-
-  setShowLeftArrow(isScrollable && !atStart);
-  setShowRightArrow(isScrollable && !atEnd);
-}, []);
-
+    const el = scrollRef.current;
+    if (!el) return;
+    const isScrollable = el.scrollWidth - el.clientWidth > 1;
+    const atStart = el.scrollLeft <= 1;
+    const atEnd = el.scrollWidth - el.clientWidth - el.scrollLeft <= 1;
+    setShowLeftArrow(isScrollable && !atStart);
+    setShowRightArrow(isScrollable && !atEnd);
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-
     const el = scrollRef.current;
     if (el) {
       el.scrollLeft = 0;
       checkArrows();
-
       let resizeTimer;
       const handleResize = () => {
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(checkArrows, 100);
       };
-      el.addEventListener("scroll", checkArrows);
-      window.addEventListener("resize", handleResize);
+      el.addEventListener('scroll', checkArrows);
+      window.addEventListener('resize', handleResize);
       return () => {
-        el.removeEventListener("scroll", checkArrows);
-        window.removeEventListener("resize", handleResize);
+        el.removeEventListener('scroll', checkArrows);
+        window.removeEventListener('resize', handleResize);
       };
     }
   }, [checkArrows, categories]);
 
   const handleNext = () => {
-  if (!scrollRef.current) return;
-  scrollRef.current.scrollBy({ left: scrollRef.current.clientWidth * 0.5, behavior: "smooth" });
-  setTimeout(checkArrows, 300);
-};
+    if (!scrollRef.current) return;
+    scrollRef.current.scrollBy({ left: scrollRef.current.clientWidth * 0.5, behavior: 'smooth' });
+    setTimeout(checkArrows, 300);
+  };
 
-const handlePrev = () => {
-  if (!scrollRef.current) return;
-  scrollRef.current.scrollBy({ left: -scrollRef.current.clientWidth * 0.5, behavior: "smooth" });
-  setTimeout(checkArrows, 300);
-};
+  const handlePrev = () => {
+    if (!scrollRef.current) return;
+    scrollRef.current.scrollBy({ left: -scrollRef.current.clientWidth * 0.5, behavior: 'smooth' });
+    setTimeout(checkArrows, 300);
+  };
 
-
-  // ✅ Use slugs consistently; push clean URL without /category and without double-encoding
+  // ✅ push clean/prefixed category URL
   const handleCategoryClick = (categoryValue) => {
     const slug = toSlug(categoryValue);
     if (typeof onCategoryChange === 'function') onCategoryChange(slug);
-
-    if (slug && slug !== 'all') {
-     router.push(`${basePrefix}/${slug}`);
+   if (slug && slug !== 'all') {
+      router.push(makeCategoryLink(locale, slug));
     } else {
-     router.push(basePrefix || '/');
-    }
+      router.push(basePrefix || '/');
+   }
   };
 
   const handleSearchSubmit = (e) => {
@@ -114,23 +104,19 @@ const handlePrev = () => {
 
   const handleSearchClick = () => setShowSearchInput(true);
 
-  // ✅ Build category list with slug values
-  const dynamicCategories = (categories || []).map(cat => ({
+  const dynamicCategories = (categories || []).map((cat) => ({
     name_en: cat.name_en,
     name_hi: cat.name_hi,
     value: toSlug(cat.name_en),
   }));
 
-  // ✅ Normalize activeCategory for selection matching
   const normalizedActive = toSlug(activeCategory || '');
-  const selectValue = dynamicCategories.some(c => c.value === normalizedActive)
+  const selectValue = dynamicCategories.some((c) => c.value === normalizedActive)
     ? normalizedActive
-    : (dynamicCategories[0]?.value || '');
+    : dynamicCategories[0]?.value || '';
 
   const getCategoryName = (category) => {
-    return lang === 'hi'
-      ? (category.name_hi || category.name_en)
-      : (category.name_en || category.name_hi);
+    return lang.startsWith('hi') ? category.name_hi || category.name_en : category.name_en || category.name_hi;
   };
 
   return (

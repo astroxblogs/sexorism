@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { setApiLanguage } from '../lib/api';
 
 const ONE_YEAR = 60 * 60 * 24 * 365;
-
 type Lang = 'en' | 'hi';
 
 const readCookieLang = (): Lang | '' => {
@@ -13,7 +12,6 @@ const readCookieLang = (): Lang | '' => {
   const v = (m && m[1]) ? m[1].toLowerCase() : '';
   return v === 'hi' ? 'hi' : v === 'en' ? 'en' : '';
 };
-
 const writeCookieLang = (lang: Lang) => {
   if (typeof document === 'undefined') return;
   const v: Lang = lang === 'hi' ? 'hi' : 'en';
@@ -28,27 +26,32 @@ export default function LangSync(): null {
     const i18nLangRaw = (i18n?.resolvedLanguage || i18n?.language || 'en').toLowerCase();
     const i18nLang: Lang = i18nLangRaw.startsWith('hi') ? 'hi' : 'en';
 
-    // 1) cookie wins (so SSR & CSR agree), else i18n, else 'en'
     const cookieLang = readCookieLang();
     const effective: Lang = cookieLang || i18nLang;
 
-    // 2) persist so SSR reads it
+    // keep SSR cookie + axios in sync
     writeCookieLang(effective);
-
-    // 3) tell axios layer
     setApiLanguage(effective);
 
-    // 4) keep cookie + axios in sync when i18n language changes
+    // 🔑 also update the real <html> element on the client
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = effective;
+      // (optional) set direction, both en/hi are 'ltr'; change if you add RTL
+      document.documentElement.dir = 'ltr';
+    }
+
     const onChange = (newLng: string) => {
       const v: Lang = String(newLng || '').toLowerCase().startsWith('hi') ? 'hi' : 'en';
       writeCookieLang(v);
       setApiLanguage(v);
+      if (typeof document !== 'undefined') {
+        document.documentElement.lang = v;
+        document.documentElement.dir = 'ltr';
+      }
     };
 
     i18n?.on?.('languageChanged', onChange);
-    return () => {
-      i18n?.off?.('languageChanged', onChange);
-    };
+    return () => i18n?.off?.('languageChanged', onChange);
   }, [i18n]);
 
   return null;
