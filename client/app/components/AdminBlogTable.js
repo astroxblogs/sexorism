@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-const AdminBlogTable = ({ blogs, onEdit, onDelete, onUpdateDate, startIndex = 0 }) => {
+const AdminBlogTable = ({ blogs, onEdit, onDelete, onUpdateDate, onDeactivate, startIndex = 0 }) => {
   const { t } = useTranslation();
   const [deleteId, setDeleteId] = useState(null);
   const [editingDateId, setEditingDateId] = useState(null);
@@ -87,10 +87,19 @@ const AdminBlogTable = ({ blogs, onEdit, onDelete, onUpdateDate, startIndex = 0 
                 <td className="p-4">
                   <button
                     className="text-green-600 hover:underline mr-4"
-                    onClick={() => onEdit(blog)}
+                    onClick={() => onEdit && onEdit(blog)}
                   >
                     {t('Edit')}
                   </button>
+
+                  {/* ✅ NEW: Deactivate action */}
+                  <button
+                    className="text-yellow-600 hover:underline mr-4"
+                    onClick={() => onDeactivate && onDeactivate(blog._id)}
+                  >
+                    {t('Deactivate')}
+                  </button>
+
                   <button
                     className="text-red-600 hover:underline"
                     onClick={() => setDeleteId(blog._id)}
@@ -154,13 +163,19 @@ const AdminBlogTable = ({ blogs, onEdit, onDelete, onUpdateDate, startIndex = 0 
             <div className="flex gap-4">
               <button
                 className="text-sm text-green-600 hover:underline font-medium"
-                onClick={() => {
-                  console.log('Edit clicked for blog:', blog);
-                  onEdit(blog);
-                }}
+                onClick={() => onEdit && onEdit(blog)}
               >
                 {t('Edit')}
               </button>
+
+              {/* ✅ NEW: Deactivate action (mobile) */}
+              <button
+                className="text-sm text-yellow-600 hover:underline font-medium"
+                onClick={() => onDeactivate && onDeactivate(blog._id)}
+              >
+                {t('Deactivate')}
+              </button>
+
               <button
                 className="text-sm text-red-600 hover:underline font-medium"
                 onClick={() => setDeleteId(blog._id)}

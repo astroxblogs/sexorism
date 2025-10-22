@@ -124,6 +124,23 @@ export default function BlogManagementComponent() {
     }
   };
 
+  // ✅ NEW: Deactivate → moves blog to pending and refreshes list
+  const handleDeactivate = async (id: string) => {
+    try {
+      await apiService.deactivateBlog(id);
+      toast.success('Blog moved to Pending');
+      // if last item on page was deactivated, move one page back
+      if (blogs.length === 1 && currentPage > 1) {
+        setCurrentPage((p) => p - 1);
+      } else {
+        fetchBlogs({ isSearchPhase: debouncedQuery.length >= 2 });
+      }
+    } catch (error) {
+      console.error('Error deactivating blog:', error);
+      toast.error('Failed to deactivate blog');
+    }
+  };
+
   // initial skeleton
   if (loading && blogs.length === 0) {
     return (
@@ -164,6 +181,7 @@ export default function BlogManagementComponent() {
             onEdit={handleEdit}
             onDelete={handleDelete}
             onUpdateDate={handleUpdateDate}
+            onDeactivate={handleDeactivate}   
             startIndex={(currentPage - 1) * limit}
           />
 

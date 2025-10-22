@@ -79,6 +79,11 @@ router.put('/blogs/:id/date', adminAuth, requireRole('admin'), blogController.up
 router.get('/blogs/pending', adminAuth, requireRole('admin'), blogController.getPendingBlogs);
 router.post('/blogs/:id/approve', adminAuth, requireRole('admin'), blogController.approveBlog);
 router.post('/blogs/:id/reject', adminAuth, requireRole('admin'), blogController.rejectBlog);
+// Deactivate (move to pending)
+
+router.patch('/blogs/:id/deactivate', adminAuth, requireRole('admin'), blogController.deactivateBlog);
+router.post('/blogs/:id/deactivate',  adminAuth, requireRole('admin'), blogController.deactivateBlog); // alias
+
 
 // ----------------- OPERATOR MANAGEMENT (Admin Only) -----------------
 router.post(

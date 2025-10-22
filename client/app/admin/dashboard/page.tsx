@@ -50,11 +50,11 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const handleEdit = (blog) => {
+  const handleEdit = (blog: any) => {
     router.push(`/admin/blogs/edit/${blog._id}`);
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: any) => {
     if (window.confirm('Are you sure you want to delete this blog?')) {
       try {
         await apiService.deleteBlog(id);
@@ -67,7 +67,7 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const handleUpdateDate = async (id, date) => {
+  const handleUpdateDate = async (id: any, date: any) => {
     try {
       await apiService.updateBlogDate(id, date);
       toast.success('Blog date updated successfully');
@@ -75,6 +75,18 @@ export default function AdminDashboardPage() {
     } catch (error) {
       console.error('Error updating blog date:', error);
       toast.error('Failed to update blog date');
+    }
+  };
+
+  // ✅ NEW: Deactivate → moves blog to "pending" then refreshes dashboard list
+  const handleDeactivate = async (id: any) => {
+    try {
+      await apiService.deactivateBlog(id);
+      toast.success('Blog moved to Pending');
+      fetchDashboardData(); // Refresh list after deactivation
+    } catch (error) {
+      console.error('Error deactivating blog:', error);
+      toast.error('Failed to deactivate blog');
     }
   };
 
@@ -116,6 +128,7 @@ export default function AdminDashboardPage() {
         onEdit={handleEdit}
         onDelete={handleDelete}
         onUpdateDate={handleUpdateDate}
+        onDeactivate={handleDeactivate} 
         startIndex={0}
       />
     </div>

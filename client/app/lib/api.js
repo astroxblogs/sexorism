@@ -536,6 +536,8 @@ export const apiService = {
     getPendingBlogs: (config = {}) => api.get('/admin/blogs/pending', config),
     approveBlog: (id) => api.post(`/admin/blogs/${id}/approve`),
     rejectBlog: (id) => api.post(`/admin/blogs/${id}/reject`),
+// client
+deactivateBlog: (id) => api.post(`/admin/blogs/${id}/deactivate`),
 
     // Category Management
     getCategories: () => api.get('/admin/categories'),

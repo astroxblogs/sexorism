@@ -325,6 +325,41 @@ exports.rejectBlog = async (req, res) => { /* ... unchanged ... */
         res.status(500).json({ error: err.message });
     }
 };
+
+
+// ✅ NEW: Move a published blog back to "pending" (Deactivate)
+//    - Admin-only
+//    - Returns the updated blog document
+exports.deactivateBlog = async (req, res) => {
+    try {
+        // Only admins can deactivate
+        if (req.user?.role !== 'admin') {
+            return res.status(403).json({ error: 'Forbidden: Only admins can deactivate blogs.' });
+        }
+
+        const blog = await Blog.findById(req.params.id);
+        if (!blog) {
+            return res.status(404).json({ error: 'Blog not found' });
+        }
+
+        // If it's already pending or rejected, keep behavior predictable
+        if (blog.status === 'pending') {
+            return res.json({ message: 'Blog is already pending.', blog });
+        }
+
+        // Flip to pending
+        blog.status = 'pending';
+        await blog.save();
+
+        // Success: this will disappear from Manage Blogs (published-only list)
+        // and appear in Pending Approvals.
+        return res.json({ message: 'Blog moved to pending (deactivated).', blog });
+    } catch (err) {
+        console.error("Error in deactivateBlog:", err);
+        return res.status(500).json({ error: err.message || 'Failed to deactivate blog.' });
+    }
+};
+
 exports.addComment = async (req, res) => { /* ... unchanged ... */ 
     try {
         const blog = await Blog.findById(req.params.id);
