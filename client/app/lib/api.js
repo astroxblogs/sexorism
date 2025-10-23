@@ -32,8 +32,17 @@ export const toCategorySlug = (text) => String(text || '')
   .replace(/^-+|-+$/g, '');      // trim
 
 
+
+
+  // >>> normalize API base so it always points to the real /api root
+const RAW_BASE = (process.env.NEXT_PUBLIC_API_BASE || '').replace(/\/+$/, ''); // trim trailing /
+const RESOLVED_BASE =
+  RAW_BASE
+    ? (RAW_BASE.endsWith('/api') ? RAW_BASE : `${RAW_BASE}/api`)
+    : '/api'; // fallback to relative in dev
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: RESOLVED_BASE,
   withCredentials: true,
 });
 

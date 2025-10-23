@@ -49,33 +49,28 @@ const seedAdmin = async () => {
   };
 };
 
-async function seed() {
-   try {
-     // First find existing admin user or create new one
-     let adminUser = await Admin.findOne({ username: 'Astrox' });
-     if (!adminUser) {
-       adminUser = await Admin.create(await seedAdmin());
-       console.log('Admin user seeded successfully!');
-     } else {
-       console.log('Admin user already exists, using existing admin');
-     }
+// async function seed() {
+//    try {
+//      // First find existing admin user or create new one
+//      let adminUser = await Admin.findOne({ username: 'Astrox' });
+//      if (!adminUser) {
+//        adminUser = await Admin.create(await seedAdmin());
+//        console.log('Admin user seeded successfully!');
+//      } else {
+//        console.log('Admin user already exists, using existing admin');
+//      }
 
-     // Clear existing blogs and create new ones with the admin's ID
-     await Blog.deleteMany({});
-     const blogsWithAdmin = seedBlogs.map(blog => ({
-       ...blog,
-       createdBy: adminUser._id
-     }));
+    
+// 
+//      await Blog.insertMany(blogsWithAdmin);
+//      console.log('Blogs seeded successfully!');
 
-     await Blog.insertMany(blogsWithAdmin);
-     console.log('Blogs seeded successfully!');
+//      console.log('Seeding complete: blogs and admin are in the database!');
+//    } catch (error) {
+//      console.error('Error during seeding process:', error);
+//    } finally {
+//      mongoose.disconnect();
+//    }
+// }
 
-     console.log('Seeding complete: blogs and admin are in the database!');
-   } catch (error) {
-     console.error('Error during seeding process:', error);
-   } finally {
-     mongoose.disconnect();
-   }
-}
-
-seed();
+// seed();

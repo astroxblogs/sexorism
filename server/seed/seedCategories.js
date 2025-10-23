@@ -136,4 +136,4 @@ const seedCategories = [
 //   }
 // }
 
-seed();
+// seed();

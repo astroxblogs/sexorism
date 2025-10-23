@@ -26,19 +26,34 @@ const app = express();
 // --- CORS Configuration ---
 const allowedOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : [];
 
+// helper: accept exact allow-list OR any *.vercel.app preview
+function isAllowedOrigin(origin) {
+  if (!origin) return true; // curl/Postman or same-origin
+  if (allowedOrigins.includes(origin)) return true;
+
+  // Allow Vercel preview deployments (e.g., https://innvibs-blogs-xxxx.vercel.app)
+  try {
+    const { hostname } = new URL(origin);
+    if (hostname.endsWith('.vercel.app')) return true;
+  } catch {
+    // ignore URL parse issues, treat as not allowed
+  }
+  return false;
+}
+
 const corsOptions = {
-    origin: (origin, callback) => {
-        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            console.log(`CORS Blocked Origin: ${origin}`);
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    credentials: true,
+  origin: (origin, callback) => {
+    if (isAllowedOrigin(origin)) {
+      return callback(null, true);
+    }
+    console.log(`CORS Blocked Origin: ${origin}`);
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
 };
 
 app.use(cors(corsOptions));
+
 
 // --- Middleware ---
 // ✅ ADDED: Increased body parser limits from your old file for larger uploads

@@ -12,7 +12,7 @@ const RESERVED = new Set([
 
 export function middleware(request: NextRequest) {
   // DEBUG: see the path Next gives us (already locale-normalized when i18n is enabled)
-  console.log('MW HIT:', request.nextUrl.pathname, 'locale=', request.nextUrl.locale)
+  // console.log('MW HIT:', request.nextUrl.pathname, 'locale=', request.nextUrl.locale)
 
   const url = request.nextUrl
   const { pathname } = url

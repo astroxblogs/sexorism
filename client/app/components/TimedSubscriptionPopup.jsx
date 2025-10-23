@@ -85,19 +85,19 @@ const TimedSubscriptionPopup = ({ showPopup, onClose, onSubscribeSuccess }) => {
             }`}
             role="dialog"
             aria-modal="true"
-            style={{
-                background: isVisible ?
-                'radial-gradient(ellipse at center, rgba(99, 102, 241, 0.1) 0%, rgba(0, 0, 0, 0.8) 70%)' :
+            style={{ 
+                background: isVisible ? 
+                'radial-gradient(ellipse at center, rgba(99, 102, 241, 0.1) 0%, rgba(0, 0, 0, 0.8) 70%)' : 
                 'transparent'
             }}
         >
-            <div
+            <div 
                 className={`bg-gradient-to-br from-white via-gray-50 to-white dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 rounded-3xl shadow-2xl p-6 w-full max-w-[calc(100%-2rem)] sm:max-w-md md:max-w-lg relative border border-gray-200/50 dark:border-gray-700/50 transition-all duration-500 transform ${
                     isVisible ? 'scale-100 translate-y-0 opacity-100' : 'scale-95 translate-y-4 opacity-0'
                 }`}
                 style={{
-                    boxShadow: isVisible ?
-                    '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 100px -20px rgba(99, 102, 241, 0.3)' :
+                    boxShadow: isVisible ? 
+                    '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 100px -20px rgba(99, 102, 241, 0.3)' : 
                     'none'
                 }}
             >
@@ -128,11 +128,11 @@ const TimedSubscriptionPopup = ({ showPopup, onClose, onSubscribeSuccess }) => {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                             </svg>
                         </div>
-
+                        
                         <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 dark:from-white dark:via-blue-200 dark:to-purple-200 bg-clip-text text-transparent mb-2">
                             Join the <span className="font-extrabold">Innvibs</span> Revolution!
                         </h2>
-
+                        
                         <div className="space-y-1">
                             <p className="text-base sm:text-lg font-semibold text-blue-600 dark:text-blue-400">
                                 ✨ Ignite Innovation • Vibrate with Ideas ✨
@@ -148,7 +148,7 @@ const TimedSubscriptionPopup = ({ showPopup, onClose, onSubscribeSuccess }) => {
                         <p className="text-gray-700 dark:text-gray-300 text-sm sm:text-base leading-relaxed">
                             🚀 <strong>Don't miss out!</strong> Join <span className="font-semibold text-blue-600 dark:text-blue-400">50,000+</span> innovators who get exclusive insights, trending topics, and game-changing ideas delivered straight to their inbox.
                         </p>
-
+                        
                         <div className="grid grid-cols-2 gap-2 mt-4 text-xs sm:text-sm">
                             <div className="flex items-center text-gray-600 dark:text-gray-400">
                                 <span className="text-green-500 mr-2">✓</span> Weekly insights
@@ -185,13 +185,13 @@ const TimedSubscriptionPopup = ({ showPopup, onClose, onSubscribeSuccess }) => {
                                  disabled={isSubmitting || isSuccess}
                              />
                          </div>
-
+                          
                          <button
                              type="submit"
                              className={`w-full py-3 px-6 rounded-xl font-bold text-white text-base sm:text-lg transition-all duration-300 transform ${
                                  isSubmitting
                                      ? 'bg-gradient-to-r from-gray-400 to-gray-500 cursor-not-allowed'
-                                     : isSuccess
+                                     : isSuccess 
                                      ? 'bg-gradient-to-r from-green-500 to-green-600 scale-105'
                                      : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 hover:scale-105 hover:shadow-xl active:scale-95'
                              } shadow-lg`}
@@ -218,8 +218,8 @@ const TimedSubscriptionPopup = ({ showPopup, onClose, onSubscribeSuccess }) => {
                     {/* Message display */}
                     {message && (
                         <div className={`mt-4 p-3 rounded-lg text-center font-medium text-sm transition-all duration-300 ${
-                            isSuccess
-                                ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-700'
+                            isSuccess 
+                                ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-700' 
                                 : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-700'
                         }`}>
                             {message}
