@@ -19,7 +19,7 @@ const inter = Inter({ subsets: ['latin'] })
 // ---------------- SEO metadata (host-aware) ----------------
 export function generateMetadata(): Metadata {
   const host = 'www.innvibs.com';
-  const isPreview = false;
+  const isPreview = process.env.VERCEL_ENV !== 'production';
 
   // 👇 read locale cookie here too (same logic you already use in <html lang>)
   const localeCookie =

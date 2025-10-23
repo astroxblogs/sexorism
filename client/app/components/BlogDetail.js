@@ -8,7 +8,7 @@ import { hasSubscriberId } from '../utils/localStorage';
 import { incrementBlogView } from '../lib/api';
 import BlogArticle from './BlogArticle';
 
-const POPUP_DELAY_SECONDS = 30;
+const POPUP_DELAY_SECONDS = 60;
 
 const BlogDetail = ({ blog }) => {
      const { i18n } = useTranslation();
