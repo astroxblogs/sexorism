@@ -7,7 +7,7 @@ const RESERVED = new Set([
   '', '_next', 'static', 'api',
   'favicon.ico', 'robots.txt', 'sitemap.xml', 'sitemap',
   'about', 'contact', 'privacy', 'terms', 'tag', 'search',
-  'admin', 'cms', 'blog'
+  'admin', 'cms', 'blog','ads.txt'
 ])
 
 export function middleware(request: NextRequest) {

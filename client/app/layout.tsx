@@ -49,7 +49,7 @@ export function generateMetadata(): Metadata {
     metadataBase: new URL(`https://${host}`), // ✅ host-aware
     title: {
       default: titleDefault,
-      template: '%s | Innvibs Blog',
+      template: '%s ',
     },
     description: descDefault,
     keywords: [
