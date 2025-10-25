@@ -186,6 +186,20 @@ const locale = (cookies().get('NEXT_LOCALE')?.value || 'en').startsWith('hi') ? 
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
+
+  {/* ✅ AdSense site verification for Auto ads */}
+        <meta name="google-adsense-account" content="ca-pub-4112734313230332" />
+
+        {/* ✅ AdSense loader (Next.js-friendly) */}
+        <Script
+          id="adsense-loader"
+          strategy="afterInteractive"
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4112734313230332"
+          crossOrigin="anonymous"
+        />
+
+
       </head>
 
       <body className={inter.className}>
