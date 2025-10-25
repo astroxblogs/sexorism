@@ -68,9 +68,7 @@ const getBlogBySlugHelper = async (slug) => {
       status: 'published'   // ✅ Only published blogs show in previews
     })
       .lean()
-      .select(
-        'title title_en title_hi content content_en content_hi image date category tags slug views comments likes shareCount updatedAt'
-      );
+     .select('title title_en title_hi content content_en content_hi image date category tags slug views comments likes shareCount updatedAt metaTitle_en metaTitle_hi metaDescription_en metaDescription_hi');
 
     if (blog) {
       console.log('✅ Blog found for social preview:', blog.title);
@@ -310,8 +308,7 @@ const getBlogBySlug = async (req, res) => {
       $or: [{ status: 'published' }, { status: { $exists: false } }]
     })
       .populate('comments')
-      .select('title title_en title_hi content content_en content_hi image date category tags slug views comments likes shareCount excerpt_en excerpt_hi likedBy');
-
+.select('title title_en title_hi content content_en content_hi image date category tags slug views comments likes shareCount excerpt_en excerpt_hi likedBy metaTitle_en metaTitle_hi metaDescription_en metaDescription_hi');
     if (!blog) return res.status(404).json({ error: 'Blog not found' });
 
     const localized = localizeBlog(blog, lang);
@@ -719,7 +716,7 @@ const getBlogByCategoryAndSlug = async (req, res) => {
       slug: slug,
       category: category.name_en, // you store category in English key
       $or: [{ status: 'published' }, { status: { $exists: false } }],
-    }).select('title title_en title_hi content content_en content_hi image date category tags slug views comments likes shareCount excerpt_en excerpt_hi likedBy');
+    }).select('title title_en title_hi content content_en content_hi image date category tags slug views comments likes shareCount excerpt_en excerpt_hi likedBy metaTitle_en metaTitle_hi metaDescription_en metaDescription_hi');
 
     if (!blog) {
       // debug logging stays if you want
