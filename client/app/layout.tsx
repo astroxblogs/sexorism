@@ -213,14 +213,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </>
         )}
 
+{/* ✅ Monetag (innvibs.in only) */}
+{!isMainSite && (
+  <>
+    <meta
+      name="monetag"
+      content="b066a938da83845ce3339ff0306c26f7"
+    />
+    <Script
+      id="monetag-loader"
+      src="https://fpyf8.com/88/tag.min.js"
+      strategy="afterInteractive"
+      async
+      data-zone="180487"
+      data-cfasync="false"
+    />
+  </>
+)}
 
- {/* ✅ Monetag meta tag — only for innvibs.in */}
-        {!isMainSite && (
-          <meta
-            name="monetag"
-            content="b066a938da83845ce3339ff0306c26f7"
-          />
-        )}
 
 
 
