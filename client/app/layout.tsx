@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers'; // ✅ added headers
 import GtmTracker from './components/GtmTracker';
 import { getBaseUrl } from './lib/site';
 import { Inter } from 'next/font/google'
@@ -18,7 +18,12 @@ const inter = Inter({ subsets: ['latin'] })
 
 // ---------------- SEO metadata (host-aware) ----------------
 export function generateMetadata(): Metadata {
-  const host = 'www.innvibs.com';
+  // ✅ detect host at request-time (works on Vercel/Node)
+  const h = headers();
+  const rawHost =
+    (h.get('x-forwarded-host') || h.get('host') || 'www.innvibs.com').toLowerCase();
+  const host = rawHost.split(',')[0].trim(); // in case of multiple values
+  const isMainSite = host.endsWith('innvibs.com'); // ✅ only main domain uses AdSense
   const isPreview = process.env.VERCEL_ENV !== 'production';
 
   // 👇 read locale cookie here too (same logic you already use in <html lang>)
@@ -41,7 +46,7 @@ export function generateMetadata(): Metadata {
   const descDefault = isHi ? desc_hi : desc_en;
 
   return {
-    metadataBase: new URL(`https://${host}`),
+    metadataBase: new URL(`https://${host}`), // ✅ host-aware
     title: {
       default: titleDefault,
       template: '%s | Innvibs Blog',
@@ -65,7 +70,7 @@ export function generateMetadata(): Metadata {
     formatDetection: { email: false, address: false, telephone: false },
     openGraph: {
       type: 'website',
-      locale: isHi ? 'hi_IN' : 'en_US', // 👈 language-aware
+      locale: isHi ? 'hi_IN' : 'en_US',
       url: '/',
       siteName: 'Innvibs Blog',
       title: titleDefault,
@@ -96,9 +101,10 @@ export function generateMetadata(): Metadata {
             'max-snippet': -1,
           },
         },
-    verification: {
-      google: 'your-google-verification-code',
-    },
+    // ✅ keep search console verification only on main site (optional)
+    verification: isMainSite
+      ? { google: 'your-google-verification-code' }
+      : undefined,
   };
 }
 
@@ -147,10 +153,17 @@ const websiteSchema = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   // read cookie set by middleware to control <html lang>
-const locale = (cookies().get('NEXT_LOCALE')?.value || 'en').startsWith('hi') ? 'hi' : 'en';
+  const locale = (cookies().get('NEXT_LOCALE')?.value || 'en').startsWith('hi') ? 'hi' : 'en';
+
+  // ✅ detect host here too to conditionally load AdSense
+  const h = headers();
+  const rawHost =
+    (h.get('x-forwarded-host') || h.get('host') || 'www.innvibs.com').toLowerCase();
+  const host = rawHost.split(',')[0].trim();
+  const isMainSite = host.endsWith('innvibs.com');
 
   return (
-   <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         {/* ✅ Consent Mode v2: set default denied BEFORE anything else */}
         <Script id="consent-mode" strategy="beforeInteractive">
@@ -171,7 +184,6 @@ const locale = (cookies().get('NEXT_LOCALE')?.value || 'en').startsWith('hi') ? 
               s.async = true;
               s.src = 'https://www.googletagmanager.com/gtm.js?id=' + id + '&l=dataLayer';
               document.head.appendChild(s);
-              // Signal GTM start
               window.dataLayer.push({'gtm.start': new Date().getTime(), event: 'gtm.js'});
             };
           `}
@@ -187,25 +199,23 @@ const locale = (cookies().get('NEXT_LOCALE')?.value || 'en').startsWith('hi') ? 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
 
-  {/* ✅ AdSense site verification for Auto ads */}
-        <meta name="google-adsense-account" content="ca-pub-4112734313230332" />
-
-        {/* ✅ AdSense loader (Next.js-friendly) */}
-        <Script
-          id="adsense-loader"
-          strategy="afterInteractive"
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4112734313230332"
-          crossOrigin="anonymous"
-        />
-
-
+        {/* ✅ AdSense tags ONLY on innvibs.com */}
+        {isMainSite && (
+          <>
+            <meta name="google-adsense-account" content="ca-pub-4112734313230332" />
+            <Script
+              id="adsense-loader"
+              strategy="afterInteractive"
+              async
+              src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4112734313230332"
+              crossOrigin="anonymous"
+            />
+          </>
+        )}
       </head>
 
       <body className={inter.className}>
-        {/* ❌ Removed unconditional GTM <noscript> to ensure it doesn't load before consent.
-            It will render conditionally from the client once consent is granted. */}
-
+        {/* ❌ No unconditional GTM noscript */}
         <I18nProvider>
           <LangSync />
           <Providers>
@@ -213,7 +223,6 @@ const locale = (cookies().get('NEXT_LOCALE')?.value || 'en').startsWith('hi') ? 
             <NavigationWrapper>
               <GtmTracker />
               <RouteAwareChrome>{children}</RouteAwareChrome>
-            
             </NavigationWrapper>
           </Providers>
         </I18nProvider>

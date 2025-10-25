@@ -16,6 +16,29 @@ interface AdSenseProps {
   responsive?: boolean
 }
 
+/** Read a cookie on the client safely */
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null
+  const m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'))
+  return m ? decodeURIComponent(m[2]) : null
+}
+
+/** Decide which site we are on: 'main' (.com) or 'in' (.in) */
+function detectSiteId(): 'main' | 'in' {
+  // Primary source: middleware-set cookie
+  const byCookie = getCookie('SITE_ID')
+  if (byCookie === 'main' || byCookie === 'in') return byCookie as 'main' | 'in'
+
+  // Fallback: hostname check
+  if (typeof window !== 'undefined') {
+    const host = (window.location.host || '').toLowerCase()
+    if (host.endsWith('innvibs.com')) return 'main'
+    if (host.endsWith('innvibs.in')) return 'in'
+  }
+  // Default safe fallback: treat as .com
+  return 'main'
+}
+
 export default function AdSense({
   slot,
   style = {},
@@ -28,46 +51,71 @@ export default function AdSense({
   const [error, setError] = useState(false)
   const adRef = useRef<HTMLDivElement>(null)
 
+  // Determine site once on mount
+  const [siteId, setSiteId] = useState<'main' | 'in'>('main')
+
   useEffect(() => {
-    // Only run on client side and after component mounts
     if (typeof window === 'undefined') return
-
     setIsClient(true)
+    setSiteId(detectSiteId())
+  }, [])
 
-    // Check if AdSense is already available
+  // ---- MAIN SITE (.com) → Google AdSense (existing behavior) ----
+  useEffect(() => {
+    if (!isClient) return
+    if (siteId !== 'main') return // skip AdSense on .in
+
+    // If AdSense is already present, try push immediately
     if (window.adsbygoogle) {
-      setIsLoaded(true)
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({})
+        setIsLoaded(true)
+      } catch (err) {
+        console.error('AdSense initialization error:', err)
+        setError(true)
+      }
       return
     }
 
-    // Load AdSense script
-    const loadAdSense = () => {
-      if (window.adsbygoogle && !isLoaded) {
-        setIsLoaded(true)
+    // Check if script tag is already in DOM (layout.tsx also loads it on .com)
+    const existingScript = document.querySelector(
+      'script[src*="pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"]'
+    )
+    if (existingScript) {
+      // When it finishes, push
+      const onLoad = () => {
         try {
-          ;(window.adsbygoogle = window.adsbygoogle || []).push({})
+          (window.adsbygoogle = window.adsbygoogle || []).push({})
+          setIsLoaded(true)
         } catch (err) {
-          console.error('AdSense initialization error:', err)
+          console.error('AdSense push error:', err)
           setError(true)
         }
       }
-    }
-
-    // Check if script is already in DOM
-    const existingScript = document.querySelector('script[src*="pagead2.googlesyndication.com"]')
-    if (existingScript) {
-      loadAdSense()
+      if ((existingScript as HTMLScriptElement).async) {
+        existingScript.addEventListener('load', onLoad, { once: true })
+      } else {
+        onLoad()
+      }
       return
     }
 
-    // Create and load script
+    // Fallback: load script ourselves (kept from your original component)
     const script = document.createElement('script')
     script.async = true
     script.crossOrigin = 'anonymous'
-    script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-0000000000000000'
+    // ✅ Use your real publisher ID here; safe even if layout already loaded (we guard above)
+    script.src =
+      'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4112734313230332'
 
     script.onload = () => {
-      loadAdSense()
+      try {
+        (window.adsbygoogle = window.adsbygoogle || []).push({})
+        setIsLoaded(true)
+      } catch (err) {
+        console.error('AdSense initialization error:', err)
+        setError(true)
+      }
     }
 
     script.onerror = () => {
@@ -75,39 +123,81 @@ export default function AdSense({
       setError(true)
     }
 
-    // Append to head
-    if (document.head) {
-      document.head.appendChild(script)
+    document.head?.appendChild(script)
+
+    // No cleanup needed
+  }, [isClient, siteId])
+
+  // ---- IN SITE (.in) → Alternate ad network (optional, via env) ----
+  useEffect(() => {
+    if (!isClient) return
+    if (siteId !== 'in') return
+
+    const altScript = (process.env.NEXT_PUBLIC_ALT_AD_SCRIPT || '').trim()
+    if (!altScript) {
+      // No alternate script configured → fail silently (no ads)
+      return
     }
 
-    return () => {
-      // Cleanup if needed
-    }
-  }, [isLoaded])
+    // If already present, don't inject again
+    const existing = document.querySelector(`script[src="${altScript}"]`)
+    if (existing) return
 
-  // Don't render AdSense on server side or if there's an error
+    const s = document.createElement('script')
+    s.async = true
+    s.src = altScript
+    s.onload = () => {
+      // Some networks need a global hydrate call; leave no-op here for safety.
+      // If your provider requires an explicit init, you can call it here.
+    }
+    s.onerror = () => {
+      console.error('Failed to load alternate ad script:', altScript)
+    }
+    document.head?.appendChild(s)
+  }, [isClient, siteId])
+
+  // Never render on server, or if AdSense errored on .com
   if (!isClient || error) {
-    return null; // Hide ads completely when not configured
+    return null
   }
 
-  return (
-    <div className={`adsense-container ${className}`} ref={adRef}>
-      <ins
-        className="adsbygoogle"
-        style={{
-          display: 'block',
-          ...style
-        }}
-        data-ad-client="ca-pub-0000000000000000"
-        data-ad-slot={slot}
-        data-ad-format={format}
-        data-full-width-responsive={responsive.toString()}
-      />
-    </div>
-  )
+  // ---- Render containers per site ----
+  if (siteId === 'main') {
+    // Google AdSense container (unchanged, but with your real client)
+    return (
+      <div className={`adsense-container ${className}`} ref={adRef}>
+        <ins
+          className="adsbygoogle"
+          style={{
+            display: 'block',
+            ...style
+          }}
+          data-ad-client="ca-pub-4112734313230332"
+          data-ad-slot={slot}
+          data-ad-format={format}
+          data-full-width-responsive={responsive.toString()}
+        />
+      </div>
+    )
+  }
+
+  // siteId === 'in' → render a generic container the alternate script can fill
+  // Many networks look for a specific class and a data-attr with slot/placement id.
+  const dataKey = (process.env.NEXT_PUBLIC_ALT_AD_DATA_KEY || 'slot').trim()
+  const altClass = (process.env.NEXT_PUBLIC_ALT_AD_CONTAINER_CLASS || 'alt-ad').trim()
+
+  // Build props with dynamic data-* key (e.g., data-slot="..."):
+  const dataAttrName = `data-${dataKey}`
+  const altProps: Record<string, any> = {
+    className: `${altClass} ${className}`.trim(),
+    style: { display: 'block', ...style },
+  }
+  altProps[dataAttrName] = slot
+
+  return <div {...altProps} />
 }
 
-// Predefined ad components for common placements
+// Predefined ad components for common placements (unchanged)
 export function HeaderAd() {
   return (
     <AdSense

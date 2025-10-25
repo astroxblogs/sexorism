@@ -1,0 +1,4 @@
+# ads.txt for innvibs.in
+# Replace with your alternate ad network entries
+example-adnetwork.com, PUB-XXXXX, DIRECT
+another-exchange.com, PUB-YYYYY, RESELLER
