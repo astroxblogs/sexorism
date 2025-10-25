@@ -212,6 +212,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             />
           </>
         )}
+
+
+ {/* ✅ Monetag meta tag — only for innvibs.in */}
+        {!isMainSite && (
+          <meta
+            name="monetag"
+            content="b066a938da83845ce3339ff0306c26f7"
+          />
+        )}
+
+
+
       </head>
 
       <body className={inter.className}>
