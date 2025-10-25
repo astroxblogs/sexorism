@@ -214,7 +214,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         )}
 
 {/* ✅ Monetag (innvibs.in only) */}
-{!isMainSite && (
+{/* {!isMainSite && (
   <>
     <meta
       name="monetag"
@@ -229,7 +229,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       data-cfasync="false"
     />
   </>
-)}
+)} */}
 
 
 
