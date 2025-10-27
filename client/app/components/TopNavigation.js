@@ -26,19 +26,19 @@ const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLog
   const lang = (i18n?.resolvedLanguage || i18n?.language || 'en').toLowerCase();
   // const basePrefix = lang.startsWith('hi') ? '/hi' : ''; // ✅ prefix when Hindi
   const locale = lang.startsWith('hi') ? 'hi' : 'en';
- const router = useRouter();
-const pathname = usePathname();
+  const router = useRouter();
+  const pathname = usePathname();
 
-const isHindiPath = pathname === '/hi' || pathname.startsWith('/hi/');
-const cookieLang = (() => {
-  try {
-    const m = document.cookie.match(/(?:^|;\s*)NEXT_LOCALE=(hi|en)/i);
-    return m && m[1] ? m[1].toLowerCase() : '';
-  } catch { return ''; }
-})();
+  const isHindiPath = pathname === '/hi' || pathname.startsWith('/hi/');
+  const cookieLang = (() => {
+    try {
+      const m = document.cookie.match(/(?:^|;\s*)NEXT_LOCALE=(hi|en)/i);
+      return m && m[1] ? m[1].toLowerCase() : '';
+    } catch { return ''; }
+  })();
 
-const effectiveLang = isHindiPath ? 'hi' : (cookieLang || (i18n?.resolvedLanguage || i18n?.language || 'en')).toLowerCase().startsWith('hi') ? 'hi' : 'en';
-const basePrefix = effectiveLang === 'hi' ? '/hi' : '';
+  const effectiveLang = isHindiPath ? 'hi' : (cookieLang || (i18n?.resolvedLanguage || i18n?.language || 'en')).toLowerCase().startsWith('hi') ? 'hi' : 'en';
+  const basePrefix = effectiveLang === 'hi' ? '/hi' : '';
 
   const [showSearchInput, setShowSearchInput] = useState(false);
   const [inputValue, setInputValue] = useState('');
@@ -108,17 +108,17 @@ const basePrefix = effectiveLang === 'hi' ? '/hi' : '';
     router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
   };
 
-const handleLogoClick = () => {
-  // If you're already on the effective home, do a route refresh (no URL change)
-  const targetHome = basePrefix || '/';
-  if (pathname === targetHome) {
-    router.refresh();
-    try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch {}
-    return;
-  }
-  // Otherwise navigate to the right home, preserving /hi when Hindi
-  router.push(targetHome);
-};
+  const handleLogoClick = () => {
+    // If you're already on the effective home, do a route refresh (no URL change)
+    const targetHome = basePrefix || '/';
+    if (pathname === targetHome) {
+      router.refresh();
+      try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch { }
+      return;
+    }
+    // Otherwise navigate to the right home, preserving /hi when Hindi
+    router.push(targetHome);
+  };
 
 
 
@@ -152,9 +152,10 @@ const handleLogoClick = () => {
 
         <div className="flex items-center gap-3 w-full lg:w-auto lg:mr-4">
 
-          <button
-            onClick={handleLogoClick}
+          <a
+            href={basePrefix || '/'}
             className="flex items-center gap-2 flex-shrink-0 max-w-[120px] sm:max-w-[140px] md:max-w-none"
+            tabIndex={0}
           >
             <img
               src="/lm1.png"
@@ -166,7 +167,8 @@ const handleLogoClick = () => {
               alt="Logo Dark"
               className="h-8 sm:h-10 w-auto object-contain hidden dark:block"
             />
-          </button>
+          </a>
+
           <div className="lg:hidden ml-auto flex items-center gap-2">
             <button
               onClick={handleSearchClick}
@@ -225,8 +227,8 @@ const handleLogoClick = () => {
                   ref={(el) => (itemRefs.current[idx] = el)}
                   onClick={() => handleCategoryClick(cat.value)}
                   className={`flex-shrink-0 rounded-full px-3.5 py-1.5 text-sm transition-colors duration-200 border ${normalizedActive === cat.value
-                      ? "bg-violet-600 border-violet-600 text-white"
-                      : "bg-white/70 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    ? "bg-violet-600 border-violet-600 text-white"
+                    : "bg-white/70 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                     }`}
                 >
                   {getCategoryName(cat)}

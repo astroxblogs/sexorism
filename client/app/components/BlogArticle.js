@@ -39,8 +39,64 @@ const BlogArticle = ({
   const basePrefix = String(currentLang || '').startsWith('hi') ? '/hi' : '';
   const displayTitle = blog?.title ?? getLocalizedContent('title', blog, currentLang);
   const displayContent = blog?.content ?? getLocalizedContent('content', blog, currentLang);
+
+  // Markdown -> HTML (existing behavior)
   const rawContentHtml = marked.parse(displayContent);
-  const cleanContentHtml = DOMPurify.sanitize(rawContentHtml);
+
+  // Sanitization: allow YouTube/Vimeo iframes + safe HTML5 <video>
+  const purifier = DOMPurify;
+
+  const ALLOWED_IFRAME_SRC = [
+    /^https:\/\/www\.youtube-nocookie\.com\/embed\//i,
+    /^https:\/\/player\.vimeo\.com\/video\//i,
+  ];
+  const ALLOWED_VIDEO_SRC = [
+    /^https?:\/\//i,
+    /^blob:/i
+  ];
+
+  purifier.addHook('uponSanitizeElement', (node, data) => {
+    if (data.tagName === 'iframe') {
+      const src = node.getAttribute('src') || '';
+      const ok = ALLOWED_IFRAME_SRC.some(re => re.test(src));
+      if (!ok) {
+        node.parentNode && node.parentNode.removeChild(node);
+        return;
+      }
+      node.setAttribute('loading', 'lazy');
+      node.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+      node.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
+      node.setAttribute('allowfullscreen', 'true');
+      node.classList.add('ql-video');
+    }
+
+    if (data.tagName === 'video') {
+      const src = node.getAttribute('src') || '';
+      // allow if src present and protocol is http(s) or blob
+      const ok = src && ALLOWED_VIDEO_SRC.some(re => re.test(src));
+      if (!ok) {
+        node.parentNode && node.parentNode.removeChild(node);
+        return;
+      }
+      node.setAttribute('controls', '');
+      node.setAttribute('playsinline', '');
+      node.setAttribute('preload', 'metadata');
+      node.classList.add('ql-html5video');
+    }
+  });
+
+  const cleanContentHtml = purifier.sanitize(rawContentHtml, {
+    ADD_TAGS: ['iframe', 'video', 'source'],
+    ADD_ATTR: [
+      // iframe
+      'allow', 'allowfullscreen', 'frameborder', 'src', 'title', 'width', 'height', 'referrerpolicy', 'loading', 'class',
+      // video
+      'controls', 'playsinline', 'muted', 'poster', 'preload',
+      'src', 'type'
+    ],
+  });
+  purifier.removeHook('uponSanitizeElement');
+
   const coverImage = blog.image?.trim() || 'https://placehold.co/800x400/666/fff?text=No+Image';
   const cleanAltTitle = createSafeAltText(displayTitle);
   const visitorId = getVisitorId();
@@ -58,6 +114,22 @@ const BlogArticle = ({
 
   return (
     <>
+      {/* Smaller, responsive embeds */}
+      <style>{`
+        .blog-post-content iframe,
+        .blog-post-content .ql-video,
+        .blog-post-content video,
+        .blog-post-content .ql-html5video {
+          display: block;
+          width: 100%;
+          max-width: 720px;
+          height: auto;
+          aspect-ratio: 16 / 9;
+          margin: 1rem auto;
+          border-radius: 0.75rem;
+        }
+      `}</style>
+
       <article className="max-w-4xl mx-auto bg-white dark:bg-gray-900 rounded-lg shadow-xl p-4 sm:p-6 md:p-8 mt-4 md:mt-8 mb-8 relative">
         <div className="w-full h-55 flex items-center justify-center bg-gray-100">
           <img src={coverImage} alt={cleanAltTitle} className="w-full h-auto object-contain rounded-lg" loading="lazy" />
