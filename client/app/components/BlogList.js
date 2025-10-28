@@ -5,7 +5,7 @@ import BlogCard from './BlogCard';
 import { useTranslation } from 'react-i18next';
 // ✅ STEP 1: Import the function to get the anonymous user ID
 import { getVisitorId } from '../utils/localStorage';
-import AdSense from './AdSense'; // AD: domain-aware
+// import AdSense from './AdSense'; // AD: domain-aware
 
 const BlogList = ({ blogs, loadingMore, hasMore, onLoadMore, totalBlogsCount, onLikeUpdate, searchQuery }) => {
   const { t, i18n } = useTranslation();
@@ -63,30 +63,22 @@ const BlogList = ({ blogs, loadingMore, hasMore, onLoadMore, totalBlogsCount, on
     <div key={lang} className="max-w-4xl w-full mx-auto px-0">
       {blogs && blogs.length > 0 ? (
         <div className="grid grid-cols-1 gap-3">
-               {blogs.map((blog, index) => {
+              {blogs.map((blog, index) => {
             const isLast = index === blogs.length - 1;
-            const showInlineAd = (index + 1) % 4 === 0; // after every 4th card
-            const adOrdinal = Math.floor((index + 1) / 4); // 1,2,3...
             return (
-              <div key={blog._id || index} ref={isLast ? observerRef : null}>
-                {/* Blog card */}
+              <div
+                key={blog._id || index}
+                ref={isLast ? observerRef : null}
+              >
+                {/* ✅ STEP 3: Pass the visitorId down to each BlogCard */}
                 <BlogCard
                   blog={blog}
                   onLikeUpdate={onLikeUpdate}
                   searchQuery={searchQuery}
                   visitorId={visitorId}
                 />
-                {/* AD: Feed Inline after every 4th card (limit 3 insertions) */}
-                {showInlineAd && adOrdinal <= 3 && (
-                  <div className="my-4 empty:hidden">
-                    <AdSense
-                      slot={`feed_inline_${adOrdinal}`}
-                      className="ad-slot ad-slot--rectangle w-full"
-                    />
-                  </div>
-                )}
               </div>
-            );
+           );
          })}
         </div>
       ) : (

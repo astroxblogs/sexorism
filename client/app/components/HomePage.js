@@ -12,7 +12,7 @@ import SidebarLatest from './SidebarLatest.jsx';
 import SEO from './SEO.js';
 import api from '../lib/api.js';
 import { useBlogs } from '../context/BlogContext.js';
-import AdSense from './AdSense'; // AD: domain-aware (.com = AdSense, .in = alt)
+// import AdSense from './AdSense'; // AD: domain-aware (.com = AdSense, .in = alt)
 
 const INITIAL_PAGE_SIZE = 6;
 
@@ -438,9 +438,9 @@ const HomePage = () => {
 
 
             {/* AD: Home Inline (above feed) */}
-            <div className="mx-auto w-full my-4 empty:hidden">
+            {/* <div className="mx-auto w-full my-4 empty:hidden">
               <AdSense slot="home_inline_above_feed" className="ad-slot ad-slot--leaderboard w-full" />
-            </div>
+            </div> */}
 
             <BlogList
               key={`${lang}-${activeCategory}-${activeTag}-${searchQuery}-${currentPage}`}
@@ -468,9 +468,9 @@ const HomePage = () => {
 
 
                 {/* AD: Sidebar Sticky Skyscraper */}
-                <div className="sticky top-20 empty:hidden">
+                {/* <div className="sticky top-20 empty:hidden">
                   <AdSense slot="sidebar_sticky_1" className="ad-slot ad-slot--skyscraper w-full" />
-                </div>
+                </div> */}
 
                 {/* Home-only sidebar sections */}
                 {!isSearchView && !isCategoryView && !isTagView &&

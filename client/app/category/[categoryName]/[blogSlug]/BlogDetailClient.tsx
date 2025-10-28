@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next'; // ADDED: For language detection
 import BlogDetail from '../../../components/BlogDetail';
 import { getBlogByCategoryAndSlug } from '../../../lib/api';
-import AdSense from '../../../components/AdSense';
+// import AdSense from '../../../components/AdSense';
 
 interface BlogDetailClientProps {
   params: {
@@ -110,17 +110,17 @@ export default function BlogDetailClient({ params }: BlogDetailClientProps) {
   }
 return (
     <>
-      {/* AD: Article Top Banner (below header / above content component) */}
+      {/* AD: Article Top Banner (below header / above content component)
       <div className="mx-auto max-w-4xl px-4 sm:px-6 md:px-0 my-4 empty:hidden">
         <AdSense slot="article_top_banner" className="ad-slot ad-slot--leaderboard w-full" />
-      </div>
+      </div> */}
 
       <BlogDetail blog={blog} />
 
       {/* AD: Article Bottom (above footer / below content component) */}
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 md:px-0 my-6 empty:hidden">
+      {/* <div className="mx-auto max-w-4xl px-4 sm:px-6 md:px-0 my-6 empty:hidden">
         <AdSense slot="article_bottom" className="ad-slot ad-slot--rectangle w-full" />
-      </div>
+      </div> */}
     </>
   );
 }

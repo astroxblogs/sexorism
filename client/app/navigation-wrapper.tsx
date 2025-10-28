@@ -6,7 +6,7 @@ import Footer1 from './components/Footer1'
 import LanguageNudge from './components/LanguageNudge'
 import { usePathname, useRouter } from 'next/navigation'
 import { getCategories } from './lib/api'
- import AdSense from './components/AdSense' // ✅ AD: domain-aware
+//  import AdSense from './components/AdSense' // ✅ AD: domain-aware
 
 interface NavigationWrapperProps {
   children: React.ReactNode
@@ -77,9 +77,9 @@ const NavigationWrapper: React.FC<NavigationWrapperProps> = ({ children }) => {
             categories={categories}
           />
          {/* AD SLOT: Below-Nav Leaderboard (global, public pages only) */}
-         <div className="mx-auto max-w-screen-xl px-3 mt-2 empty:hidden">
+         {/* <div className="mx-auto max-w-screen-xl px-3 mt-2 empty:hidden">
            <AdSense slot="global_below_nav_leaderboard" className="ad-slot ad-slot--leaderboard w-full" />
-         </div>
+         </div> */}
        </>
       )}
 
@@ -88,11 +88,11 @@ const NavigationWrapper: React.FC<NavigationWrapperProps> = ({ children }) => {
       </main>
 
      {/* AD SLOT: Below-Main Leaderboard (before footer on public pages) */}
-     {!isStandalonePage && !isAdminPage && (
+     {/* {!isStandalonePage && !isAdminPage && (
        <div className="mx-auto max-w-screen-xl px-3 my-6 empty:hidden">
          <AdSense slot="global_below_main_leaderboard" className="ad-slot ad-slot--leaderboard w-full" />
        </div>
-     )}
+     )} */}
 
       {isStandalonePage || isAdminPage ? <div /> : <Footer1 />}
 

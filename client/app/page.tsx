@@ -2,7 +2,7 @@ import NextDynamic from 'next/dynamic';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { cookies } from 'next/headers';
- import AdSense from './components/AdSense'; // ✅ AD: domain-aware
+//  import AdSense from './components/AdSense'; // ✅ AD: domain-aware
 
 const Home = NextDynamic(() => import('./components/HomePage.js'), {
   ssr: false,
@@ -112,9 +112,9 @@ export default async function HomePage() {
       </noscript>
 
      {/* AD SLOT: Home Top Leaderboard (below header, above feed) */}
-      <div className="mx-auto max-w-screen-xl px-3 my-3 empty:hidden">
+      {/* <div className="mx-auto max-w-screen-xl px-3 my-3 empty:hidden">
        <AdSense slot="home_top_leaderboard" className="ad-slot ad-slot--leaderboard w-full" />
-     </div>
+     </div> */}
 
       {/* Your existing client UI remains exactly the same */}
       <Suspense fallback={<div className="text-center py-20">Loading...</div>}>
@@ -122,9 +122,9 @@ export default async function HomePage() {
       </Suspense>
 
      {/* AD SLOT: Home Bottom Leaderboard (after feed) */}
-    <div className="mx-auto max-w-screen-xl px-3 my-6 empty:hidden">
+    {/* <div className="mx-auto max-w-screen-xl px-3 my-6 empty:hidden">
        <AdSense slot="home_bottom_leaderboard" className="ad-slot ad-slot--leaderboard w-full" />
-     </div>
+     </div> */}
     </>
   );
 }
