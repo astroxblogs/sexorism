@@ -213,16 +213,33 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </>
         )}
 
-{/* ✅ Monetag (innvibs.in only) */}
-{!isMainSite && (
+{/* ✅ AdSense + Funding Choices ONLY on innvibs.com */}
+{isMainSite && (
   <>
-    {/* <meta
-      name="monetag"
-      content="b066a938da83845ce3339ff0306c26f7"
-    /> */}
-  <script src="https://fpyf8.com/88/tag.min.js" data-zone="180843" async data-cfasync="false"></script>
+    <meta name="google-adsense-account" content="ca-pub-4112734313230332" />
+
+    {/* AdSense loader */}
+    <Script
+      id="adsense-loader"
+      strategy="afterInteractive"
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4112734313230332"
+      crossOrigin="anonymous"
+    />
+
+    {/* Funding Choices (Consent messages) */}
+    <Script
+      id="funding-choices"
+      src="https://fundingchoicesmessages.google.com/i/pub-4112734313230332?ers=1"
+      async
+      strategy="afterInteractive"
+    />
+    <Script id="funding-choices-present" strategy="afterInteractive">
+      {`(function(){function signalGooglefcPresent(){if(!window.frames['googlefcPresent']){if(document.body){const iframe=document.createElement('iframe');iframe.style='width: 0; height: 0; border: none; z-index: -1000; left: -1000px; top: -1000px;';iframe.style.display='none';iframe.name='googlefcPresent';document.body.appendChild(iframe);}else{setTimeout(signalGooglefcPresent,0);}}}signalGooglefcPresent();})();`}
+    </Script>
   </>
 )}
+
 
 
 

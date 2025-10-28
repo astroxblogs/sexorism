@@ -12,6 +12,7 @@ import SidebarLatest from './SidebarLatest.jsx';
 import SEO from './SEO.js';
 import api from '../lib/api.js';
 import { useBlogs } from '../context/BlogContext.js';
+import AdSense from './AdSense'; // AD: domain-aware (.com = AdSense, .in = alt)
 
 const INITIAL_PAGE_SIZE = 6;
 
@@ -27,7 +28,7 @@ const toSlug = (text) =>
 
 // ✅ reserved top-level routes (so we can detect clean category paths)
 const RESERVED_TOP_LEVEL = new Set([
-  '','hi', 'tag', 'search', 'about', 'contact', 'privacy', 'terms', 'admin', 'cms', '_next', 'api', 'static',
+  '', 'hi', 'tag', 'search', 'about', 'contact', 'privacy', 'terms', 'admin', 'cms', '_next', 'api', 'static',
   'sitemap'
 ]);
 
@@ -39,9 +40,9 @@ const HomePage = () => {
   const searchParams = useSearchParams();
   const blogContext = useBlogs();
   const blogs = blogContext?.blogs || [];
-  const setBlogs = blogContext?.setBlogs || (() => {});
+  const setBlogs = blogContext?.setBlogs || (() => { });
   const featuredBlogs = blogContext?.featuredBlogs || [];
-  const setFeaturedBlogs = blogContext?.setFeaturedBlogs || (() => {});
+  const setFeaturedBlogs = blogContext?.setFeaturedBlogs || (() => { });
 
   // ========= Locale-aware path normalization =========
   // Treat /hi and /hi/... as if they were / and /... for internal routing,
@@ -50,12 +51,12 @@ const HomePage = () => {
   const isHindi = rawPath === '/hi' || rawPath.startsWith('/hi/');
   const pathForRouting = isHindi ? (rawPath.slice(3) || '/') : rawPath; // '/hi' -> '/', '/hi/tech' -> '/tech'
   const basePrefix = isHindi ? '/hi' : '';
-const locale = isHindi ? 'hi' : 'en';
+  const locale = isHindi ? 'hi' : 'en';
   // ===== CATEGORY DETECTION (supports both legacy /category/:slug and clean /:slug) =====
   const segments = (pathForRouting || '').split('/').filter(Boolean);
 
   // routes that are NOT categories
-  const RESERVED = new Set([ 'hi', 'tag', 'search', 'about', 'contact', 'privacy', 'terms', 'admin', 'cms', 'sitemap']);
+  const RESERVED = new Set(['hi', 'tag', 'search', 'about', 'contact', 'privacy', 'terms', 'admin', 'cms', 'sitemap']);
 
   // legacy? /category/:slug
   const isLegacyCategory = segments[0] === 'category' && !!segments[1];
@@ -359,14 +360,14 @@ const locale = isHindi ? 'hi' : 'en';
     ? t('general.search_results_for', { query: searchQuery })
     : isCategoryView
       ? t('general.blogs_in_category', {
-          category: t(
-            `category.${String(activeCategory)
-              .toLowerCase()
-              .replace(/ & /g, '_')
-              .replace(/\s+/g, '_')}`,
-            { defaultValue: activeCategory }
-          )
-        })
+        category: t(
+          `category.${String(activeCategory)
+            .toLowerCase()
+            .replace(/ & /g, '_')
+            .replace(/\s+/g, '_')}`,
+          { defaultValue: activeCategory }
+        )
+      })
       : isTagView
         ? `Curated #${activeTag} Reads`
         : '';
@@ -383,7 +384,7 @@ const locale = isHindi ? 'hi' : 'en';
       <SEO
         title="Inner Vibes: Technology, Travel, Health, Lifestyle, Trends, Sports, Fashion with Vastu & Astro"
         description="Explore technology, travel, health & wellness, lifestyle trends, sports and fashion—plus Vastu & astrology insights. Fresh stories daily from Innvibs."
-        canonicalUrl={basePrefix || '/'} 
+        canonicalUrl={basePrefix || '/'}
         schema={[organizationSchema, websiteSchema]}
       />
 
@@ -395,6 +396,8 @@ const locale = isHindi ? 'hi' : 'en';
               <HeroCarousel blogs={featuredBlogs} />
             )}
             {!isSearchView && !isCategoryView && !isTagView && (
+
+
               <div className="text-center md:text-left mt-4 md:mt-6">
                 <motion.h1
                   className="text-lg sm:text-xl md:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white tracking-tight leading-snug md:leading-tight"
@@ -433,6 +436,12 @@ const locale = isHindi ? 'hi' : 'en';
               </h2>
             )}
 
+
+            {/* AD: Home Inline (above feed) */}
+            <div className="mx-auto w-full my-4 empty:hidden">
+              <AdSense slot="home_inline_above_feed" className="ad-slot ad-slot--leaderboard w-full" />
+            </div>
+
             <BlogList
               key={`${lang}-${activeCategory}-${activeTag}-${searchQuery}-${currentPage}`}
               blogs={blogs}
@@ -455,6 +464,14 @@ const locale = isHindi ? 'hi' : 'en';
               <div className="text-center text-gray-500 dark:text-gray-400">Loading sidebar...</div>
             ) : (
               <>
+
+
+
+                {/* AD: Sidebar Sticky Skyscraper */}
+                <div className="sticky top-20 empty:hidden">
+                  <AdSense slot="sidebar_sticky_1" className="ad-slot ad-slot--skyscraper w-full" />
+                </div>
+
                 {/* Home-only sidebar sections */}
                 {!isSearchView && !isCategoryView && !isTagView &&
                   sidebarSections.map((sec) => (

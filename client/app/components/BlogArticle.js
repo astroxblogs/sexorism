@@ -8,6 +8,7 @@ import { getVisitorId } from '../lib/localStorage';
 import LikeButton from './LikeButton.jsx';
 import ShareButton from './ShareButton.jsx';
 import TimedSubscriptionPopup from './TimedSubscriptionPopup.jsx';
+import AdSense from './AdSense'; // AD: domain-aware
 
 const createSafeAltText = (text) => {
   if (!text) return '';
@@ -141,6 +142,12 @@ const BlogArticle = ({
           </h1>
         </div>
 
+
+         {/* AD: Article Top Banner (below title) */}
+        <div className="my-4 empty:hidden">
+          <AdSense slot="article_top_banner" className="ad-slot ad-slot--leaderboard w-full" />
+        </div>
+
         <div className="flex flex-wrap gap-x-3 gap-y-1 items-center text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-6 md:mb-8">
           <span>Published on: {blog.date ? new Date(blog.date).toLocaleDateString() : 'Invalid Date'}</span>
           <span className="flex items-center gap-1"><svg className="w-3 h-3 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.562 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.865.802V10.333z"></path></svg>{blog.likedBy?.length || 0}</span>
@@ -165,12 +172,26 @@ const BlogArticle = ({
           </div>
         </div>
 
+        
+        {/* AD: Article Inline (mid) */}
+        <div className="my-6 empty:hidden">
+         <AdSense slot="article_inline_1" className="ad-slot ad-slot--in-article w-full" />
+      </div>
+
         {showGatedPopup && (
           <TimedSubscriptionPopup showPopup={showGatedPopup} onClose={() => setShowGatedPopup(false)} onSubscribeSuccess={() => { setIsSubscribed(true); setShowGatedPopup(false); }} />
         )}
         {showTimedPopup && !isSubscribed && (
           <TimedSubscriptionPopup showPopup={showTimedPopup} onClose={() => setShowTimedPopup(false)} onSubscribeSuccess={onTimedPopupSuccess} />
         )}
+
+
+
+        {/* AD: Article Bottom (above likes/comments) */}
+        <div className="my-6 empty:hidden">
+          <AdSense slot="article_bottom" className="ad-slot ad-slot--rectangle w-full" />
+        </div>
+
 
         <div className="border-t dark:border-gray-700 pt-6">
           <div className="mb-8">

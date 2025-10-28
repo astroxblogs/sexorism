@@ -2,6 +2,7 @@ import NextDynamic from 'next/dynamic';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { cookies } from 'next/headers';
+ import AdSense from './components/AdSense'; // ✅ AD: domain-aware
 
 const Home = NextDynamic(() => import('./components/HomePage.js'), {
   ssr: false,
@@ -57,10 +58,6 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-
-
-   
-
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE ||
   (process.env.NODE_ENV !== 'production' ? 'https://api.innvibs.in' : '');
@@ -114,10 +111,20 @@ export default async function HomePage() {
         </section>
       </noscript>
 
+     {/* AD SLOT: Home Top Leaderboard (below header, above feed) */}
+      <div className="mx-auto max-w-screen-xl px-3 my-3 empty:hidden">
+       <AdSense slot="home_top_leaderboard" className="ad-slot ad-slot--leaderboard w-full" />
+     </div>
+
       {/* Your existing client UI remains exactly the same */}
       <Suspense fallback={<div className="text-center py-20">Loading...</div>}>
-       <Home key={`home-${lang}`} />
+        <Home key={`home-${lang}`} />
       </Suspense>
+
+     {/* AD SLOT: Home Bottom Leaderboard (after feed) */}
+    <div className="mx-auto max-w-screen-xl px-3 my-6 empty:hidden">
+       <AdSense slot="home_bottom_leaderboard" className="ad-slot ad-slot--leaderboard w-full" />
+     </div>
     </>
   );
 }
