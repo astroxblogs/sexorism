@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { cookies, headers } from 'next/headers'; // ✅ added headers
+import { cookies, headers } from 'next/headers'; // added headers
 import GtmTracker from './components/GtmTracker';
 import { getBaseUrl } from './lib/site';
 import { Inter } from 'next/font/google'
@@ -18,15 +18,15 @@ const inter = Inter({ subsets: ['latin'] })
 
 // ---------------- SEO metadata (host-aware) ----------------
 export function generateMetadata(): Metadata {
-  // ✅ detect host at request-time (works on Vercel/Node)
+  // detect host at request-time (works on Vercel/Node)
   const h = headers();
   const rawHost =
     (h.get('x-forwarded-host') || h.get('host') || 'www.innvibs.com').toLowerCase();
   const host = rawHost.split(',')[0].trim(); // in case of multiple values
-  const isMainSite = host.endsWith('innvibs.com'); // ✅ only main domain uses AdSense
+  const isMainSite = host.endsWith('innvibs.com'); // only main domain uses AdSense
   const isPreview = process.env.VERCEL_ENV !== 'production';
 
-  // 👇 read locale cookie here too (same logic you already use in <html lang>)
+  // read locale cookie here too (same logic you already use in <html lang>)
   const localeCookie =
     (cookies().get('NEXT_LOCALE')?.value || 'en').startsWith('hi') ? 'hi' : 'en';
 
@@ -35,7 +35,7 @@ export function generateMetadata(): Metadata {
   const desc_en =
     'Discover the world of Lifestyle, Fashion, Travel, Sports, Technology, Astrology, and Vastu Shastra at Innvibs — your trusted destination for daily inspiration, trending ideas, and expert insights. Explore fashion trends, travel guides, health and fitness tips, tech innovations, spiritual wisdom, and vastu-based home solutions. Stay updated, stay inspired — Inner Vibes: Explore Inside, Express Outside.';
 
-  // ✅ Hindi defaults used only when browsing under /hi (page-level metadata can still override)
+  // Hindi defaults used only when browsing under /hi (page-level metadata can still override)
   const titleDefault_hi =
     'Inner vibes — टेक्नोलॉजी, ट्रैवल, हेल्थ, लाइफस्टाइल, ट्रेंड्स, स्पोर्ट्स, फैशन, वास्तु व ज्योतिष - innvibs.com';
   const desc_hi =
@@ -46,7 +46,7 @@ export function generateMetadata(): Metadata {
   const descDefault = isHi ? desc_hi : desc_en;
 
   return {
-    metadataBase: new URL(`https://${host}`), // ✅ host-aware
+    metadataBase: new URL(`https://${host}`), // host-aware
     title: {
       default: titleDefault,
       template: '%s ',
@@ -86,22 +86,22 @@ export function generateMetadata(): Metadata {
     },
     robots: isPreview
       ? {
-          index: false,
-          follow: false,
-          googleBot: { index: false, follow: false },
-        }
+        index: false,
+        follow: false,
+        googleBot: { index: false, follow: false },
+      }
       : {
+        index: true,
+        follow: true,
+        googleBot: {
           index: true,
           follow: true,
-          googleBot: {
-            index: true,
-            follow: true,
-            'max-video-preview': -1,
-            'max-image-preview': 'large',
-            'max-snippet': -1,
-          },
+          'max-video-preview': -1,
+          'max-image-preview': 'large',
+          'max-snippet': -1,
         },
-    // ✅ keep search console verification only on main site (optional)
+      },
+    // keep search console verification only on main site (optional)
     verification: isMainSite
       ? { google: 'your-google-verification-code' }
       : undefined,
@@ -155,7 +155,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   // read cookie set by middleware to control <html lang>
   const locale = (cookies().get('NEXT_LOCALE')?.value || 'en').startsWith('hi') ? 'hi' : 'en';
 
-  // ✅ detect host here too to conditionally load AdSense
+  // detect host here too to conditionally load AdSense
   const h = headers();
   const rawHost =
     (h.get('x-forwarded-host') || h.get('host') || 'www.innvibs.com').toLowerCase();
@@ -165,7 +165,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
-        {/* ✅ Consent Mode v2: set default denied BEFORE anything else */}
+        {/* Consent Mode v2: set default denied BEFORE anything else */}
         <Script id="consent-mode" strategy="beforeInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
@@ -199,47 +199,27 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
 
-        {/* ✅ AdSense tags ONLY on innvibs.com */}
-        {isMainSite && (
-          <>
-            <meta name="google-adsense-account" content="ca-pub-4112734313230332" />
-            <Script
-              id="adsense-loader"
-              strategy="afterInteractive"
-              async
-              src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4112734313230332"
-              crossOrigin="anonymous"
-            />
-          </>
-        )}
 
-{/* ✅ AdSense + Funding Choices ONLY on innvibs.com */}
-{isMainSite && (
-  <>
-    <meta name="google-adsense-account" content="ca-pub-4112734313230332" />
+        {/*  Google AdSense (loads on BOTH innvibs.com and innvibs.in) */}
+        <meta name="google-adsense-account" content="ca-pub-4112734313230332" />
+        <Script
+          id="adsense-loader"
+          strategy="afterInteractive"
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4112734313230332"
+          crossOrigin="anonymous"
+        />
 
-    {/* AdSense loader */}
-    <Script
-      id="adsense-loader"
-      strategy="afterInteractive"
-      async
-      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4112734313230332"
-      crossOrigin="anonymous"
-    />
-
-    {/* Funding Choices (Consent messages) */}
-    <Script
-      id="funding-choices"
-      src="https://fundingchoicesmessages.google.com/i/pub-4112734313230332?ers=1"
-      async
-      strategy="afterInteractive"
-    />
-    <Script id="funding-choices-present" strategy="afterInteractive">
-      {`(function(){function signalGooglefcPresent(){if(!window.frames['googlefcPresent']){if(document.body){const iframe=document.createElement('iframe');iframe.style='width: 0; height: 0; border: none; z-index: -1000; left: -1000px; top: -1000px;';iframe.style.display='none';iframe.name='googlefcPresent';document.body.appendChild(iframe);}else{setTimeout(signalGooglefcPresent,0);}}}signalGooglefcPresent();})();`}
-    </Script>
-  </>
-)}
-
+        {/*  Funding Choices (Consent messages) — also on BOTH domains */}
+        <Script
+          id="funding-choices"
+          src="https://fundingchoicesmessages.google.com/i/pub-4112734313230332?ers=1"
+          async
+          strategy="afterInteractive"
+        />
+        <Script id="funding-choices-present" strategy="afterInteractive">
+          {`(function(){function signalGooglefcPresent(){if(!window.frames['googlefcPresent']){if(document.body){const iframe=document.createElement('iframe');iframe.style='width: 0; height: 0; border: none; z-index: -1000; left: -1000px; top: -1000px;';iframe.style.display='none';iframe.name='googlefcPresent';document.body.appendChild(iframe);}else{setTimeout(signalGooglefcPresent,0);}}}signalGooglefcPresent();})();`}
+        </Script>
 
 
 
@@ -247,7 +227,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
 
       <body className={inter.className}>
-        {/* ❌ No unconditional GTM noscript */}
+        {/* No unconditional GTM noscript */}
         <I18nProvider>
           <LangSync />
           <Providers>
