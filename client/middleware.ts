@@ -141,6 +141,8 @@ export const config = {
     '/admin/:path*',
     '/hi',
     '/hi/:path*',
+    '/en',            // ✅ ensure middleware runs for /en
+    '/en/:path*',     // ✅ and for /en/anything
     '/ads.txt',
     '/((?!_next|.*\\..*).*)',
   ],
