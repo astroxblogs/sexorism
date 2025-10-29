@@ -16,7 +16,7 @@ import { useBlogs } from '../context/BlogContext.js';
 
 const INITIAL_PAGE_SIZE = 6;
 
-// ✅ helper to make slugs consistent (keeps "&" as -&-)
+// helper to make slugs consistent (keeps "&" as -&-)
 const toSlug = (text) =>
   String(text || '')
     .toLowerCase()
@@ -26,7 +26,7 @@ const toSlug = (text) =>
     .replace(/-+/g, '-')
     .replace(/^-+|-+$/g, '');
 
-// ✅ reserved top-level routes (so we can detect clean category paths)
+// reserved top-level routes (so we can detect clean category paths)
 const RESERVED_TOP_LEVEL = new Set([
   '', 'hi', 'tag', 'search', 'about', 'contact', 'privacy', 'terms', 'admin', 'cms', '_next', 'api', 'static',
   'sitemap'
@@ -373,7 +373,7 @@ const HomePage = () => {
         : '';
 
   if (loading) {
-    return <div className="text-center py-20 dark:text-gray-200">{t('general.loading_blogs')}</div>;
+    return <div className="min-h-screen text-center py-20 dark:text-gray-200">{t('general.loading_blogs')}</div>;
   }
 
   const showDynamicPageTitle = isSearchView || isCategoryView || isTagView;
@@ -480,7 +480,7 @@ const HomePage = () => {
                       title={sec.title}
                       items={sec.items}
                       onViewMore={() => {
-                        // ✅ push clean URL and keep /hi when Hindi
+                        // push clean URL and keep /hi when Hindi
                         const slug = toSlug(sec.title);
                         router.push(makeCategoryLink(locale, slug));
                       }}

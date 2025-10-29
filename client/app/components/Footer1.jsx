@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { useTranslation } from 'react-i18next';
 import { useTheme } from './ThemeContext';
+import { usePathname } from 'next/navigation';
 import {
   FaLinkedin,
   FaTwitter,
@@ -17,6 +18,17 @@ import {
 export default function BalancedMonumentFooter() {
   const { t } = useTranslation();
   const { theme, toggleTheme } = useTheme(); // <-- Use shared context
+  const pathname = usePathname();
+
+ // Locale-aware prefix: '/hi' when browsing Hindi, '' for English
+  const localePrefix = React.useMemo(() => {
+    if (pathname && pathname.startsWith('/hi')) return '/hi';
+    if (typeof document !== 'undefined') {
+      const m = document.cookie.match(/(?:^|;\s*)NEXT_LOCALE=([^;]+)/);
+      if (m && String(m[1]).startsWith('hi')) return '/hi';
+    }
+    return '';
+  }, [pathname]);
 
   const blogCategories = [
     { labelKey: "category.technology", value: "Technology" },
@@ -126,6 +138,13 @@ export default function BalancedMonumentFooter() {
                       return null;
                     }
 
+                   
+                   let href = link.path;
+                   if (hasInternal && link.path.startsWith('/category/')) {
+                     const slug = link.path.slice('/category/'.length); // e.g., "health-&-wellness"
+                     href = (localePrefix === '/hi') ? `/hi/${slug}` : link.path;
+                  }
+
                     return (
                       <li key={link?.nameKey || link?.name}>
                         {isExternal ? (
@@ -140,7 +159,8 @@ export default function BalancedMonumentFooter() {
                           </a>
                         ) : (
                           <Link
-                            href={link.path}
+
+                           href={href}
                             className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors duration-200"
                           >
                             {t(link?.nameKey || link?.name)}
