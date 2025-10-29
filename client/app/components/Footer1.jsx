@@ -20,7 +20,7 @@ export default function BalancedMonumentFooter() {
   const { theme, toggleTheme } = useTheme(); // <-- Use shared context
   const pathname = usePathname();
 
- // Locale-aware prefix: '/hi' when browsing Hindi, '' for English
+  // Locale-aware prefix: '/hi' when browsing Hindi, '' for English
   const localePrefix = React.useMemo(() => {
     if (pathname && pathname.startsWith('/hi')) return '/hi';
     if (typeof document !== 'undefined') {
@@ -138,12 +138,22 @@ export default function BalancedMonumentFooter() {
                       return null;
                     }
 
-                   
-                   let href = link.path;
-                   if (hasInternal && link.path.startsWith('/category/')) {
-                     const slug = link.path.slice('/category/'.length); // e.g., "health-&-wellness"
-                     href = (localePrefix === '/hi') ? `/hi/${slug}` : link.path;
-                  }
+                    // Build a clean, locale-aware href ONLY for internal links
+                    const hrefStr = hasInternal ? (() => {
+                      let h = link.path; // safe: link.path is a string in this branch
+
+                      // Category links: Hindi -> /hi/<slug>, English -> /<slug>
+                      if (h.startsWith('/category/')) {
+                        const slug = h.slice('/category/'.length); // "business-&-finance"
+                        h = (localePrefix === '/hi') ? `/hi/${slug}` : `/${slug}`;
+                      }
+
+                      // Normalize accidental prefixes (Vercel can add /en)
+                      if (h.slice(0, 7) === '/hi/en/') h = '/hi/' + h.slice(7);
+                      else if (h.slice(0, 4) === '/en/') h = '/' + h.slice(4);
+
+                      return h;
+                    })() : undefined;
 
                     return (
                       <li key={link?.nameKey || link?.name}>
@@ -159,8 +169,7 @@ export default function BalancedMonumentFooter() {
                           </a>
                         ) : (
                           <Link
-
-                           href={href}
+                            href={hrefStr || '/'}
                             className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors duration-200"
                           >
                             {t(link?.nameKey || link?.name)}
