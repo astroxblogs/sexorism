@@ -139,15 +139,11 @@ export default function BalancedMonumentFooter() {
                     }
 
                    
-                    let href = link.path;
+                   let href = link.path;
                    if (hasInternal && link.path.startsWith('/category/')) {
-                     const slug = link.path.slice('/category/'.length);
-                     // ✅ For Hindi → /hi/<slug>, for English → /<slug> (strip /en if Vercel adds it)
-                     href = (localePrefix === '/hi') ? `/hi/${slug}` : `/${slug}`;
-                   }
-
-                   // ✅ Clean any accidental double prefix like /hi/en/... or /en/...
-                   href = href.replace(/^\/en\//, '/').replace(/^\/hi\/en\//, '/hi/');
+                     const slug = link.path.slice('/category/'.length); // e.g., "health-&-wellness"
+                     href = (localePrefix === '/hi') ? `/hi/${slug}` : link.path;
+                  }
 
                     return (
                       <li key={link?.nameKey || link?.name}>
