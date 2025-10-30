@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
-import { cookies, headers } from 'next/headers'; // added headers
+import { cookies } from 'next/headers';
+
 import GtmTracker from './components/GtmTracker';
 import { getBaseUrl } from './lib/site';
 import { Inter } from 'next/font/google'
@@ -18,12 +19,8 @@ const inter = Inter({ subsets: ['latin'] })
 
 // ---------------- SEO metadata (host-aware) ----------------
 export function generateMetadata(): Metadata {
-  // detect host at request-time (works on Vercel/Node)
-  const h = headers();
-  const rawHost =
-    (h.get('x-forwarded-host') || h.get('host') || 'www.innvibs.com').toLowerCase();
-  const host = rawHost.split(',')[0].trim(); // in case of multiple values
-  const isMainSite = host.endsWith('innvibs.com'); // only main domain uses AdSense
+  // single canonical host now
+  const host = 'www.innvibs.com';
   const isPreview = process.env.VERCEL_ENV !== 'production';
 
   // read locale cookie here too (same logic you already use in <html lang>)
@@ -35,7 +32,6 @@ export function generateMetadata(): Metadata {
   const desc_en =
     'Discover the world of Lifestyle, Fashion, Travel, Sports, Technology, Astrology, and Vastu Shastra at Innvibs — your trusted destination for daily inspiration, trending ideas, and expert insights. Explore fashion trends, travel guides, health and fitness tips, tech innovations, spiritual wisdom, and vastu-based home solutions. Stay updated, stay inspired — Inner Vibes: Explore Inside, Express Outside.';
 
-  // Hindi defaults used only when browsing under /hi (page-level metadata can still override)
   const titleDefault_hi =
     'Inner vibes — टेक्नोलॉजी, ट्रैवल, हेल्थ, लाइफस्टाइल, ट्रेंड्स, स्पोर्ट्स, फैशन, वास्तु व ज्योतिष - innvibs.com';
   const desc_hi =
@@ -46,7 +42,7 @@ export function generateMetadata(): Metadata {
   const descDefault = isHi ? desc_hi : desc_en;
 
   return {
-    metadataBase: new URL(`https://${host}`), // host-aware
+    metadataBase: new URL(`https://${host}`),
     title: {
       default: titleDefault,
       template: '%s ',
@@ -86,27 +82,28 @@ export function generateMetadata(): Metadata {
     },
     robots: isPreview
       ? {
-        index: false,
-        follow: false,
-        googleBot: { index: false, follow: false },
-      }
+          index: false,
+          follow: false,
+          googleBot: { index: false, follow: false },
+        }
       : {
-        index: true,
-        follow: true,
-        googleBot: {
           index: true,
           follow: true,
-          'max-video-preview': -1,
-          'max-image-preview': 'large',
-          'max-snippet': -1,
+          googleBot: {
+            index: true,
+            follow: true,
+            'max-video-preview': -1,
+            'max-image-preview': 'large',
+            'max-snippet': -1,
+          },
         },
-      },
-    // keep search console verification only on main site (optional)
-    verification: isMainSite
-      ? { google: 'your-google-verification-code' }
-      : undefined,
+    // only one site now → keep it always
+    verification: {
+      google: 'your-google-verification-code',
+    },
   };
 }
+
 
 
 // ---------------- JSON-LD Schemas ----------------
@@ -155,12 +152,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   // read cookie set by middleware to control <html lang>
   const locale = (cookies().get('NEXT_LOCALE')?.value || 'en').startsWith('hi') ? 'hi' : 'en';
 
-  // detect host here too to conditionally load AdSense
-  const h = headers();
-  const rawHost =
-    (h.get('x-forwarded-host') || h.get('host') || 'www.innvibs.com').toLowerCase();
-  const host = rawHost.split(',')[0].trim();
-  const isMainSite = host.endsWith('innvibs.com');
+  
 
   return (
     <html lang={locale} suppressHydrationWarning>
@@ -200,7 +192,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
 
 
-        {/*  Google AdSense (loads on BOTH innvibs.com and innvibs.in) */}
+       {/*  Google AdSense (single canonical domain) */}
         <meta name="google-adsense-account" content="ca-pub-4112734313230332" />
         <Script
           id="adsense-loader"

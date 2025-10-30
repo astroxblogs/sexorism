@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server'
 const LOCALES = new Set(['hi'])
 const RESERVED = new Set([
   'hi',
-  'en', // ✅ treat "en" as reserved so it’s never a category
+  'en', //  treat "en" as reserved so it’s never a category
   '', '_next', 'static', 'api',
   'favicon.ico', 'robots.txt', 'sitemap.xml', 'sitemap',
   'about', 'contact', 'privacy', 'terms', 'tag', 'search',
@@ -16,34 +16,7 @@ export function middleware(request: NextRequest) {
   const { pathname } = url
   const segments = pathname.split('/').filter(Boolean)
 
-  // --- host detection (use forwarded host first, then host)
-  const rawHost =
-    request.headers.get('x-forwarded-host') ||
-    request.headers.get('host') ||
-    ''
-  const host = rawHost.toLowerCase()
-
-  const isMainSite = host === 'innvibs.com' || host.endsWith('.innvibs.com')
-  const isInSite = host === 'innvibs.in' || host.endsWith('.innvibs.in')
-
-  // 🔴 1) FORCE .in → .com (hard redirect, keeps path + query)
-  // This runs BEFORE any other logic, so NO UI change, just domain normalize.
-  if (isInSite) {
-    const redirectUrl = url.clone()
-    redirectUrl.host = 'innvibs.com'
-    redirectUrl.protocol = 'https:' // ensure https in prod
-
-    const res = NextResponse.redirect(redirectUrl, 308)
-    // optional: mark it as main so the target already has the cookie
-    res.cookies.set('SITE_ID', 'main', {
-      path: '/',
-      httpOnly: false,
-      sameSite: 'lax',
-    })
-    return res
-  }
-
-  // --- from here on, we are on innvibs.com (or localhost / vercel preview) ---
+ 
 
   const isSensitive =
     pathname.startsWith('/cms') ||
@@ -59,7 +32,8 @@ export function middleware(request: NextRequest) {
           'X-Robots-Tag',
           'noindex, nofollow, noarchive, nosnippet, noimageindex'
         )
-        redirect.cookies.set('SITE_ID', isMainSite ? 'main' : 'in', {
+        //  we no longer set "in" here, only "main"
+        redirect.cookies.set('SITE_ID', 'main', {
           path: '/',
           httpOnly: false,
           sameSite: 'lax',
@@ -72,7 +46,8 @@ export function middleware(request: NextRequest) {
       'X-Robots-Tag',
       'noindex, nofollow, noarchive, nosnippet, noimageindex'
     )
-    res.cookies.set('SITE_ID', isMainSite ? 'main' : 'in', {
+    //  always main
+    res.cookies.set('SITE_ID', 'main', {
       path: '/',
       httpOnly: false,
       sameSite: 'lax',
@@ -93,7 +68,8 @@ export function middleware(request: NextRequest) {
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 365,
     })
-    res.cookies.set('SITE_ID', isMainSite ? 'main' : 'in', {
+    //  always main now
+    res.cookies.set('SITE_ID', 'main', {
       path: '/',
       httpOnly: false,
       sameSite: 'lax',
@@ -105,7 +81,7 @@ export function middleware(request: NextRequest) {
   const rest = firstSegIsHi ? segments.slice(1) : segments
 
   if (isHindi) {
-    // ✅ If footer accidentally linked /hi/en/..., drop the extra 'en'
+    //  If footer accidentally linked /hi/en/..., drop the extra 'en'
     const eff = rest[0] === 'en' ? rest.slice(1) : rest
 
     // /hi → keep URL, serve home
@@ -139,7 +115,7 @@ export function middleware(request: NextRequest) {
   }
 
   // ---------- ENGLISH (root) ----------
-  // ✅ If footer accidentally linked /en/... on English, normalize it away
+  //  If footer accidentally linked /en/... on English, normalize it away
   if (segments[0] === 'en') {
     const cleaned = segments.slice(1).map(decodeURIComponent)
     const rewriteUrl = url.clone()
@@ -181,8 +157,8 @@ export const config = {
     '/admin/:path*',
     '/hi',
     '/hi/:path*',
-    '/en',            // ✅ ensure middleware runs for /en
-    '/en/:path*',     // ✅ and for /en/anything
+    '/en',            //  ensure middleware runs for /en
+    '/en/:path*',     //  and for /en/anything
     '/ads.txt',
     '/((?!_next|.*\\..*).*)',
   ],
