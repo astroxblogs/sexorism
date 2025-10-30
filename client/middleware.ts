@@ -16,8 +16,34 @@ export function middleware(request: NextRequest) {
   const { pathname } = url
   const segments = pathname.split('/').filter(Boolean)
 
-  const host = (request.headers.get('x-forwarded-host') || request.headers.get('host') || '').toLowerCase()
-  const isMainSite = host.endsWith('innvibs.com')
+  // --- host detection (use forwarded host first, then host)
+  const rawHost =
+    request.headers.get('x-forwarded-host') ||
+    request.headers.get('host') ||
+    ''
+  const host = rawHost.toLowerCase()
+
+  const isMainSite = host === 'innvibs.com' || host.endsWith('.innvibs.com')
+  const isInSite = host === 'innvibs.in' || host.endsWith('.innvibs.in')
+
+  // 🔴 1) FORCE .in → .com (hard redirect, keeps path + query)
+  // This runs BEFORE any other logic, so NO UI change, just domain normalize.
+  if (isInSite) {
+    const redirectUrl = url.clone()
+    redirectUrl.host = 'innvibs.com'
+    redirectUrl.protocol = 'https:' // ensure https in prod
+
+    const res = NextResponse.redirect(redirectUrl, 308)
+    // optional: mark it as main so the target already has the cookie
+    res.cookies.set('SITE_ID', 'main', {
+      path: '/',
+      httpOnly: false,
+      sameSite: 'lax',
+    })
+    return res
+  }
+
+  // --- from here on, we are on innvibs.com (or localhost / vercel preview) ---
 
   const isSensitive =
     pathname.startsWith('/cms') ||
@@ -29,19 +55,33 @@ export function middleware(request: NextRequest) {
       const token = request.cookies.get('token')?.value
       if (!token) {
         const redirect = NextResponse.redirect(new URL('/cms/login', request.url))
-        redirect.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet, noimageindex')
-        redirect.cookies.set('SITE_ID', isMainSite ? 'main' : 'in', { path: '/', httpOnly: false, sameSite: 'lax' })
+        redirect.headers.set(
+          'X-Robots-Tag',
+          'noindex, nofollow, noarchive, nosnippet, noimageindex'
+        )
+        redirect.cookies.set('SITE_ID', isMainSite ? 'main' : 'in', {
+          path: '/',
+          httpOnly: false,
+          sameSite: 'lax',
+        })
         return redirect
       }
     }
     const res = NextResponse.next()
-    res.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet, noimageindex')
-    res.cookies.set('SITE_ID', isMainSite ? 'main' : 'in', { path: '/', httpOnly: false, sameSite: 'lax' })
+    res.headers.set(
+      'X-Robots-Tag',
+      'noindex, nofollow, noarchive, nosnippet, noimageindex'
+    )
+    res.cookies.set('SITE_ID', isMainSite ? 'main' : 'in', {
+      path: '/',
+      httpOnly: false,
+      sameSite: 'lax',
+    })
     return res
   }
 
   // --- Locale detection
-  const normalizedLocale = String(request.nextUrl.locale || '').toLowerCase();
+  const normalizedLocale = String(request.nextUrl.locale || '').toLowerCase()
   const firstSegIsHi = segments[0] === 'hi'
   const isHindi = normalizedLocale === 'hi' || firstSegIsHi
 
