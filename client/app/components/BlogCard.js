@@ -2,8 +2,8 @@
 
 import React, { useEffect, memo } from "react";
 import Link from "next/link";
-import LikeButton from './LikeButton.jsx';
-import { MessageSquare, Eye } from "lucide-react";
+// import LikeButton from './LikeButton.jsx';          // ⛔️ TEMP: hide Like button
+import { MessageSquare /*, Eye*/ } from "lucide-react"; // ⛔️ TEMP: don't import Eye (views)
 import ShareButton from "./ShareButton.jsx";
 import { useTranslation } from "react-i18next";
 import { getCategoryClasses } from "../lib/categoryColors.js";
@@ -71,11 +71,11 @@ const BlogCard = ({ blog, onLikeUpdate, searchQuery, visitorId }) => {
     return highlightedText;
   };
 
- const generateBlogUrl = () => {
+  const generateBlogUrl = () => {
     const categorySlug = blog?.category ? toSlug(blog.category) : 'uncategorized';
     const blogSlug = blog?.slug || blog?._id || '';
     return makeBlogLink(locale, categorySlug, blogSlug);
- };
+  };
   const blogUrl = generateBlogUrl();
 
   const siteUrl =
@@ -137,12 +137,15 @@ const BlogCard = ({ blog, onLikeUpdate, searchQuery, visitorId }) => {
         </div>
 
         <div className="mt-auto pt-2 flex items-center gap-4 sm:gap-5 text-gray-500 dark:text-gray-400 text-[11px] sm:text-xs">
+          {/* ⛔️ TEMP: hide Like button */}
+          {/*
           <LikeButton
             blogId={blog?._id}
             initialLikes={Array.isArray(blog?.likedBy) ? blog.likedBy.length : 0}
             initialLiked={Array.isArray(blog?.likedBy) ? blog.likedBy.includes(visitorId) : false}
             visitorId={visitorId}
           />
+          */}
 
           <Link
             href={`${blogUrl}#comments`}
@@ -162,10 +165,13 @@ const BlogCard = ({ blog, onLikeUpdate, searchQuery, visitorId }) => {
             className="relative z-20 text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
           />
 
+          {/* ⛔️ TEMP: hide views */}
+          {/*
           <span className="ml-auto flex items-center gap-1.5">
             <Eye size={14} />
             <span>{blog?.views || 0}</span>
           </span>
+          */}
         </div>
       </div>
     </div>
