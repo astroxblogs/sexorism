@@ -2,8 +2,8 @@
 
 import React, { useEffect, memo } from "react";
 import Link from "next/link";
-// import LikeButton from './LikeButton.jsx';          // ⛔️ TEMP: hide Like button
-import { MessageSquare /*, Eye*/ } from "lucide-react"; // ⛔️ TEMP: don't import Eye (views)
+// import LikeButton from './LikeButton.jsx';          // (still hidden from earlier)
+import { MessageSquare /*, Eye*/ } from "lucide-react"; // no Eye (views)
 import ShareButton from "./ShareButton.jsx";
 import { useTranslation } from "react-i18next";
 import { getCategoryClasses } from "../lib/categoryColors.js";
@@ -137,22 +137,19 @@ const BlogCard = ({ blog, onLikeUpdate, searchQuery, visitorId }) => {
         </div>
 
         <div className="mt-auto pt-2 flex items-center gap-4 sm:gap-5 text-gray-500 dark:text-gray-400 text-[11px] sm:text-xs">
-          {/* ⛔️ TEMP: hide Like button */}
-          {/*
-          <LikeButton
-            blogId={blog?._id}
-            initialLikes={Array.isArray(blog?.likedBy) ? blog.likedBy.length : 0}
-            initialLiked={Array.isArray(blog?.likedBy) ? blog.likedBy.includes(visitorId) : false}
-            visitorId={visitorId}
-          />
-          */}
+          {/* Like hidden earlier */}
 
           <Link
             href={`${blogUrl}#comments`}
             className="flex items-center gap-1.5 hover:text-gray-900 dark:hover:text-white"
+            aria-label="Comments"
+            title="Comments"
           >
             <MessageSquare size={14} />
+            {/* ⛔️ TEMP: hide comment count */}
+            {/*
             <span>{Array.isArray(blog?.comments) ? blog.comments.length : 0}</span>
+            */}
           </Link>
 
           <ShareButton
@@ -161,17 +158,11 @@ const BlogCard = ({ blog, onLikeUpdate, searchQuery, visitorId }) => {
             blogId={blog?._id}
             blogSlug={blog?.slug}
             variant="icon"
-            showCountOnIcon={true}
+            showCountOnIcon={false}  // ⛔️ TEMP: do not show share count
             className="relative z-20 text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
           />
 
-          {/* ⛔️ TEMP: hide views */}
-          {/*
-          <span className="ml-auto flex items-center gap-1.5">
-            <Eye size={14} />
-            <span>{blog?.views || 0}</span>
-          </span>
-          */}
+          {/* views hidden earlier */}
         </div>
       </div>
     </div>

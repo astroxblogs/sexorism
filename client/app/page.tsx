@@ -2,7 +2,7 @@ import NextDynamic from 'next/dynamic';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { cookies } from 'next/headers';
-//  import AdSense from './components/AdSense'; // ✅ AD: domain-aware
+//  import AdSense from './components/AdSense'; // AD: domain-aware
 
 const Home = NextDynamic(() => import('./components/HomePage.js'), {
   ssr: false,
@@ -11,10 +11,10 @@ const Home = NextDynamic(() => import('./components/HomePage.js'), {
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-// ⛏️ replace this:
+// replace this:
 // export const metadata: Metadata = { ... }
 
-// ✅ with this:
+// with this:
 export async function generateMetadata(): Promise<Metadata> {
   const lang = currentLang(); // reads NEXT_LOCALE/i18next cookie
   const isHi = lang === 'hi';
@@ -64,7 +64,7 @@ const API_BASE =
 
 function currentLang(): 'en' | 'hi' {
   const c = cookies();
-   // Prefer middleware-set cookie; fall back to i18next
+  // Prefer middleware-set cookie; fall back to i18next
   const v = c.get('NEXT_LOCALE')?.value || c.get('i18next')?.value || '';
   return v.toLowerCase().startsWith('hi') ? 'hi' : 'en';
 }
@@ -111,7 +111,7 @@ export default async function HomePage() {
         </section>
       </noscript>
 
-     {/* AD SLOT: Home Top Leaderboard (below header, above feed) */}
+      {/* AD SLOT: Home Top Leaderboard (below header, above feed) */}
       {/* <div className="mx-auto max-w-screen-xl px-3 my-3 empty:hidden">
        <AdSense slot="home_top_leaderboard" className="ad-slot ad-slot--leaderboard w-full" />
      </div> */}
@@ -121,8 +121,8 @@ export default async function HomePage() {
         <Home key={`home-${lang}`} />
       </Suspense>
 
-     {/* AD SLOT: Home Bottom Leaderboard (after feed) */}
-    {/* <div className="mx-auto max-w-screen-xl px-3 my-6 empty:hidden">
+      {/* AD SLOT: Home Bottom Leaderboard (after feed) */}
+      {/* <div className="mx-auto max-w-screen-xl px-3 my-6 empty:hidden">
        <AdSense slot="home_bottom_leaderboard" className="ad-slot ad-slot--leaderboard w-full" />
      </div> */}
     </>

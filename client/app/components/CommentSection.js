@@ -77,7 +77,7 @@ const CommentSection = ({ blogId, initialComments, visitorId }) => {
 
     return (
         <section id="comments" className="mt-10 pt-6 border-t dark:border-gray-700">
-            <h3 className="text-2xl font-bold mb-4">{t('comment')} ({comments.length})</h3>
+            <h3 className="text-2xl font-bold mb-4">{t('comment')}</h3>
 
             <form onSubmit={handleSubmit} className="flex flex-col md:flex-row gap-4 mb-8">
                 <input
