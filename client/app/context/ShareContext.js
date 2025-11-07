@@ -10,7 +10,7 @@ export const ShareProvider = ({ children }) => {
     (blogId) => {
       return shareCounts[blogId] || 0;
     },
-    []
+    [shareCounts]
   );
 
   const setInitialShareCount = useCallback((blogId, count) => {

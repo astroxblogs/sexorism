@@ -152,12 +152,37 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   // read cookie set by middleware to control <html lang>
   const locale = (cookies().get('NEXT_LOCALE')?.value || 'en').startsWith('hi') ? 'hi' : 'en';
 
-  
-
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
-        {/* Consent Mode v2: set default denied BEFORE anything else */}
+        {/* === Ezoic Privacy Scripts (must be first) === */}
+        <Script
+          id="ezoic-privacy-min"
+          src="https://cmp.gatekeeperconsent.com/min.js"
+          strategy="beforeInteractive"
+          // @ts-ignore - allow custom data-* attr to pass through
+          data-cfasync="false"
+        />
+        <Script
+          id="ezoic-privacy-cmp"
+          src="https://the.gatekeeperconsent.com/cmp.min.js"
+          strategy="beforeInteractive"
+          // @ts-ignore
+          data-cfasync="false"
+        />
+
+        {/* === Ezoic Header Script (after privacy) === */}
+        <Script
+          id="ezoic-header"
+          src="//www.ezojs.com/ezoic/sa.min.js"
+          async
+          strategy="beforeInteractive"
+        />
+        <Script id="ezoic-header-init" strategy="beforeInteractive">
+          {`window.ezstandalone = window.ezstandalone || {}; ezstandalone.cmd = ezstandalone.cmd || [];`}
+        </Script>
+
+        {/* Consent Mode v2: set default denied BEFORE anything else (kept as-is) */}
         <Script id="consent-mode" strategy="beforeInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
@@ -191,8 +216,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
 
-
-       {/*  Google AdSense (single canonical domain) */}
+        {/*  Google AdSense (single canonical domain) */}
         <meta name="google-adsense-account" content="ca-pub-4112734313230332" />
         <Script
           id="adsense-loader"
@@ -212,10 +236,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Script id="funding-choices-present" strategy="afterInteractive">
           {`(function(){function signalGooglefcPresent(){if(!window.frames['googlefcPresent']){if(document.body){const iframe=document.createElement('iframe');iframe.style='width: 0; height: 0; border: none; z-index: -1000; left: -1000px; top: -1000px;';iframe.style.display='none';iframe.name='googlefcPresent';document.body.appendChild(iframe);}else{setTimeout(signalGooglefcPresent,0);}}}signalGooglefcPresent();})();`}
         </Script>
-
-
-
-
       </head>
 
       <body className={inter.className}>
