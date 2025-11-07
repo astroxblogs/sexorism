@@ -3,6 +3,21 @@
   "outputDirectory": ".next",
   "framework": "nextjs",
   "installCommand": "npm install",
-  "devCommand": "npm run dev"
- 
+  "devCommand": "npm run dev",
+  
+  "rewrites": [
+    {
+      "source": "./ads.txt",
+      "destination": "https://srv.adstxtmanager.com/19390/innvibs.com"
+    }
+  ],
+  "headers": [
+    {
+      "source": "./ads.txt",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=300, s-maxage=300" }
+      ]
+    }
+  ]
 }
+ 
