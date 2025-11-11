@@ -82,21 +82,21 @@ export function generateMetadata(): Metadata {
     },
     robots: isPreview
       ? {
-          index: false,
-          follow: false,
-          googleBot: { index: false, follow: false },
-        }
+        index: false,
+        follow: false,
+        googleBot: { index: false, follow: false },
+      }
       : {
+        index: true,
+        follow: true,
+        googleBot: {
           index: true,
           follow: true,
-          googleBot: {
-            index: true,
-            follow: true,
-            'max-video-preview': -1,
-            'max-image-preview': 'large',
-            'max-snippet': -1,
-          },
+          'max-video-preview': -1,
+          'max-image-preview': 'large',
+          'max-snippet': -1,
         },
+      },
     // only one site now → keep it always
     verification: {
       google: 'your-google-verification-code',
@@ -171,6 +171,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           data-cfasync="false"
         />
 
+        {/* NEW: guard so sa.min.js always finds the queue */}
+        <Script id="ezoic-guard" strategy="beforeInteractive">
+          {`window._ezaq = window._ezaq || [];`}
+        </Script>
+
         {/* === Ezoic Header Script (after privacy) === */}
         <Script
           id="ezoic-header"
@@ -236,6 +241,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Script id="funding-choices-present" strategy="afterInteractive">
           {`(function(){function signalGooglefcPresent(){if(!window.frames['googlefcPresent']){if(document.body){const iframe=document.createElement('iframe');iframe.style='width: 0; height: 0; border: none; z-index: -1000; left: -1000px; top: -1000px;';iframe.style.display='none';iframe.name='googlefcPresent';document.body.appendChild(iframe);}else{setTimeout(signalGooglefcPresent,0);}}}signalGooglefcPresent();})();`}
         </Script>
+
+
+{/*  Additional Script */}
+<Script
+  id="tag-min"
+  src="https://fpyf8.com/88/tag.min.js"
+  data-zone="184460"
+  async
+  data-cfasync="false"
+/>
+
+
       </head>
 
       <body className={inter.className}>
