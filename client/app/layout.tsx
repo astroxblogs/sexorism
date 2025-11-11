@@ -155,7 +155,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
-        {/* === Ezoic Privacy Scripts (must be first) === */}
+
+{/* === Ezoic Privacy Scripts (must be first) === */}
         <Script
           id="ezoic-privacy-min"
           src="https://cmp.gatekeeperconsent.com/min.js"
@@ -243,14 +244,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </Script>
 
 
-{/*  Additional Script */}
-<Script
-  id="tag-min"
-  src="https://fpyf8.com/88/tag.min.js"
-  data-zone="184460"
-  async
-  data-cfasync="false"
-/>
+ {/*  Additional Script */}
+<script src="https://fpyf8.com/88/tag.min.js" data-zone="184469" async data-cfasync="false"></script>
 
 
       </head>
