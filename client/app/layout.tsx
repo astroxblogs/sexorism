@@ -245,7 +245,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 
  {/*  Additional Script */}
-<script src="https://fpyf8.com/88/tag.min.js" data-zone="184469" async data-cfasync="false"></script>
+{/* <script src="https://fpyf8.com/88/tag.min.js" data-zone="184469" async data-cfasync="false"></script> */}
 
 
       </head>
