@@ -273,7 +273,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 <Script
   id="infolinks-main"
-  src="http://resources.infolinks.com/js/infolinks_main.js"
+  src="https://resources.infolinks.com/js/infolinks_main.js"
   strategy="afterInteractive"
 />
  
