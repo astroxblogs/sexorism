@@ -262,6 +262,24 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </NavigationWrapper>
           </Providers>
         </I18nProvider>
+
+
+<Script id="infolinks-init" strategy="afterInteractive">
+  {`
+    var infolinks_pid = 3441548;
+    var infolinks_wsid = 0;
+  `}
+</Script>
+
+<Script
+  id="infolinks-main"
+  src="http://resources.infolinks.com/js/infolinks_main.js"
+  strategy="afterInteractive"
+/>
+ 
+ 
+
+
       </body>
     </html>
   )
