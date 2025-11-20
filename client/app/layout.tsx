@@ -185,9 +185,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     />
 
     {/* NEW: guard so sa.min.js always finds the queue */}
-    <Script id="ezoic-guard" strategy="beforeInteractive">
-      {`window._ezaq = window._ezaq || [];`}
-    </Script>
+    {isProductionDomain && (
+      <Script id="ezoic-guard" strategy="beforeInteractive">
+        {`window._ezaq = window._ezaq || [];`}
+      </Script>
+    )}
 
     {/* === Ezoic Header Script (after privacy) === */}
     <Script
@@ -196,9 +198,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       async
       strategy="beforeInteractive"
     />
-    <Script id="ezoic-header-init" strategy="beforeInteractive">
-      {`window.ezstandalone = window.ezstandalone || {}; ezstandalone.cmd = ezstandalone.cmd || [];`}
-    </Script>
+    {isProductionDomain && (
+      <Script id="ezoic-header-init" strategy="beforeInteractive">
+        {`window.ezstandalone = window.ezstandalone || {}; ezstandalone.cmd = ezstandalone.cmd || [];`}
+      </Script>
+    )}
   </>
 )}
 
