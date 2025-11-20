@@ -206,7 +206,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   </>
 )}
 
-        {/* Consent Mode v2: set default denied BEFORE anything else (kept as-is) */}
+        {/* Consent Mode v2: set default denied BEFORE anything else (kept as-is) - Cache bust: v2 */}
         <Script id="consent-mode" strategy="beforeInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
