@@ -158,41 +158,49 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   // read cookie set by middleware to control <html lang>
   const locale = (cookies().get('NEXT_LOCALE')?.value || 'en').startsWith('hi') ? 'hi' : 'en';
 
+  // Check if running on main domain (not Vercel preview)
+  const isProductionDomain = process.env.NODE_ENV === 'production' &&
+    !process.env.VERCEL_URL?.includes('vercel.app');
+
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
 
-{/* === Ezoic Privacy Scripts (must be first) === */}
-        <Script
-          id="ezoic-privacy-min"
-          src="https://cmp.gatekeeperconsent.com/min.js"
-          strategy="beforeInteractive"
-          // @ts-ignore - allow custom data-* attr to pass through
-          data-cfasync="false"
-        />
-        <Script
-          id="ezoic-privacy-cmp"
-          src="https://the.gatekeeperconsent.com/cmp.min.js"
-          strategy="beforeInteractive"
-          // @ts-ignore
-          data-cfasync="false"
-        />
+{isProductionDomain && (
+  <>
+    {/* === Ezoic Privacy Scripts (must be first) === */}
+    <Script
+      id="ezoic-privacy-min"
+      src="https://cmp.gatekeeperconsent.com/min.js"
+      strategy="beforeInteractive"
+      // @ts-ignore - allow custom data-* attr to pass through
+      data-cfasync="false"
+    />
+    <Script
+      id="ezoic-privacy-cmp"
+      src="https://the.gatekeeperconsent.com/cmp.min.js"
+      strategy="beforeInteractive"
+      // @ts-ignore
+      data-cfasync="false"
+    />
 
-        {/* NEW: guard so sa.min.js always finds the queue */}
-        <Script id="ezoic-guard" strategy="beforeInteractive">
-          {`window._ezaq = window._ezaq || [];`}
-        </Script>
+    {/* NEW: guard so sa.min.js always finds the queue */}
+    <Script id="ezoic-guard" strategy="beforeInteractive">
+      {`window._ezaq = window._ezaq || [];`}
+    </Script>
 
-        {/* === Ezoic Header Script (after privacy) === */}
-        <Script
-          id="ezoic-header"
-          src="//www.ezojs.com/ezoic/sa.min.js"
-          async
-          strategy="beforeInteractive"
-        />
-        <Script id="ezoic-header-init" strategy="beforeInteractive">
-          {`window.ezstandalone = window.ezstandalone || {}; ezstandalone.cmd = ezstandalone.cmd || [];`}
-        </Script>
+    {/* === Ezoic Header Script (after privacy) === */}
+    <Script
+      id="ezoic-header"
+      src="//www.ezojs.com/ezoic/sa.min.js"
+      async
+      strategy="beforeInteractive"
+    />
+    <Script id="ezoic-header-init" strategy="beforeInteractive">
+      {`window.ezstandalone = window.ezstandalone || {}; ezstandalone.cmd = ezstandalone.cmd || [];`}
+    </Script>
+  </>
+)}
 
         {/* Consent Mode v2: set default denied BEFORE anything else (kept as-is) */}
         <Script id="consent-mode" strategy="beforeInteractive">
@@ -228,29 +236,33 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
 
-        {/*  Google AdSense (single canonical domain) */}
-        <meta name="google-adsense-account" content="ca-pub-4112734313230332" />
-        <Script
-          id="adsense-loader"
-          strategy="afterInteractive"
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4112734313230332"
-          crossOrigin="anonymous"
-        />
+        {isProductionDomain && (
+          <>
+            {/*  Google AdSense (single canonical domain) */}
+            <meta name="google-adsense-account" content="ca-pub-4112734313230332" />
+            <Script
+              id="adsense-loader"
+              strategy="afterInteractive"
+              async
+              src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4112734313230332"
+              crossOrigin="anonymous"
+            />
 
-        {/*  Funding Choices (Consent messages) — also on BOTH domains */}
-        <Script
-          id="funding-choices"
-          src="https://fundingchoicesmessages.google.com/i/pub-4112734313230332?ers=1"
-          async
-          strategy="afterInteractive"
-        />
-        <Script id="funding-choices-present" strategy="afterInteractive">
-          {`(function(){function signalGooglefcPresent(){if(!window.frames['googlefcPresent']){if(document.body){const iframe=document.createElement('iframe');iframe.style='width: 0; height: 0; border: none; z-index: -1000; left: -1000px; top: -1000px;';iframe.style.display='none';iframe.name='googlefcPresent';document.body.appendChild(iframe);}else{setTimeout(signalGooglefcPresent,0);}}}signalGooglefcPresent();})();`}
-        </Script>
+            {/*  Funding Choices (Consent messages) — also on BOTH domains */}
+            <Script
+              id="funding-choices"
+              src="https://fundingchoicesmessages.google.com/i/pub-4112734313230332?ers=1"
+              async
+              strategy="afterInteractive"
+            />
+            <Script id="funding-choices-present" strategy="afterInteractive">
+              {`(function(){function signalGooglefcPresent(){if(!window.frames['googlefcPresent']){if(document.body){const iframe=document.createElement('iframe');iframe.style='width: 0; height: 0; border: none; z-index: -1000; left: -1000px; top: -1000px;';iframe.style.display='none';iframe.name='googlefcPresent';document.body.appendChild(iframe);}else{setTimeout(signalGooglefcPresent,0);}}}signalGooglefcPresent();})();`}
+            </Script>
+          </>
+        )}
 
 
- {/*  Additional Script */}
+  {/*  Additional Script */}
 {/* <script src="https://fpyf8.com/88/tag.min.js" data-zone="184469" async data-cfasync="false"></script> */}
 
 
@@ -268,22 +280,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <RouteAwareChrome>{children}</RouteAwareChrome>
             </NavigationWrapper>
           </Providers>
-          
- </I18nProvider>
 
+  </I18nProvider>
 
-<Script id="infolinks-init" strategy="afterInteractive">
-  {`
-    var infolinks_pid = 3441548;
-    var infolinks_wsid = 0;
-  `}
-</Script>
+{isProductionDomain && (
+  <>
+    <Script id="infolinks-init" strategy="afterInteractive">
+      {`
+        var infolinks_pid = 3441548;
+        var infolinks_wsid = 0;
+      `}
+    </Script>
 
-<Script
-  id="infolinks-main"
-  src="https://resources.infolinks.com/js/infolinks_main.js"
-  strategy="afterInteractive"
-/>
+    <Script
+      id="infolinks-main"
+      src="https://resources.infolinks.com/js/infolinks_main.js"
+      strategy="afterInteractive"
+    />
+  </>
+)}
  
  
 
