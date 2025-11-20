@@ -162,6 +162,15 @@ router.get('/profile', adminAuth, async (req, res) => {
 });
 
 // ----------------- CATEGORY ROUTES -----------------
+
+// ✅ ADDED: Route for handling category image uploads
+router.post(
+    '/categories/upload-image',
+    adminAuth,
+    upload.single('image'), // 'image' must match the field name in the form data
+    categoryController.uploadImage
+);
+
 router.post('/categories', adminAuth, categoryController.createCategory);
 router.get('/categories', adminAuth, categoryController.getCategories);
 router.delete('/categories/:id', adminAuth, categoryController.deleteCategory);

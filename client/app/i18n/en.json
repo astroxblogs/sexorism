@@ -1,5 +1,5 @@
 {
-    "application_name": "innvibs",
+    "application_name": "Sexorism",
     "navigation": {
         "home": "Home",
         "blog": "Blog",
@@ -30,12 +30,12 @@
         "astrology": "Astrology",
   "vastu_shastra": "Vastu Shastra"
     },
-   "homepage": {
-    "welcome_title": "Welcome to Inner Vibes",
-    "tagline_line1": "Inner Vibes — Explore Inside, Express Outside",
-    "tagline_line2": "Your daily dose of insights into technology and more.",
-    "featured_posts": "Featured Posts"
-  },
+ "homepage": {
+  "welcome_title": "Welcome to Sexorism",
+  "tagline_line1": "Sexorism — Where Desire Meets Story",
+  "tagline_line2": "Dive deep into real, erotic stories, fantasies, and adult confessions. 18+ only.",
+  "featured_posts": "Hot & Trending Erotic Stories"
+},
     "language_selector": {
         "select_language": "Select Language",
         "english": "English",
@@ -59,7 +59,8 @@
         "loading_blogs": "Loading blogs...",
         "latest_blogs": "Latest Blogs",
         "search_results_for": "Search Results for \"{{query}}\"",
-        "blogs_in_category": "Your Essential Reads in {{category}}",
+       "blogs_in_category": "Hot & Unmissable Erotic Reads in {{category}}",
+
         "loading_components": "Loading components...",
         "cancel": "Cancel",
         "error_loading_blogs": "Failed to load blog posts. Please try again.",
@@ -96,8 +97,8 @@
         "mode": "Mode"
     },
     "footer": {
-        "tagline_line1": "Inner Vibes — Explore Inside, Express Outside",
-    "tagline_line2": "A curated space for insights, stories, and ideas that matter.",
+     "tagline_line1": "Sexorism — Erotic Stories, Real Pleasure",
+"tagline_line2": "Your destination for bold adult blogs, sensual experiences, and sexual fantasies.",
         "company_title": "Company",
         "about_us": "About Us",
         "careers": "Careers",

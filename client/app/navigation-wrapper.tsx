@@ -76,19 +76,20 @@ const NavigationWrapper: React.FC<NavigationWrapperProps> = ({ children }) => {
             onLogoClick={handleLogoClick}
             categories={categories}
           />
-         {/* AD SLOT: Below-Nav Leaderboard (global, public pages only) */}
-         {/* <div className="mx-auto max-w-screen-xl px-3 mt-2 empty:hidden">
+          {/* AD SLOT: Below-Nav Leaderboard (global, public pages only) */}
+          {/* <div className="mx-auto max-w-screen-xl px-3 mt-2 empty:hidden">
            <AdSense slot="global_below_nav_leaderboard" className="ad-slot ad-slot--leaderboard w-full" />
          </div> */}
-       </>
+        </>
       )}
 
-      <main className="block w-full min-h-[200px] bg-[rgba(255,0,0,0.03)]">
+      {/* Use global theme background instead of hard-coded red tint */}
+      <main className="block w-full min-h-[200px] bg-[var(--color-bg-primary)]">
         {children}
       </main>
 
-     {/* AD SLOT: Below-Main Leaderboard (before footer on public pages) */}
-     {/* {!isStandalonePage && !isAdminPage && (
+      {/* AD SLOT: Below-Main Leaderboard (before footer on public pages) */}
+      {/* {!isStandalonePage && !isAdminPage && (
        <div className="mx-auto max-w-screen-xl px-3 my-6 empty:hidden">
          <AdSense slot="global_below_main_leaderboard" className="ad-slot ad-slot--leaderboard w-full" />
        </div>

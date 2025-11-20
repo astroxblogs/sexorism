@@ -4,23 +4,23 @@
 
 @layer base {
   :root {
-    /* Light mode colors */
-    --color-bg-primary: #ffffff;
-    --color-bg-secondary: #f8fafc;
-    --color-text-primary: #1f2937;
-    --color-text-secondary: #6b7280;
-    --color-accent: #7c3aed;
-    --color-border: #e5e7eb;
+    /* NEW Light mode colors: soft yellow like the reference site */
+    --color-bg-primary: #fff9ce;        /* page background */
+    --color-bg-secondary: #f5e6a3;      /* content cards / panels */
+    --color-text-primary: #3b2e1a;      /* deep brown text */
+    --color-text-secondary: #7c6a3b;    /* slightly muted warm text */
+    --color-accent: #b8860b;            /* golden accent (links, buttons) */
+    --color-border: #e3d59f;            /* warm light border */
   }
 
   .dark {
-    /* Dark mode colors */
-    --color-bg-primary: #0f0f23;
-    --color-bg-secondary: #1a1a2e;
-    --color-text-primary: #f8fafc;
-    --color-text-secondary: #cbd5e1;
-    --color-accent: #a855f7;
-    --color-border: #374151;
+    /* NEW Dark mode colors: black background, white-ish text */
+    --color-bg-primary: #000000;        /* pure black */
+    --color-bg-secondary: #111827;      /* near-black for cards */
+    --color-text-primary: #f9fafb;      /* white text */
+    --color-text-secondary: #d1d5db;    /* soft gray text */
+    --color-accent: #facc15;            /* warm golden accent */
+    --color-border: #374151;            /* gray border */
   }
 }
 
@@ -70,6 +70,7 @@
   .dark .border-dark-border { border-color: var(--color-border); }
 }
 
+/* Google Translate & language selector tweaks (unchanged) */
 .goog-te-banner-frame.skiptranslate,
 .goog-te-balloon-frame,
 .goog-logo-link,
@@ -79,7 +80,6 @@
 
 body {
     top: 0px !important;
-
 }
 
 #google_translate_element {
@@ -146,6 +146,7 @@ body {
 .rdw-fontsize-dropdown {
     color: #333 !important;
 }
+
 /* Custom styles for Admin Blog Form Quill Editor */
 .admin-quill-editor {
     border-radius: 0.5rem;
@@ -203,7 +204,7 @@ body {
 }
 
 .admin-quill-editor .ql-editor::-webkit-scrollbar-thumb {
-    background:gray;
+    background: gray;
     /* Make thumb bright red */
     border-radius: 10px;
     border: 2px solid black;
@@ -212,14 +213,10 @@ body {
 
 .dark .admin-quill-editor .ql-editor::-webkit-scrollbar-thumb {
     background: #ff0000;
-    /* Make thumb brigh
-    t red in dark mode */
+    /* Make thumb bright red in dark mode */
     border: 2px solid gray;
     /* Add yellow border to thumb in dark mode */
 }
-
-
-
 
 /* Ensure the toolbar doesn't scroll with content */
 .admin-quill-editor .ql-toolbar {
@@ -228,18 +225,53 @@ body {
     border-top-right-radius: 0.5rem;
 }
 
-
-
+/* Blog post content links – now use accent color to match theme */
 .blog-post-content a {
-  color: #2563eb; /* A standard, catchy blue */
+  color: var(--color-accent);
   text-decoration: underline;
-  font-weight: 500; /* Makes the link text slightly bolder */
+  font-weight: 500;
 }
 
 
-
-
-
-
-
-
+/* === Splash Screen Styles === */
+.splash-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Richer adult, cinematic background */
+    background:
+      radial-gradient(circle at top, rgba(255, 255, 255, 0.06) 0%, transparent 45%),
+      radial-gradient(circle at bottom, #330018 0%, #05000a 45%, #000000 100%);
+    color: #f5f5f5;
+    overflow: hidden;
+  }
+  
+  .splash-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    text-align: center;
+    padding: 2rem;
+  }
+  
+  .splash-logo {
+    width: 190px;
+    height: auto;
+    filter:
+      drop-shadow(0 0 25px rgba(255, 255, 255, 0.25))
+      drop-shadow(0 0 50px rgba(255, 0, 80, 0.35));
+  }
+  
+  .splash-tagline {
+    font-size: 0.95rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 230, 240, 0.9);
+    max-width: 420px;
+    line-height: 1.5;
+  }
+  

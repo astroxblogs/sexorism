@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next'; // ADDED: For language detection
 import BlogDetail from '../../../components/BlogDetail';
 import { getBlogByCategoryAndSlug } from '../../../lib/api';
+import { makeCategoryLink, makeBlogLink } from '../../../lib/paths';
+import api from '../../../lib/api';
 // import AdSense from '../../../components/AdSense';
 
 interface BlogDetailClientProps {
@@ -29,6 +31,8 @@ export default function BlogDetailClient({ params }: BlogDetailClientProps) {
   const [blog, setBlog] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [otherBlogs, setOtherBlogs] = useState<any[]>([]);
+  const [otherBlogsLoading, setOtherBlogsLoading] = useState(false);
   const router = useRouter();
 
   // ADDED: Get current language from i18next
@@ -73,6 +77,38 @@ export default function BlogDetailClient({ params }: BlogDetailClientProps) {
     }
   }, [params.categoryName, params.blogSlug, lang]); // ADDED: `lang` dependency to re-fetch on language change
 
+  // Fetch other categories' latest blogs
+  useEffect(() => {
+    const fetchOtherBlogs = async () => {
+      if (!blog) return;
+
+      setOtherBlogsLoading(true);
+      try {
+        // Get current category name
+        const currentCategory = categorySlugToApiName(params.categoryName);
+
+        // Fetch blogs excluding current category, limit to 4
+        const response = await api.get('/blogs', {
+          params: {
+            excludeCategory: currentCategory,
+            limit: 4,
+            lang: lang
+          }
+        });
+
+        const blogs = response.data?.blogs || [];
+        setOtherBlogs(blogs);
+      } catch (error) {
+        console.error('Error fetching other blogs:', error);
+        setOtherBlogs([]);
+      } finally {
+        setOtherBlogsLoading(false);
+      }
+    };
+
+    fetchOtherBlogs();
+  }, [blog, params.categoryName, lang]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
@@ -116,6 +152,52 @@ return (
       </div> */}
 
       <BlogDetail blog={blog} />
+
+      {/* Other Categories Latest Articles */}
+      {otherBlogs.length > 0 && (
+        <div className="max-w-7xl mx-auto px-4 py-12">
+          <div className="border-t border-[var(--color-border)] pt-12">
+            <h2 className="text-2xl md:text-3xl font-bold text-[var(--color-text-primary)] mb-8 text-center">
+              {lang === 'hi' ? 'और भी बोल्ड कंटेंट देखें' : 'Explore More From Our Bold Collection'}
+            </h2>
+
+            {otherBlogsLoading ? (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--color-accent)]"></div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {otherBlogs.map((otherBlog, index) => (
+                  <article
+                    key={otherBlog._id}
+                    className="group cursor-pointer bg-[var(--color-bg-primary)] rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-[var(--color-border)]"
+                    onClick={() => router.push(makeBlogLink(lang === 'hi' ? 'hi' : 'en', otherBlog.category?.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || 'uncategorized', otherBlog.slug || otherBlog._id))}
+                  >
+                    <div className="aspect-[4/3] overflow-hidden">
+                      <img
+                        src={otherBlog.image}
+                        alt={otherBlog.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                      />
+                    </div>
+                    <div className="p-4">
+                      <h3 className="text-sm font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)] transition-colors line-clamp-2 mb-2">
+                        {otherBlog.title}
+                      </h3>
+                      <div className="flex items-center justify-between text-xs text-[var(--color-text-secondary)]">
+                        <span className="bg-[var(--color-bg-secondary)] px-2 py-1 rounded-full">
+                          {otherBlog.category}
+                        </span>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* AD: Article Bottom (above footer / below content component) */}
       {/* <div className="mx-auto max-w-4xl px-4 sm:px-6 md:px-0 my-6 empty:hidden">

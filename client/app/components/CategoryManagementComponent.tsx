@@ -21,6 +21,7 @@ type Category = {
   name_en: string
   name_hi?: string
   slug: string
+  image?: string
   metaTitle_en?: string
   metaTitle_hi?: string
   metaDescription_en?: string
@@ -37,10 +38,12 @@ export default function CategoryManagementComponent() {
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
+  const [uploadingImage, setUploadingImage] = useState(false)
 
   const [form, setForm] = useState({
     name_en: '',
     name_hi: '',
+    image: '',
     metaTitle_en: '',
     metaTitle_hi: '',
     metaDescription_en: '',
@@ -83,6 +86,7 @@ export default function CategoryManagementComponent() {
     setForm({
       name_en: '',
       name_hi: '',
+      image: '',
       metaTitle_en: '',
       metaTitle_hi: '',
       metaDescription_en: '',
@@ -102,6 +106,7 @@ export default function CategoryManagementComponent() {
         name_en: form.name_en.trim(),
         name_hi: form.name_hi?.trim() || '',
         slug: slugify(form.name_en),
+        image: form.image?.trim() || '',
         metaTitle_en: form.metaTitle_en?.trim() || '',
         metaTitle_hi: form.metaTitle_hi?.trim() || '',
         metaDescription_en: form.metaDescription_en?.trim() || '',
@@ -133,6 +138,7 @@ export default function CategoryManagementComponent() {
     setForm({
       name_en: cat.name_en || '',
       name_hi: cat.name_hi || '',
+      image: cat.image || '',
       metaTitle_en: cat.metaTitle_en || '',
       metaTitle_hi: cat.metaTitle_hi || '',
       metaDescription_en: cat.metaDescription_en || '',
@@ -150,6 +156,23 @@ export default function CategoryManagementComponent() {
     } catch (e) {
       console.error('Error deleting category:', e)
       toast.error('Failed to delete category')
+    }
+  }
+
+  const handleImageUpload = async (file: File) => {
+    if (!file) return
+    setUploadingImage(true)
+    const formData = new FormData()
+    formData.append('image', file)
+    try {
+      const res = await apiService.uploadCategoryImage(formData)
+      setForm({ ...form, image: res.data.imageUrl })
+      toast.success('Image uploaded successfully')
+    } catch (e: any) {
+      console.error('Error uploading image:', e)
+      toast.error('Failed to upload image')
+    } finally {
+      setUploadingImage(false)
     }
   }
 
@@ -248,6 +271,39 @@ export default function CategoryManagementComponent() {
                     className="w-full rounded-md border px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     placeholder="e.g., स्वास्थ्य और कल्याण"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Category Image
+                  </label>
+                  <input
+                    type="text"
+                    value={form.image}
+                    onChange={(e) => setForm({ ...form, image: e.target.value })}
+                    className="w-full rounded-md border px-3 py-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    placeholder="Paste Image URL or upload below"
+                  />
+                  <div className="flex items-center gap-2 mt-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) handleImageUpload(file)
+                      }}
+                      className="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                      disabled={uploadingImage}
+                    />
+                    {uploadingImage && (
+                      <div className="text-sm text-blue-600">Uploading...</div>
+                    )}
+                  </div>
+                  {form.image && (
+                    <div className="mt-2">
+                      <img src={form.image} alt="Category Preview" className="max-h-32 object-contain rounded-md shadow-md" />
+                    </div>
+                  )}
                 </div>
 
                 <div>

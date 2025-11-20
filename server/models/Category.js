@@ -18,7 +18,11 @@ const CategorySchema = new mongoose.Schema({
         lowercase: true,
         trim: true
     },
-    
+    image: {
+        type: String,
+        trim: true
+    },
+
     // ✅ NEW SEO FIELDS
     metaTitle_en: {
         type: String,

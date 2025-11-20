@@ -31,11 +31,11 @@
     "vastu_shastra": "वास्तु शास्त्र"
   },
 "homepage": {
-    "welcome_title": "Inner Vibes में आपका स्वागत है",
-    "tagline_line1": "Inner Vibes - अंदर की खोज, बाहर की अभिव्यक्ति",
-    "tagline_line2": "तकनीक और अन्य विषयों पर आपकी दैनिक अंतर्दृष्टि।",
-    "featured_posts": "विशेष पोस्ट"
-  },
+  "welcome_title": "स्वागत है Sexorism में",
+  "tagline_line1": "Sexorism — जहाँ चाहत बनती है कहानी",
+  "tagline_line2": "रीयल, इरोटिक कहानियाँ, फैंटेसी और वयस्क अनुभवों की गहराई में उतरें। सिर्फ 18+ के लिए।",
+  "featured_posts": "सबसे हॉट और ट्रेंडिंग इरोटिक स्टोरीज"
+},
   "language_selector": {
     "select_language": "भाषा चुनें",
     "english": "अंग्रेज़ी",
@@ -59,7 +59,8 @@
     "loading_blogs": "ब्लॉग लोड हो रहे हैं...",
     "latest_blogs": "नवीनतम ब्लॉग",
     "search_results_for": "\"{{query}}\" के लिए खोज परिणाम",
-    "blogs_in_category": "{{category}} में आपके आवश्यक लेख",
+   "blogs_in_category": "[translate:{{category}} में हॉट और बोल्ड इरोटिक कहानियाँ, बिल्कुल न चूकें]",
+
     "loading_components": "घटक लोड हो रहे हैं...",
     "error_loading_blogs": "ब्लॉग पोस्ट लोड करने में विफल। कृपया पुनः प्रयास करें।",
     "cancel": "रद्द करें",
@@ -96,8 +97,8 @@
     "mode": "मोड"
   },
   "footer": {
-    "tagline_line1": "Inner Vibes - अंदर की खोज, बाहर की अभिव्यक्ति",
-    "tagline_line2": "महत्वपूर्ण अंतर्दृष्टि, कहानियों और विचारों के लिए एक चयनित स्थान।",
+  "tagline_line1": "Sexorism — इरोटिक कहानियाँ, असली सुख",
+"tagline_line2": "बोल्ड वयस्क ब्लॉग, संवेदनशील अनुभव और सेक्स फैंटेसी के लिए यहाँ आएं।",
     "company_title": "कंपनी",
     "about_us": "हमारे बारे में",
     "careers": "करियर",

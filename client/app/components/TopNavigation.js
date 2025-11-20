@@ -24,7 +24,6 @@ const toSlug = (text) =>
 const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLogoClick, categories }) => {
   const { t, i18n } = useTranslation();
   const lang = (i18n?.resolvedLanguage || i18n?.language || 'en').toLowerCase();
-  // const basePrefix = lang.startsWith('hi') ? '/hi' : ''; // ✅ prefix when Hindi
   const locale = lang.startsWith('hi') ? 'hi' : 'en';
   const router = useRouter();
   const pathname = usePathname();
@@ -37,7 +36,13 @@ const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLog
     } catch { return ''; }
   })();
 
-  const effectiveLang = isHindiPath ? 'hi' : (cookieLang || (i18n?.resolvedLanguage || i18n?.language || 'en')).toLowerCase().startsWith('hi') ? 'hi' : 'en';
+  const effectiveLang = isHindiPath
+    ? 'hi'
+    : (cookieLang || (i18n?.resolvedLanguage || i18n?.language || 'en'))
+        .toLowerCase()
+        .startsWith('hi')
+      ? 'hi'
+      : 'en';
   const basePrefix = effectiveLang === 'hi' ? '/hi' : '';
 
   const [showSearchInput, setShowSearchInput] = useState(false);
@@ -109,18 +114,14 @@ const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLog
   };
 
   const handleLogoClick = () => {
-    // If you're already on the effective home, do a route refresh (no URL change)
     const targetHome = basePrefix || '/';
     if (pathname === targetHome) {
       router.refresh();
       try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch { }
       return;
     }
-    // Otherwise navigate to the right home, preserving /hi when Hindi
     router.push(targetHome);
   };
-
-
 
   const handleCloseSearch = () => {
     setShowSearchInput(false);
@@ -146,9 +147,15 @@ const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLog
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/90 dark:bg-dark-bg-secondary backdrop-blur supports-[backdrop-filter]:bg-white/70 dark:supports-[backdrop-filter]:bg-dark-bg-secondary shadow">
+    <nav
+      className="
+        sticky top-0 z-50
+        bg-[var(--color-bg-secondary)]
+        backdrop-blur supports-[backdrop-filter]:bg-[var(--color-bg-secondary)]
+        shadow border-b border-light-border
+      "
+    >
       <div className="py-2.5 px-3 sm:px-4 md:px-8 flex flex-col lg:flex-row gap-2 lg:gap-6 lg:justify-between lg:items-center">
-
 
         <div className="flex items-center gap-3 w-full lg:w-auto lg:mr-4">
 
@@ -158,21 +165,38 @@ const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLog
             tabIndex={0}
           >
             <img
-              src="/lm1.png"
+              src="/light.png"
               alt="Logo Light"
               className="h-8 sm:h-10 w-auto object-contain block dark:hidden"
             />
             <img
-              src="/tp2..png"
+              src="/dark.png"
               alt="Logo Dark"
               className="h-8 sm:h-10 w-auto object-contain hidden dark:block"
             />
           </a>
 
+          {/* Website Brand Name */}
+          <button
+            onClick={handleLogoClick}
+            className="
+              text-lg sm:text-3xl font-bold
+              text-amber-800 dark:text-white
+              hover:text-amber-900 dark:hover:text-gray-200
+              transition-colors duration-200
+              font-[var(--font-space-grotesk)]
+              tracking-wide
+              hidden sm:block
+            "
+            aria-label="Go to homepage"
+          >
+            Sexorism
+          </button>
+
           <div className="lg:hidden ml-auto flex items-center gap-2">
             <button
               onClick={handleSearchClick}
-              className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+              className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
             >
               <Search className="w-5 h-5" />
             </button>
@@ -183,14 +207,20 @@ const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLog
 
         {/* ✅ min-w-0 allows this flex item to shrink properly. */}
         <div className="flex flex-grow justify-center items-center order-last lg:order-none min-w-0 lg:ml-8">
-
           <div className="relative flex items-center w-full max-w-[920px] mx-auto lg:px-8">
 
+            {/* Mobile category dropdown */}
             <div className="w-full lg:hidden px-3">
               <div className="relative">
                 <select
                   aria-label="Select category"
-                  className="appearance-none w-full rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 px-3 pr-9 py-2 text-sm font-medium shadow-sm"
+                  className="
+                    appearance-none w-full rounded-full
+                    border border-light-border
+                    bg-[var(--color-bg-primary)]
+                    text-[var(--color-text-primary)]
+                    px-3 pr-9 py-2 text-sm font-medium shadow-sm
+                  "
                   value={selectValue}
                   onChange={(e) => handleCategoryClick(e.target.value)}
                 >
@@ -198,25 +228,39 @@ const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLog
                     <option key={cat.value} value={cat.value}>{getCategoryName(cat)}</option>
                   ))}
                 </select>
-                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <ChevronDown
+                  className="
+                    pointer-events-none absolute right-3 top-1/2 -translate-y-1/2
+                    h-4 w-4 text-[var(--color-text-secondary)]
+                  "
+                />
               </div>
             </div>
 
+            {/* Left scroll arrow */}
             <AnimatePresence>
               {showLeftArrow && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.5 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.5 }}
-                  className="hidden lg:block absolute left-0 z-20 bg-light-bg-secondary dark:bg-dark-bg-secondary pr-4 rounded-r-full"
+                  className="hidden lg:block absolute left-0 z-20 bg-[var(--color-bg-secondary)] pr-4 rounded-r-full"
                 >
-                  <button onClick={handlePrev} className="p-1.5 rounded-full shadow-md hover:bg-gray-200 dark:hover:bg-gray-700">
-                    <ChevronLeft className="h-5 w-5 text-gray-700 dark:text-gray-200" />
+                  <button
+                    onClick={handlePrev}
+                    className="
+                      p-1.5 rounded-full shadow-md
+                      bg-[var(--color-bg-primary)]
+                      hover:bg-[var(--color-bg-accent)]
+                    "
+                  >
+                    <ChevronLeft className="h-5 w-5 text-[var(--color-text-primary)]" />
                   </button>
                 </motion.div>
               )}
             </AnimatePresence>
 
+            {/* Category pills */}
             <div
               ref={scrollRef}
               className="hidden lg:flex items-center space-x-2 whitespace-nowrap overflow-x-auto scroll-smooth no-scrollbar px-3 sm:px-10"
@@ -226,26 +270,35 @@ const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLog
                   key={cat.value}
                   ref={(el) => (itemRefs.current[idx] = el)}
                   onClick={() => handleCategoryClick(cat.value)}
-                  className={`flex-shrink-0 rounded-full px-3.5 py-1.5 text-sm transition-colors duration-200 border ${normalizedActive === cat.value
-                    ? "bg-violet-600 border-violet-600 text-white"
-                    : "bg-white/70 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    }`}
+                  className={`flex-shrink-0 rounded-full px-3.5 py-1.5 text-sm transition-colors duration-200 border ${
+                    normalizedActive === cat.value
+                      ? "bg-[var(--color-accent)] border-[var(--color-accent)] text-[var(--color-bg-primary)]"
+                      : "bg-[var(--color-bg-primary)] border-light-border text-[var(--color-text-primary)] hover:bg-[var(--color-bg-secondary)]"
+                  }`}
                 >
                   {getCategoryName(cat)}
                 </button>
               ))}
             </div>
 
+            {/* Right scroll arrow */}
             <AnimatePresence>
               {showRightArrow && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.5 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.5 }}
-                  className="hidden lg:block absolute right-0 z-20 bg-light-bg-secondary dark:bg-dark-bg-secondary pl-4 rounded-l-full"
+                  className="hidden lg:block absolute right-0 z-20 bg-[var(--color-bg-secondary)] pl-4 rounded-l-full"
                 >
-                  <button onClick={handleNext} className="p-1.5 rounded-full shadow-md hover:bg-gray-200 dark:hover:bg-gray-700">
-                    <ChevronRight className="h-5 w-5 text-gray-700 dark:text-gray-200" />
+                  <button
+                    onClick={handleNext}
+                    className="
+                      p-1.5 rounded-full shadow-md
+                      bg-[var(--color-bg-primary)]
+                      hover:bg-[var(--color-bg-accent)]
+                    "
+                  >
+                    <ChevronRight className="h-5 w-5 text-[var(--color-text-primary)]" />
                   </button>
                 </motion.div>
               )}
@@ -253,27 +306,38 @@ const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLog
           </div>
         </div>
 
+        {/* Right side (desktop search + language + toggle) */}
         <div className="hidden lg:flex items-center gap-3 flex-shrink-0 lg:self-auto self-end w-full lg:w-auto justify-end">
           {showSearchInput ? (
             <form
               onSubmit={handleSearchSubmit}
-              className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-full px-4 py-1 w-full max-w-xs border border-gray-200 dark:border-gray-700"
+              className="
+                flex items-center
+                bg-[var(--color-bg-primary)]
+                rounded-full px-4 py-1 w-full max-w-xs
+                border border-light-border
+              "
             >
               <input
                 type="text"
                 placeholder={t('Search...')}
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                className="bg-transparent text-sm text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-0 border-none w-full"
+                className="
+                  bg-transparent text-sm
+                  text-[var(--color-text-primary)]
+                  placeholder-[var(--color-text-secondary)]
+                  focus:outline-none focus:ring-0 border-none w-full
+                "
               />
               <button type="button" onClick={handleCloseSearch}>
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4 text-[var(--color-text-secondary)]" />
               </button>
             </form>
           ) : (
             <button
               onClick={handleSearchClick}
-              className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+              className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
             >
               <Search className="w-5 h-5" />
             </button>
@@ -288,22 +352,33 @@ const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLog
         </div>
       </div>
 
+      {/* Mobile search bar under nav */}
       {showSearchInput && (
         <div className="px-3 pb-2 lg:hidden">
           <form
             onSubmit={handleSearchSubmit}
-            className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-full px-4 py-2 border border-gray-200 dark:border-gray-700"
+            className="
+              flex items-center
+              bg-[var(--color-bg-primary)]
+              rounded-full px-4 py-2
+              border border-light-border
+            "
           >
             <input
               type="text"
               placeholder={t('Search...')}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              className="bg-transparent text-sm text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-0 border-none w-full"
+              className="
+                bg-transparent text-sm
+                text-[var(--color-text-primary)]
+                placeholder-[var(--color-text-secondary)]
+                focus:outline-none focus:ring-0 border-none w-full
+              "
               autoFocus
             />
             <button type="button" onClick={handleCloseSearch}>
-              <X className="w-4 h-4" />
+              <X className="w-4 h-4 text-[var(--color-text-secondary)]" />
             </button>
           </form>
         </div>

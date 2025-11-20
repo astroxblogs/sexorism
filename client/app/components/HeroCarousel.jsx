@@ -9,17 +9,16 @@ import { makeBlogLink } from '../lib/paths';
 const slugify = (text) => {
     return text
         .toLowerCase()
-        .replace(/\s+/g, '-') // Replace spaces with hyphens
-        .replace(/[^a-z0-9\-&]/g, '') // Remove special characters except hyphens and ampersands
-        .replace(/-+/g, '-') // Replace multiple hyphens with single
-        .replace(/^-+|-+$/g, ''); // Trim leading/trailing hyphens
+        .replace(/\s+/g, '-') 
+        .replace(/[^a-z0-9\-&]/g, '') 
+        .replace(/-+/g, '-') 
+        .replace(/^-+|-+$/g, ''); 
 };
 
 const HeroCarousel = ({ blogs }) => {
     const { i18n, t } = useTranslation();
- const currentLang = i18n?.resolvedLanguage || i18n?.language || 'en';
-const basePrefix = String(currentLang).toLowerCase().startsWith('hi') ? '/hi' : '';
-
+    const currentLang = i18n?.resolvedLanguage || i18n?.language || 'en';
+    
     const [currentIndex, setCurrentIndex] = useState(0);
     const locale = String(currentLang || 'en').toLowerCase().startsWith('hi') ? 'hi' : 'en';
     const [imageLoaded, setImageLoaded] = useState(false);
@@ -68,7 +67,8 @@ const basePrefix = String(currentLang).toLowerCase().startsWith('hi') ? '/hi' : 
 
     return (
         <section className="relative w-full">
-            <div className="relative h-[320px] sm:h-[380px] md:h-[420px] overflow-hidden rounded-xl bg-gray-200 dark:bg-gray-800">
+            {/* UPDATED HEIGHTS BELOW: h-[500px] sm:h-[550px] md:h-[600px] */}
+            <div className="relative h-[500px] sm:h-[550px] md:h-[550px] overflow-hidden rounded-xl bg-gray-200 dark:bg-gray-800">
                 <div
                     className={`absolute inset-0 bg-cover bg-center transition-opacity duration-700 ${imageLoaded ? 'opacity-100' : 'opacity-0'} pointer-events-none`}
                     style={{ backgroundImage: `url(${currentBlog?.image})` }}
@@ -94,7 +94,7 @@ const basePrefix = String(currentLang).toLowerCase().startsWith('hi') ? '/hi' : 
                         <p className="mt-3 text-gray-200 text-sm sm:text-base line-clamp-3">
                             {excerpt}
                         </p>
-                        +  <Link
+                        <Link
                             href={makeBlogLink(
                                 locale,
                                 currentBlog?.category ? slugify(currentBlog.category) : 'uncategorized',
@@ -130,5 +130,3 @@ const basePrefix = String(currentLang).toLowerCase().startsWith('hi') ? '/hi' : 
 };
 
 export default HeroCarousel;
-
-

@@ -553,6 +553,9 @@ deactivateBlog: (id) => api.post(`/admin/blogs/${id}/deactivate`),
     createCategory: (categoryData) => api.post('/admin/categories', categoryData),
     updateCategory: (id, categoryData) => api.put(`/admin/categories/${id}`, categoryData),
     deleteCategory: (id) => api.delete(`/admin/categories/${id}`),
+    uploadCategoryImage: (formData) => api.post('/admin/categories/upload-image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
 
     // Subscriber Management
     getSubscribers: () => api.get('/admin/subscribers'),

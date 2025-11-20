@@ -7,6 +7,7 @@ const shape = (cat) => ({
   slug: cat.slug,
   name_en: cat.name_en,
   name_hi: cat.name_hi,
+  image: cat.image,
   metaTitle_en: cat.metaTitle_en,
   metaTitle_hi: cat.metaTitle_hi,
   metaDescription_en: cat.metaDescription_en,
@@ -58,7 +59,7 @@ exports.getCategoryBySlug = async (req, res) => {
         { name_hi: new RegExp(`^${nameGuess}$`, 'i') },
       ],
     })
-      .select('slug name_en name_hi metaTitle_en metaTitle_hi metaDescription_en metaDescription_hi createdAt updatedAt')
+      .select('slug name_en name_hi image metaTitle_en metaTitle_hi metaDescription_en metaDescription_hi createdAt updatedAt')
       .lean();
 
     if (!cat) return res.status(404).json({ message: 'Category not found' });
@@ -80,7 +81,7 @@ exports.getCategoryById = async (req, res) => {
     }
 
     const cat = await Category.findById(id)
-      .select('slug name_en name_hi metaTitle_en metaTitle_hi metaDescription_en metaDescription_hi createdAt updatedAt')
+      .select('slug name_en name_hi image metaTitle_en metaTitle_hi metaDescription_en metaDescription_hi createdAt updatedAt')
       .lean();
 
     if (!cat) return res.status(404).json({ message: 'Category not found' });
@@ -90,6 +91,7 @@ exports.getCategoryById = async (req, res) => {
       slug: cat.slug,
       name_en: cat.name_en,
       name_hi: cat.name_hi,
+      image: cat.image,
       metaTitle_en: cat.metaTitle_en,
       metaTitle_hi: cat.metaTitle_hi,
       metaDescription_en: cat.metaDescription_en,
