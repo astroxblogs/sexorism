@@ -10,8 +10,13 @@ if (process.env.NODE_ENV === 'development') {
     dotenv.config({ path: './.env.testing' });
     console.log('✅ Server is starting in TESTING mode, loaded .env.testing');
 } else {
-    dotenv.config(); // Loads .env by default for production
-    console.log('✅ Server is starting in PRODUCTION mode, loaded .env');
+    // Only load .env if MONGO_URI is not already set (e.g., from Render environment)
+    if (!process.env.MONGO_URI) {
+        dotenv.config(); // Loads .env by default for production
+        console.log('✅ Server is starting in PRODUCTION mode, loaded .env');
+    } else {
+        console.log('✅ Server is starting in PRODUCTION mode, using environment MONGO_URI');
+    }
 }
 
 // --- Route Imports ---
