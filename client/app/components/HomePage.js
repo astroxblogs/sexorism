@@ -294,13 +294,50 @@ const HomePage = (props) => {
     }
   }, [isInitialLoad, fetchBlogs]);
 
+
+
+ // Category pagination function
+ const fetchCategoryBlogs = useCallback(
+  async (page = 1) => {
+    if (categoryLoading) return;
+
+    setCategoryLoading(true);
+    try {
+      const queryCategory = activeCategory.replace(/\bAnd\b/g, '&');
+      const res = await api.get(
+        `/blogs?category=${encodeURIComponent(queryCategory)}&page=${page}&limit=8`
+      );
+
+      const {
+        blogs: newBlogs,
+        currentPage: apiCurrentPage,
+        totalPages: apiTotalPages,
+        totalBlogs: apiTotalBlogs,
+      } = res.data;
+
+      setBlogs(newBlogs);
+      setCategoryCurrentPage(apiCurrentPage);
+      setCategoryTotalPages(apiTotalPages);
+      setCategoryTotalBlogs(apiTotalBlogs);
+    } catch (err) {
+      console.error('Error fetching category blogs:', err);
+      setBlogs([]);
+    } finally {
+      setCategoryLoading(false);
+    }
+  },
+  [activeCategory, categoryLoading]
+);
+
+
+
   // Initialize category pagination when categoryMode is active
   useEffect(() => {
     if (categoryMode && activeCategory && activeCategory !== 'all') {
       setCategoryCurrentPage(1);
       fetchCategoryBlogs(1);
     }
-  }, [categoryMode, activeCategory, fetchCategoryBlogs]);
+  }, [categoryMode, activeCategory]);
 
   const loadMoreBlogs = () => {
     if (currentPage < totalPages && !loadingMore) {
@@ -308,39 +345,7 @@ const HomePage = (props) => {
     }
   };
 
-  // Category pagination function
-  const fetchCategoryBlogs = useCallback(
-    async (page = 1) => {
-      if (categoryLoading) return;
-
-      setCategoryLoading(true);
-      try {
-        const queryCategory = activeCategory.replace(/\bAnd\b/g, '&');
-        const res = await api.get(
-          `/blogs?category=${encodeURIComponent(queryCategory)}&page=${page}&limit=8`
-        );
-
-        const {
-          blogs: newBlogs,
-          currentPage: apiCurrentPage,
-          totalPages: apiTotalPages,
-          totalBlogs: apiTotalBlogs,
-        } = res.data;
-
-        setBlogs(newBlogs);
-        setCategoryCurrentPage(apiCurrentPage);
-        setCategoryTotalPages(apiTotalPages);
-        setCategoryTotalBlogs(apiTotalBlogs);
-      } catch (err) {
-        console.error('Error fetching category blogs:', err);
-        setBlogs([]);
-      } finally {
-        setCategoryLoading(false);
-      }
-    },
-    [activeCategory, categoryLoading]
-  );
-
+  
   // Handle category page change
   const handleCategoryPageChange = (page) => {
     if (page >= 1 && page <= categoryTotalPages) {
