@@ -10,8 +10,13 @@
 
 # production
 /build
-/.next
-/out
+.next
+client/.next
+.next
+.cache
+out
+
+
 
 # misc
 .DS_Store
