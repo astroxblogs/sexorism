@@ -8,33 +8,33 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy - Innvibs',
+  title: 'Privacy Policy - Sexorism',
   description:
-    'Read our privacy policy and understand how we collect, use, and protect your data at Innvibs.',
-  keywords: ['privacy policy','data protection','cookie policy','personal data','Innvibs privacy'],
-  authors: [{ name: 'Innvibs' }],
+    'Read our privacy policy and understand how we collect, use, and protect your data at Sexorism.',
+  keywords: ['privacy policy','data protection','cookie policy','personal data','Sexorism privacy'],
+  authors: [{ name: 'Sexorism' }],
   creator: 'Astrox Softech Pvt Ltd',
-  publisher: 'Innvibs',
+  publisher: 'Sexorism',
   formatDetection: { email: false, address: false, telephone: false },
   metadataBase: new URL(BASE_URL),
   alternates: { canonical: '/privacy' },
   openGraph: {
-    title: 'Privacy Policy - Innvibs',
+    title: 'Privacy Policy - Sexorism',
     description:
-      'Understand how Innvibs collects, uses, shares, and protects your personal information.',
+      'Understand how Sexorism collects, uses, shares, and protects your personal information.',
     url: '/privacy',
-    siteName: 'Innvibs',
-    images: [{ url: '/top.png', width: 1200, height: 630, alt: 'Innvibs Privacy Policy' }],
+    siteName: 'Sexorism',
+    images: [{ url: '/top.png', width: 1200, height: 630, alt: 'Sexorism Privacy Policy' }],
     locale: 'en_US',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Privacy Policy - Innvibs',
+    title: 'Privacy Policy - Sexorism',
     description:
-      'Understand how Innvibs collects, uses, shares, and protects your personal information.',
+      'Understand how Sexorism collects, uses, shares, and protects your personal information.',
     images: ['/top.png'],
-    creator: '@innvibs',
+    creator: '@Sexorism',
   },
   icons: {
     icon: [
@@ -50,20 +50,20 @@ export default function PrivacyLayout({ children }: { children: React.ReactNode 
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
-    name: 'Privacy Policy - Innvibs',
+    name: 'Privacy Policy - Sexorism',
     url: `${BASE_URL}/privacy`,
     isPartOf: {
       '@type': 'WebSite',
-      name: 'Innvibs',
+      name: 'Sexorism',
       url: BASE_URL,
     },
     about: {
       '@type': 'Organization',
-      name: 'Innvibs',
+      name: 'Sexorism',
       parentOrganization: { '@type': 'Organization', name: 'Astrox Softech Pvt Ltd' },
       url: BASE_URL,
       logo: `${BASE_URL}/top.png`,
-      sameAs: ['https://www.facebook.com/innvibs'],
+      sameAs: ['https://www.facebook.com/Sexorism'],
       contactPoint: [
         {
           '@type': 'ContactPoint',

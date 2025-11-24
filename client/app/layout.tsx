@@ -76,7 +76,7 @@ export function generateMetadata(): Metadata {
         siteName: 'Sexorism',
         title: titleDefault,
         description: descDefault,
-        images: [{ url: '/top.png', width: 1200, height: 630, alt: 'Sexorism — Erotic Adult Stories' }],
+        images: [{ url: '/light.png', width: 1200, height: 630, alt: 'Sexorism — Erotic Adult Stories' }],
       },
       twitter: {
         card: 'summary_large_image',

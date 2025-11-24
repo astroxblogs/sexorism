@@ -79,7 +79,7 @@ export default function BalancedMonumentFooter() {
     { name: "LinkedIn", icon: <FaLinkedin />, url: "https://linkedin.com", colorClass: "text-[#0077B5]" },
     { name: "Twitter", icon: <FaTwitter />, url: "https://twitter.com", colorClass: "text-[#1DA1F2]" },
     { name: "Instagram", icon: <FaInstagram />, url: "https://instagram.com", colorClass: "text-pink-500" },
-    { name: "Facebook", icon: <FaFacebook />, url: "https://www.facebook.com/innvibs", colorClass: "text-[#1877F2]" },
+    { name: "Facebook", icon: <FaFacebook />, url: "https://www.facebook.com/Sexorism", colorClass: "text-[#1877F2]" },
   ];
 
   return (
@@ -91,12 +91,12 @@ export default function BalancedMonumentFooter() {
           <img
             src="/light.png"
             className="h-20 w-auto max-w-full block dark:hidden"
-            alt="innvibs Logo Light"
+            alt="Sexorism Logo Light"
           />
           <img
             src="dark.png"
             className="h-20 w-auto max-w-full hidden dark:block"
-            alt="innvibs Logo Dark"
+            alt="Sexorism Logo Dark"
           />
         </div>
 

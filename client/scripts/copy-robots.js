@@ -2,8 +2,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const site = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.innvibs.com';
-const isProd = /innvibs\.com$/i.test(site);
+const site = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.Sexorism.com';
+const isProd = /Sexorism\.com$/i.test(site);
 
 const robotsProd = `User-agent: *
 Allow: /

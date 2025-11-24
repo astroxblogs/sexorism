@@ -7,7 +7,7 @@ export default function TermsPage() {
       icon: '📜',
       title: 'Introduction',
       content:
-        'Welcome to Innvibs.com. By accessing or using our website, you agree to comply with and be bound by the following Terms of Service. If you do not agree with these terms, please refrain from using our site.',
+        'Welcome to Sexorism.com. By accessing or using our website, you agree to comply with and be bound by the following Terms of Service. If you do not agree with these terms, please refrain from using our site.',
     },
     {
       icon: '⚖️',
@@ -23,7 +23,7 @@ export default function TermsPage() {
       icon: '©️',
       title: 'Intellectual Property Rights',
       content:
-        'All content on Innvibs.com, including text, images, and logos, is protected by copyright and trademark laws. You may not use, reproduce, or distribute any content without our prior written permission.',
+        'All content on Sexorism.com, including text, images, and logos, is protected by copyright and trademark laws. You may not use, reproduce, or distribute any content without our prior written permission.',
     },
     {
       icon: '👤',
@@ -40,13 +40,13 @@ export default function TermsPage() {
       icon: '✍️',
       title: 'User Contributions',
       content:
-        'If you contribute content to our website, such as comments or articles, you grant Innvibs.com a non-exclusive, royalty-free license to use, modify, and display your content.',
+        'If you contribute content to our website, such as comments or articles, you grant Sexorism.com a non-exclusive, royalty-free license to use, modify, and display your content.',
     },
     {
       icon: '⚠️',
       title: 'Limitation of Liability',
       content:
-        'Innvibs.com is not liable for any damages arising from the use or inability to use our website. This includes, but is not limited to, direct, indirect, incidental, or consequential damages.',
+        'Sexorism.com is not liable for any damages arising from the use or inability to use our website. This includes, but is not limited to, direct, indirect, incidental, or consequential damages.',
     },
     {
       icon: '🏛️',
@@ -148,7 +148,7 @@ export default function TermsPage() {
             <div className="flex-1">
               <h3 className="text-xl font-bold text-amber-900 dark:text-amber-100 mb-2">Important Notice</h3>
               <p className="text-amber-800 dark:text-amber-200 leading-relaxed">
-                By continuing to use Innvibs.com, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.
+                By continuing to use Sexorism.com, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.
                 Your continued use of the website constitutes acceptance of any modifications to these terms.
               </p>
             </div>

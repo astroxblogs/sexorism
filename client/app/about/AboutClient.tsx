@@ -27,7 +27,7 @@ export default function AboutClient() {
                     <div className="text-center space-y-6">
                         <div className="inline-block">
                             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 dark:from-purple-400 dark:via-pink-400 dark:to-blue-400 bg-clip-text text-transparent">
-                                Innvibs
+                                Sexorism
                             </h1>
                             <div className="h-1 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 rounded-full mt-2"></div>
                         </div>
@@ -50,7 +50,7 @@ export default function AboutClient() {
                         </span>
                     </h2>
                     <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed text-center max-w-4xl mx-auto">
-                        Innvibs is more than just a blog; it's a vibrant community of passionate writers, thinkers, and creators dedicated to bringing you insightful content that enriches your life. Whether you're seeking the latest fashion trends, tech innovations, travel guides, or spiritual wisdom, we've got you covered.
+                        Sexorism is more than just a blog; it's a vibrant community of passionate writers, thinkers, and creators dedicated to bringing you insightful content that enriches your life. Whether you're seeking the latest fashion trends, tech innovations, travel guides, or spiritual wisdom, we've got you covered.
                     </p>
                 </div>
             </div>
@@ -134,7 +134,7 @@ export default function AboutClient() {
                         Join Us on Our Journey
                     </h2>
                     <p className="text-lg text-white/90 leading-relaxed max-w-4xl mx-auto mb-8">
-                        At Innvibs, we continually evolve and expand our horizons. We invite you to join us on this exciting journey of discovery and growth. Stay connected, stay inspired, and let Innvibs be your trusted companion in navigating the world of lifestyle, fashion, technology, travel, sports, astrology, and vastu shastra.
+                        At Sexorism, we continually evolve and expand our horizons. We invite you to join us on this exciting journey of discovery and growth. Stay connected, stay inspired, and let Sexorism be your trusted companion in navigating the world of lifestyle, fashion, technology, travel, sports, astrology, and vastu shastra.
                     </p>
                     <div className="flex flex-wrap justify-center gap-4">
                         <button className="bg-white text-purple-600 font-semibold px-8 py-3 rounded-full hover:bg-gray-100 transition-colors shadow-lg hover:shadow-xl">

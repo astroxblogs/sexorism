@@ -6,7 +6,7 @@ import BlogDetailClient from './BlogDetailClient';
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE ||
-  (process.env.NODE_ENV !== 'production' ? 'https://api.innvibs.in' : '');
+  (process.env.NODE_ENV !== 'production' ? 'https://api.Sexorism.in' : '');
 
 const normalizeCategoryForApi = (s: string) =>
   decodeURIComponent(s || '')
@@ -50,7 +50,7 @@ export async function generateMetadata({
       (lang === 'hi'
         ? blog?.metaTitle_hi || blog?.title_hi
         : blog?.metaTitle_en || blog?.title_en || blog?.metaTitle || blog?.title) ||
-      'Innvibs Blog';
+      'Sexorism Blog';
 
     const descBase =
       (lang === 'hi'
@@ -59,9 +59,9 @@ export async function generateMetadata({
         : blog?.metaDescription_en ||
           blog?.metaDescription ||
           (blog?.content_en || blog?.content || '').replace(/<[^>]*>/g, '').slice(0, 160)) ||
-      'Read the latest blog posts and articles on Innvibs';
+      'Read the latest blog posts and articles on Sexorism';
 
-    const title = `${titleBase} - Innvibs Blog`;
+    const title = `${titleBase} - Sexorism Blog`;
     const description = descBase;
 
     return {
@@ -75,7 +75,7 @@ export async function generateMetadata({
         title,
         description,
         url: canonical,
-        siteName: 'Innvibs Blog',
+        siteName: 'Sexorism Blog',
         images: [
           {
             url: blog?.image || `${siteUrl}/top.png`,
@@ -87,7 +87,7 @@ export async function generateMetadata({
         type: 'article',
         publishedTime: blog?.date || blog?.createdAt,
         modifiedTime: blog?.updatedAt,
-        authors: [blog?.createdBy || 'Innvibs'],
+        authors: [blog?.createdBy || 'Sexorism'],
         tags: blog?.tags || [],
       },
       twitter: {
@@ -95,7 +95,7 @@ export async function generateMetadata({
         title,
         description,
         images: [blog?.image || `${siteUrl}/top.png`],
-        creator: '@innvibs',
+        creator: '@Sexorism',
       },
       robots: {
         index: true,
@@ -112,8 +112,8 @@ export async function generateMetadata({
   } catch (e) {
     console.error('Error fetching blog metadata:', e);
     return {
-      title: 'Blog Post - Innvibs',
-      description: 'Read the latest blog posts and articles on Innvibs',
+      title: 'Blog Post - Sexorism',
+      description: 'Read the latest blog posts and articles on Sexorism',
       alternates: {
         canonical,
         languages: { en: urlEn, 'x-default': urlEn, hi: urlHi },

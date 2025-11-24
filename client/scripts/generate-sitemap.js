@@ -8,10 +8,10 @@ const path = require('path');
 const SITE_BASE =
   process.env.NEXT_PUBLIC_SITE_URL ||
   process.env.SITEMAP_BASE_URL ||
-  'https://www.innvibs.com';
+  'https://www.Sexorism.com';
 
 const API_BASE =
-  (process.env.NEXT_PUBLIC_API_BASE || 'https://api.innvibs.in').replace(/\/$/, '');
+  (process.env.NEXT_PUBLIC_API_BASE || 'https://api.Sexorism.in').replace(/\/$/, '');
 
 // Static pages in your app
 const staticPages = ['', '/about', '/contact', '/privacy', '/terms', '/search'];

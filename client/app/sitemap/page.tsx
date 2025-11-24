@@ -2,8 +2,8 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Sitemap | Innvibs',
-  description: 'Discover the world of Lifestyle, Fashion, Travel, Sports, Technology, Astrology, and Vastu Shastra at Innvibs — your trusted destination for daily inspiration, trending ideas, and expert insights. Explore fashion trends, travel guides, health and fitness tips, tech innovations, spiritual wisdom, and vastu-based home solutions. Stay updated, stay inspired — Inner Vibes: Explore Inside, Express Outside.',
+  title: 'Sitemap | Sexorism',
+  description: 'Discover the world of Lifestyle, Fashion, Travel, Sports, Technology, Astrology, and Vastu Shastra at Sexorism — your trusted destination for daily inspiration, trending ideas, and expert insights. Explore fashion trends, travel guides, health and fitness tips, tech innovations, spiritual wisdom, and vastu-based home solutions. Stay updated, stay inspired — Inner Vibes: Explore Inside, Express Outside.',
   robots: { index: true, follow: true },
 };
 
@@ -36,7 +36,7 @@ export default function SitemapPage() {
           Sitemap
         </h1>
         <p className="mt-2 text-sm md:text-base text-gray-600 dark:text-gray-300">
-          Quick links to primary pages and categories across Innvibs.
+          Quick links to primary pages and categories across Sexorism.
         </p>
       </header>
 

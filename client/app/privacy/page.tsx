@@ -9,7 +9,7 @@ export default function PrivacyPage() {
   // Minimal “Manage Cookies”: clear consent cookie so your banner re-appears on next load
   const manageCookies = useCallback(() => {
     try {
-      document.cookie = 'innvibs_consent=; Max-Age=0; Path=/; SameSite=Lax';
+      document.cookie = 'Sexorism_consent=; Max-Age=0; Path=/; SameSite=Lax';
     } catch {}
     // Reload so Providers shows the consent banner again
     window.location.reload();
@@ -21,7 +21,7 @@ export default function PrivacyPage() {
       title: 'Introduction',
       content: (
         <>
-          At Innvibs.com, we value your privacy and are committed to protecting it. This Privacy
+          At Sexorism.com, we value your privacy and are committed to protecting it. This Privacy
           Policy explains how we collect, use, disclose, and safeguard your information when you
           visit our website. If you do not agree with the terms of this policy, please do not
           access the site.
@@ -401,7 +401,7 @@ export default function PrivacyPage() {
         {/* Footer note */}
         <div className="mt-8 text-center">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            By using Innvibs.com, you consent to our Privacy Policy and agree to its terms.
+            By using Sexorism.com, you consent to our Privacy Policy and agree to its terms.
           </p>
         </div>
       </div>

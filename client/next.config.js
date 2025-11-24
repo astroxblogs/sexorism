@@ -2,11 +2,11 @@
 
 const resolvedApiOrigin =
   process.env.NEXT_PUBLIC_API_BASE ||
-  (process.env.NODE_ENV !== 'production' ? 'https://api.innvibs.in' : '');
+  (process.env.NODE_ENV !== 'production' ? 'https://api.Sexorism.in' : '');
 
 if (!resolvedApiOrigin) {
   throw new Error(
-    'Missing NEXT_PUBLIC_API_BASE in production. Set it to https://api.innvibs.com (prod) or https://api.innvibs.in (preview).'
+    'Missing NEXT_PUBLIC_API_BASE in production. Set it to https://api.Sexorism.com (prod) or https://api.Sexorism.in (preview).'
   );
 }
 

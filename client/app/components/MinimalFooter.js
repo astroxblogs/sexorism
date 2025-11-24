@@ -12,7 +12,7 @@ const MinimalFooter = () => {
       <div className="max-w-5xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row justify-between items-center text-center">
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 sm:mb-0">
-            © {new Date().getFullYear()} Innvibs Blogs. All rights reserved.
+            © {new Date().getFullYear()} Sexorism Blogs. All rights reserved.
           </p>
           <div className="flex items-center space-x-4 md:space-x-6">
             <Link href="/about" className={linkCls}>About Us</Link>

@@ -27,7 +27,7 @@ type CategoryDto = {
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE ||
-  (process.env.NODE_ENV !== 'production' ? 'https://api.innvibs.in' : '');
+  (process.env.NODE_ENV !== 'production' ? 'https://api.Sexorism.in' : '');
 
 const CategoryPage = NextDynamic(() => import('../../components/CategoryPage'), {
   ssr: false,
@@ -120,7 +120,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
       description,
       url: canonical,
       type: 'website',
-      siteName: 'Innvibs',
+      siteName: 'Sexorism',
     },
     twitter: { card: 'summary_large_image', title, description },
     alternates: {

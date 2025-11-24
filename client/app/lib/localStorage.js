@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid'; // ADDED: Import the UUID generator
 
 const SUBSCRIBER_ID_KEY = 'astrox_subscriber_id';
-const VISITOR_ID_KEY = 'innvibs_visitor_id'; // ADDED: New key for the anonymous ID
+const VISITOR_ID_KEY = 'Sexorism_visitor_id'; // ADDED: New key for the anonymous ID
 
 /**
  * Stores the subscriber ID in localStorage.

@@ -34,7 +34,7 @@ export default function SplashLoader() {
           <div className="splash-inner">
             <motion.img
               src="/light.png"
-              alt="Innvibs Light Logo"
+              alt="Sexorism Light Logo"
               className="splash-logo"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{

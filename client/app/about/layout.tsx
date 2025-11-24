@@ -8,19 +8,19 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export const metadata: Metadata = {
-  title: 'About Us - Innvibs',
+  title: 'About Us - Sexorism',
   description:
-    'Learn more about Innvibs—our mission, values, and the topics we cover across lifestyle, fashion, technology, travel, sports, astrology, and Vastu Shastra.',
+    'Learn more about Sexorism—our mission, values, and the topics we cover across lifestyle, fashion, technology, travel, sports, astrology, and Vastu Shastra.',
   keywords: [
-    'about Innvibs',
+    'about Sexorism',
     'our mission',
-    'Innvibs values',
+    'Sexorism values',
     'lifestyle blog',
     'fashion technology travel sports astrology vastu',
   ],
-  authors: [{ name: 'Innvibs' }],
+  authors: [{ name: 'Sexorism' }],
   creator: 'Astrox Softech Pvt Ltd',
-  publisher: 'Innvibs',
+  publisher: 'Sexorism',
   formatDetection: { email: false, address: false, telephone: false },
 
   // Dynamic base: switches between .com (prod) and .in (preview/dev)
@@ -29,23 +29,23 @@ export const metadata: Metadata = {
   alternates: { canonical: '/about' },
 
   openGraph: {
-    title: 'About Us - Innvibs',
+    title: 'About Us - Sexorism',
     description:
-      'Discover Innvibs: our mission, values, and what we offer across lifestyle, fashion, technology, travel, sports, astrology, and Vastu Shastra.',
+      'Discover Sexorism: our mission, values, and what we offer across lifestyle, fashion, technology, travel, sports, astrology, and Vastu Shastra.',
     url: '/about',
-    siteName: 'Innvibs',
-    images: [{ url: '/top.png', width: 1200, height: 630, alt: 'Innvibs About' }],
+    siteName: 'Sexorism',
+    images: [{ url: '/top.png', width: 1200, height: 630, alt: 'Sexorism About' }],
     locale: 'en_US',
     type: 'website',
   },
 
   twitter: {
     card: 'summary_large_image',
-    title: 'About Us - Innvibs',
+    title: 'About Us - Sexorism',
     description:
-      'Discover Innvibs: our mission, values, and what we offer across lifestyle, fashion, technology, travel, sports, astrology, and Vastu Shastra.',
+      'Discover Sexorism: our mission, values, and what we offer across lifestyle, fashion, technology, travel, sports, astrology, and Vastu Shastra.',
     images: ['/top.png'],
-    creator: '@innvibs',
+    creator: '@Sexorism',
   },
 };
 
@@ -53,16 +53,16 @@ export default function AboutLayout({ children }: { children: React.ReactNode })
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
-    name: 'About Us - Innvibs',
+    name: 'About Us - Sexorism',
     url: `${BASE_URL}/about`,
-    isPartOf: { '@type': 'WebSite', name: 'Innvibs', url: BASE_URL },
+    isPartOf: { '@type': 'WebSite', name: 'Sexorism', url: BASE_URL },
     about: {
       '@type': 'Organization',
-      name: 'Innvibs',
+      name: 'Sexorism',
       parentOrganization: { '@type': 'Organization', name: 'Astrox Softech Pvt Ltd' },
       url: BASE_URL,
       logo: `${BASE_URL}/top.png`,
-      sameAs: ['https://www.facebook.com/innvibs'],
+      sameAs: ['https://www.facebook.com/Sexorism'],
     },
   };
 

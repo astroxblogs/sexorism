@@ -8,12 +8,12 @@ export const dynamic = 'force-dynamic'
 
 export const revalidate = 0
 export const metadata: Metadata = {
-  title: 'Contact Us - Innvibs Blog',
+  title: 'Contact Us - Sexorism Blog',
   description:
-    "Get in touch with the Innvibs. We'd love to hear from you! Contact us for questions, feedback, or collaboration opportunities.",
+    "Get in touch with the Sexorism. We'd love to hear from you! Contact us for questions, feedback, or collaboration opportunities.",
   keywords: [
     'contact us',
-    'Innvibs contact',
+    'Sexorism contact',
     'get in touch',
     'contact information',
     'blog contact',
@@ -21,9 +21,9 @@ export const metadata: Metadata = {
     'collaboration',
     'feedback',
   ],
-  authors: [{ name: 'Innvibs' }],
+  authors: [{ name: 'Sexorism' }],
   creator: 'Astrox Softech Pvt Ltd',
-  publisher: 'Innvibs',
+  publisher: 'Sexorism',
   formatDetection: { email: false, address: false, telephone: false },
 
   // Dynamic base for prod (.com) and preview/dev (.in)
@@ -34,17 +34,17 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: 'Contact Us - Innvibs Blog',
+    title: 'Contact Us - Sexorism Blog',
     description:
-      "Get in touch with the Innvibs. We'd love to hear from you! Contact us for questions, feedback, or collaboration opportunities.",
+      "Get in touch with the Sexorism. We'd love to hear from you! Contact us for questions, feedback, or collaboration opportunities.",
     url: '/contact', // resolves against metadataBase
-    siteName: 'Innvibs Blog',
+    siteName: 'Sexorism Blog',
     images: [
       {
         url: '/top.png',
         width: 1200,
         height: 630,
-        alt: 'Innvibs Blog - Contact Us',
+        alt: 'Sexorism Blog - Contact Us',
       },
     ],
     locale: 'en_US',
@@ -53,11 +53,11 @@ export const metadata: Metadata = {
 
   twitter: {
     card: 'summary_large_image',
-    title: 'Contact Us - Innvibs Blog',
+    title: 'Contact Us - Sexorism Blog',
     description:
-      "Get in touch with the Innvibs. We'd love to hear from you! Contact us for questions, feedback, or collaboration opportunities.",
+      "Get in touch with the Sexorism. We'd love to hear from you! Contact us for questions, feedback, or collaboration opportunities.",
     images: ['/top.png'],
-    creator: '@innvibs',
+    creator: '@Sexorism',
   },
 
   robots: {
@@ -87,10 +87,10 @@ export default function ContactLayout({ children }: { children: React.ReactNode 
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'Innvibs',
+    name: 'Sexorism',
     url: BASE_URL,
     logo: `${BASE_URL}/top.png`,
-    sameAs: ['https://www.facebook.com/innvibs'],
+    sameAs: ['https://www.facebook.com/Sexorism'],
     parentOrganization: { '@type': 'Organization', name: 'Astrox Softech Pvt Ltd' },
     contactPoint: [
       {

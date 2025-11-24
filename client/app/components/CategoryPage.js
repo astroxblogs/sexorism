@@ -282,24 +282,24 @@ const CategoryPage = ({ categoryName }) => {
       : (category.name_en || category.name_hi);
 
   const metaDescriptionFallback =
-    `Explore the latest articles, news, and insights in the ${category.name_en} category on Innvibs. Stay updated with our in-depth posts.`;
+    `Explore the latest articles, news, and insights in the ${category.name_en} category on Sexorism. Stay updated with our in-depth posts.`;
 
   const canonicalPath = `${basePrefix}/${categorySlug}`;
 
   const collectionPageSchema = {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
-    name: `${category.name_en} Blogs - Innvibs`,
+    name: `${category.name_en} Blogs - Sexorism`,
     description: (category.metaDescription ?? metaDescriptionFallback),
-    url: `https://www.innvibs.com${canonicalPath}`,
+    url: `https://www.Sexorism.com${canonicalPath}`,
   };
 
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.innvibs.com' },
-      { '@type': 'ListItem', position: 2, name: category.name_en, item: `https://www.innvibs.com${canonicalPath}` },
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.Sexorism.com' },
+      { '@type': 'ListItem', position: 2, name: category.name_en, item: `https://www.Sexorism.com${canonicalPath}` },
     ],
   };
 

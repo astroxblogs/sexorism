@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import { permanentRedirect } from 'next/navigation';
 
 export const metadata: Metadata = {
-  title: 'Blog - Innvibs',
+  title: 'Blog - Sexorism',
   description: 'Read our latest blog posts and articles',
 };
 

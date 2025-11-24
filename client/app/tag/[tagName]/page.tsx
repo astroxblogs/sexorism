@@ -15,8 +15,8 @@ export async function generateMetadata({
   const raw = decodeURIComponent(params.tagName || '')
   const pretty = raw.replace(/-/g, ' ').replace(/\s+/g, ' ').trim()
   return {
-    title: `Curated #${pretty} Reads – Innvibs`,
-    description: `Explore articles tagged "${pretty}" on Innvibs.`,
+    title: `Curated #${pretty} Reads – Sexorism`,
+    description: `Explore articles tagged "${pretty}" on Sexorism.`,
   }
 }
 

@@ -8,29 +8,29 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export const metadata: Metadata = {
-  title: 'Terms of Service - Innvibs',
+  title: 'Terms of Service - Sexorism',
   description:
-    'Read the Innvibs Terms of Service and user agreement, including acceptable use, IP rights, limitations, and governing law.',
+    'Read the Sexorism Terms of Service and user agreement, including acceptable use, IP rights, limitations, and governing law.',
   // Dynamic base so canonical / OG resolve for both .com (prod) and .in (dev)
   metadataBase: new URL(BASE_URL),
   alternates: { canonical: '/terms' },
   openGraph: {
-    title: 'Terms of Service - Innvibs',
+    title: 'Terms of Service - Sexorism',
     description:
-      'Understand the rules for using Innvibs: acceptable use, IP rights, liability limits, and governing law.',
+      'Understand the rules for using Sexorism: acceptable use, IP rights, liability limits, and governing law.',
     url: '/terms', // resolves against metadataBase
-    siteName: 'Innvibs',
-    images: [{ url: '/top.png', width: 1200, height: 630, alt: 'Innvibs Terms of Service' }],
+    siteName: 'Sexorism',
+    images: [{ url: '/top.png', width: 1200, height: 630, alt: 'Sexorism Terms of Service' }],
     locale: 'en_US',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Terms of Service - Innvibs',
+    title: 'Terms of Service - Sexorism',
     description:
-      'Understand the rules for using Innvibs: acceptable use, IP rights, liability limits, and governing law.',
+      'Understand the rules for using Sexorism: acceptable use, IP rights, liability limits, and governing law.',
     images: ['/top.png'],
-    creator: '@innvibs',
+    creator: '@Sexorism',
   },
   // You can let robots inherit from root; keeping your explicit config is fine too:
   robots: {
@@ -50,16 +50,16 @@ export default function TermsLayout({ children }: { children: React.ReactNode })
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebPage',
-    name: 'Terms of Service - Innvibs',
+    name: 'Terms of Service - Sexorism',
     url: `${BASE_URL}/terms`,
-    isPartOf: { '@type': 'WebSite', name: 'Innvibs', url: BASE_URL },
+    isPartOf: { '@type': 'WebSite', name: 'Sexorism', url: BASE_URL },
     about: {
       '@type': 'Organization',
-      name: 'Innvibs',
+      name: 'Sexorism',
       parentOrganization: { '@type': 'Organization', name: 'Astrox Softech Pvt Ltd' },
       url: BASE_URL,
       logo: `${BASE_URL}/top.png`,
-      sameAs: ['https://www.facebook.com/innvibs'],
+      sameAs: ['https://www.facebook.com/Sexorism'],
       contactPoint: [
         {
           '@type': 'ContactPoint',

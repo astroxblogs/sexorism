@@ -18,7 +18,7 @@ const GTM_ID = 'GTM-PJPB3FJL';
 // Simple cookie get/set that avoids external deps
 function getConsentFromCookie(): ConsentState {
   try {
-    const cookie = ('; ' + document.cookie).split('; ').find(c => c.startsWith('innvibs_consent='));
+    const cookie = ('; ' + document.cookie).split('; ').find(c => c.startsWith('Sexorism_consent='));
     if (!cookie) return 'unset';
     const val = decodeURIComponent(cookie.split('=')[1] || '');
     if (val === 'granted' || val === 'denied') return val;
@@ -28,7 +28,7 @@ function getConsentFromCookie(): ConsentState {
 function setConsentCookie(val: Exclude<ConsentState, 'unset'>) {
   try {
     const fifteenDays = 15 * 24 * 60 * 60; // 15 days in seconds
-    document.cookie = `innvibs_consent=${val}; Max-Age=${fifteenDays}; Path=/; SameSite=Lax`;
+    document.cookie = `Sexorism_consent=${val}; Max-Age=${fifteenDays}; Path=/; SameSite=Lax`;
   } catch {}
 }
 

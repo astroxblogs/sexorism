@@ -59,7 +59,7 @@ const Sidebar = ({ activeView, setActiveView, handleLogout }) => {
   return (
     <div className="w-64 bg-white border-r border-gray-200 flex flex-col sticky top-0 h-screen">
       <div className="p-6 border-b border-gray-200">
-        <h1 className="text-2xl font-bold text-gray-800">Innvibs</h1>
+        <h1 className="text-2xl font-bold text-gray-800">Sexorism</h1>
         <p className="text-sm text-gray-500">Operator Panel</p>
       </div>
 

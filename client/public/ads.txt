@@ -1,8 +1,8 @@
 google.com, pub-4112734313230332, DIRECT, f08c47fec0942fa0
  
-#Ads.txt innvibs.com
+#Ads.txt Sexorism.com
 #Ads.txt managed by AdsTxtManager.com - the free ads.txt management tool for publishers
-ownerdomain=innvibs.com
+ownerdomain=Sexorism.com
 contact=directsales@ezoic.com
 managerdomain=ezoic.ai
  

@@ -11,5 +11,5 @@ export function getBaseUrl() {
   }
 
   // canonical domain (no .in logic anymore)
-  return 'https://www.innvibs.com';
+  return 'https://www.Sexorism.com';
 }

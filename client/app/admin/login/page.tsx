@@ -4,8 +4,8 @@ import { Suspense } from 'react';
 import AdminLoginClient from './AdminLoginClient';
 
 export const metadata: Metadata = {
-  title: 'Admin Login - Innvibs',
-  description: 'Admin login page for Innvibs',
+  title: 'Admin Login - Sexorism',
+  description: 'Admin login page for Sexorism',
 };
 
 export default function AdminLoginPage() {

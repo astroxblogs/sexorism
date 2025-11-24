@@ -161,9 +161,9 @@ const HomePage = (props) => {
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'Innvibs',
-    url: 'https://www.innvibs.com',
-    logo: 'https://www.innvibs.com/logo512.png',
+    name: 'Sexorism',
+    url: 'https://www.Sexorism.com',
+    logo: 'https://www.Sexorism.com/logo512.png',
     sameAs: [
       'https://www.facebook.com/your-profile',
       'https://www.twitter.com/your-profile',
@@ -175,12 +175,12 @@ const HomePage = (props) => {
   const websiteSchema = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    url: 'https://www.innvibs.com',
+    url: 'https://www.Sexorism.com',
     potentialAction: {
       '@type': 'SearchAction',
       target: {
         '@type': 'EntryPoint',
-        urlTemplate: 'https://www.innvibs.com/search?q={search_term_string}',
+        urlTemplate: 'https://www.Sexorism.com/search?q={search_term_string}',
       },
       'query-input': 'required name=search_term_string',
     },
@@ -401,7 +401,7 @@ const HomePage = (props) => {
 
       <SEO
         title="Inner Vibes: Technology, Travel, Health, Lifestyle, Trends, Sports, Fashion with Vastu & Astro"
-        description="Explore technology, travel, health & wellness, lifestyle trends, sports and fashion—plus Vastu & astrology insights. Fresh stories daily from Innvibs."
+        description="Explore technology, travel, health & wellness, lifestyle trends, sports and fashion—plus Vastu & astrology insights. Fresh stories daily from Sexorism."
         canonicalUrl={basePrefix || '/'}
         schema={[organizationSchema, websiteSchema]}
       />
@@ -453,7 +453,7 @@ const HomePage = (props) => {
                 Discover Amazing Stories
               </motion.span>
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-[var(--color-text-primary)] mb-4 max-w-4xl">
-                {t('homepage.welcome_title', 'Welcome to Innvibs Blogs')}
+                {t('homepage.welcome_title', 'Welcome to Sexorism Blogs')}
               </h1>
               <p className="text-lg sm:text-xl text-[var(--color-text-secondary)] max-w-3xl">
                 {t(

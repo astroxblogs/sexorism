@@ -6,9 +6,9 @@ export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
 export const metadata: Metadata = {
-  title: 'Page Not Found - Innvibs Blog',
-  description: 'The page you are looking for could not be found. Browse our latest articles and blog posts on Innvibs.',
-  keywords: ['404', 'page not found', 'Innvibs', 'blog'],
+  title: 'Page Not Found - Sexorism Blog',
+  description: 'The page you are looking for could not be found. Browse our latest articles and blog posts on Sexorism.',
+  keywords: ['404', 'page not found', 'Sexorism', 'blog'],
   robots: {
     index: false,
     follow: true,

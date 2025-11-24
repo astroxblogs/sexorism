@@ -8,12 +8,12 @@ import { toast } from 'react-hot-toast';
 
 export default function SettingsComponent() {
   const [settings, setSettings] = useState({
-    siteName: 'Innvibs Blog',
+    siteName: 'Sexorism Blog',
     siteDescription: 'Your daily source for insightful articles',
     contactEmail: 'contact@astroxsoftech.com',
     socialLinks: {
-      facebook: 'https://www.facebook.com/innvibs',
-      twitter: 'https://twitter.com/innvibs',
+      facebook: 'https://www.facebook.com/Sexorism',
+      twitter: 'https://twitter.com/Sexorism',
       instagram: '',
       linkedin: ''
     }

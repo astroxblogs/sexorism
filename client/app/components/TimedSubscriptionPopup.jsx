@@ -48,7 +48,7 @@ const TimedSubscriptionPopup = ({ showPopup, onClose, onSubscribeSuccess }) => {
                 }
             }
 
-            setMessage(data.msg || '🎉 Welcome to the Innvibs community!');
+            setMessage(data.msg || '🎉 Welcome to the Sexorism community!');
             setIsSuccess(true);
 
             if (onSubscribeSuccess) {
@@ -130,7 +130,7 @@ const TimedSubscriptionPopup = ({ showPopup, onClose, onSubscribeSuccess }) => {
                         </div>
                         
                         <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 dark:from-white dark:via-blue-200 dark:to-purple-200 bg-clip-text text-transparent mb-2">
-                            Join the <span className="font-extrabold">Innvibs</span> Revolution!
+                            Join the <span className="font-extrabold">Sexorism</span> Revolution!
                         </h2>
                         
                         <div className="space-y-1">
@@ -210,7 +210,7 @@ const TimedSubscriptionPopup = ({ showPopup, onClose, onSubscribeSuccess }) => {
                                      <span>Welcome! 🎉</span>
                                  </div>
                              ) : (
-                                 <span>🚀 Join Innvibs - It's Free!</span>
+                                 <span>🚀 Join Sexorism - It's Free!</span>
                              )}
                          </button>
                     </form>
