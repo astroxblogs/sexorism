@@ -35,7 +35,7 @@ export async function generateMetadata(): Promise<Metadata> {
       description,
       url: isHi ? '/hi' : '/',
       siteName: 'Sexorism',
-      images: [{ url: '/top.png', width: 1200, height: 630, alt: 'Sexorism — Erotic Adult Content' }],
+      images: [{ url: '/light.png', width: 1200, height: 630, alt: 'Sexorism — Erotic Adult Content' }],
       locale: isHi ? 'hi_IN' : 'en_US',
       type: 'website',
     },
@@ -43,7 +43,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: 'summary_large_image',
       title,
       description,
-      images: ['/top.png'],
+      images: ['/light.png'],
       creator: '@sexorism',
     },
     alternates: {
