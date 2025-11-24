@@ -11,46 +11,64 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export async function generateMetadata(): Promise<Metadata> {
-  const lang = currentLang();
-  const isHi = lang === 'hi';
+  const lang = currentLang();
+  const isHi = lang === 'hi';
 
-  const title_en = 
-    'Sexorism — Erotic Sex Stories, Adult Blogs & Bold Pleasure | 18+ Only';
-  const desc_en =
-    'Dive into Sexorism: Your ultimate 18+ adult destination for steamy erotic stories, real confessions, adult blogs, and fantasies. Dare to explore desire and pleasure like never before.';
+  // Get the base URL for absolute image URLs
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://sexorism.vercel.app';
 
-  const title_hi =
-    'Sexorism — एडल्ट सेक्स स्टोरी, बोल्ड ब्लॉग, और यौन संतुष्टि | केवल 18+ के लिए';
-  const desc_hi =
-    'Sexorism पर पाएं इरोटिक कहानियाँ, सच्चे अनुभव और वयस्क ब्लॉग। सिर्फ 18+ के लिए, जहाँ इच्छा और आनंद है।';
+  const title_en =
+    'Sexorism — Erotic Sex Stories, Adult Blogs & Bold Pleasure | 18+ Only';
+  const desc_en =
+    'Dive into Sexorism: Your ultimate 18+ adult destination for steamy erotic stories, real confessions, adult blogs, and fantasies. Dare to explore desire and pleasure like never before.';
 
-  const title = isHi ? title_hi : title_en;
-  const description = isHi ? desc_hi : desc_en;
+  const title_hi =
+    'Sexorism — एडल्ट सेक्स स्टोरी, बोल्ड ब्लॉग, और यौन संतुष्टि | केवल 18+ के लिए';
+  const desc_hi =
+    'Sexorism पर पाएं इरोटिक कहानियाँ, सच्चे अनुभव और वयस्क ब्लॉग। सिर्फ 18+ के लिए, जहाँ इच्छा और आनंद है।';
 
-  return {
-    title,
-    description,
-    openGraph: {
-      title,
-      description,
-      url: isHi ? '/hi' : '/',
-      siteName: 'Sexorism',
-      images: [{ url: '/light.png', width: 1200, height: 630, alt: 'Sexorism — Erotic Adult Content' }],
-      locale: isHi ? 'hi_IN' : 'en_US',
-      type: 'website',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: ['/light.png'],
-      creator: '@sexorism',
-    },
-    alternates: {
-      canonical: isHi ? '/hi' : '/',
-      languages: { en: '/', hi: '/hi' },
-    },
-  };
+  const title = isHi ? title_hi : title_en;
+  const description = isHi ? desc_hi : desc_en;
+
+  // Use absolute URL for the image
+  const imageUrl = `${baseUrl}/light.png`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: isHi ? `${baseUrl}/hi` : baseUrl,
+      siteName: 'Sexorism',
+      images: [{
+        url: imageUrl,
+        width: 1200,
+        height: 630,
+        alt: 'Sexorism — Erotic Adult Content',
+        type: 'image/png'
+      }],
+      locale: isHi ? 'hi_IN' : 'en_US',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [imageUrl],
+      creator: '@sexorism',
+    },
+    alternates: {
+      canonical: isHi ? `${baseUrl}/hi` : baseUrl,
+      languages: { en: baseUrl, hi: `${baseUrl}/hi` },
+    },
+    other: {
+      'og:image:secure_url': imageUrl,
+      'og:image:width': '1200',
+      'og:image:height': '630',
+      'twitter:image:alt': 'Sexorism — Erotic Adult Content',
+    },
+  };
 }
 
 const API_BASE =
@@ -88,24 +106,24 @@ export default async function HomePage() {
     (await fetchJson(`${API_BASE}/api/blogs?limit=10&lang=${lang}`, lang)) || [];
   const posts: any[] = Array.isArray(list?.blogs) ? list.blogs : Array.isArray(list) ? list : [];
 
-  return (
-    <>
-      <noscript>
-        <section>
-          <h1>Sexorism — Latest 18+ Adult Posts</h1>
-          {posts.slice(0, 10).map((p) => (
-            <article key={p._id || p.slug}>
-              <h2>{p?.title}</h2>
-              {p?.image ? <img src={p.image} alt={p.title} /> : null}
-              <p>{excerptFromHtml(p?.content || p?.excerpt || '')}</p>
-            </article>
-          ))}
-        </section>
-      </noscript>
+return (
+  <>
+    <noscript>
+      <section>
+        <h1>Sexorism — Latest 18+ Adult Posts</h1>
+        {posts.slice(0, 10).map((p) => (
+          <article key={p._id || p.slug}>
+            <h2>{p?.title}</h2>
+            {p?.image ? <img src={p.image} alt={p.title} /> : null}
+            <p>{excerptFromHtml(p?.content || p?.excerpt || '')}</p>
+          </article>
+        ))}
+      </section>
+    </noscript>
 
-      <Suspense fallback={<div className="text-center py-20">Loading...</div>}>
-        <Home key={`home-${lang}`} />
-      </Suspense>
-    </>
-  );
+    <Suspense fallback={<div className="text-center py-20">Loading...</div>}>
+      <Home key={`home-${lang}`} />
+    </Suspense>
+  </>
+);
 }
