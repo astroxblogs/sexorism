@@ -2,32 +2,17 @@
 
 import { useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { pushToDataLayer } from '../lib/gtmEvents';
 
 /**
- * GTM-friendly analytics component:
- * - DOES NOT inject gtag.js directly
- * - Pushes page_view (redundant safety) and Web Vitals into dataLayer
- * - Let GTM route events to GA4 (configure tags/triggers inside GTM)
+ * Analytics component (GTM removed):
+ * - Web Vitals tracking only (no GTM dependency)
+ * - Measures Core Web Vitals for performance monitoring
  */
 export default function Analytics() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Optional: additional page_view push (harmless with GTM)
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const q = searchParams?.toString();
-    const page_path = q ? `${pathname}?${q}` : pathname;
-
-    pushToDataLayer('page_view', {
-      page_path,
-      page_title: typeof document !== 'undefined' ? document.title : '',
-      page_location: typeof window !== 'undefined' ? window.location.href : '',
-    });
-  }, [pathname, searchParams]);
-
-  // Core Web Vitals -> dataLayer (GTM -> GA4)
+  // Core Web Vitals tracking (console logging for development)
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -36,11 +21,12 @@ export default function Analytics() {
         const { getCLS, getFID, getFCP, getLCP, getTTFB } = await import('web-vitals');
 
         const report = (metric: any) => {
-          // Example: { name: 'CLS', value: 0.03, delta: ..., id: 'v4-...' }
-          pushToDataLayer('web_vitals', {
-            metric_name: metric.name,
-            metric_id: metric.id,
-            metric_value: metric.value,
+          // Log to console for development (can be replaced with your analytics)
+          console.log('Web Vital:', {
+            name: metric.name,
+            value: metric.value,
+            id: metric.id,
+            page: pathname
           });
         };
 
@@ -53,7 +39,7 @@ export default function Analytics() {
         // ignore if web-vitals not available
       }
     })();
-  }, []);
+  }, [pathname]);
 
   return null;
 }

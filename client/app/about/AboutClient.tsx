@@ -32,7 +32,7 @@ export default function AboutClient() {
                             <div className="h-1 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 rounded-full mt-2"></div>
                         </div>
                         <p className="text-xl sm:text-2xl text-gray-600 dark:text-gray-300 font-light italic">
-                            Inner Vibes — Explore Inside, Express Outside
+                            Sexorism — Explore Inside, Express Outside
                         </p>
                         <p className="text-lg text-gray-500 dark:text-gray-400 max-w-3xl mx-auto">
                             Your daily source for insightful articles and trending stories

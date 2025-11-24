@@ -170,7 +170,7 @@ const TopNavigation = ({ activeCategory, onCategoryChange, setSearchQuery, onLog
               className="h-8 sm:h-10 w-auto object-contain block dark:hidden"
             />
             <img
-              src="/dark.png"
+              src="/light.png"
               alt="Logo Dark"
               className="h-8 sm:h-10 w-auto object-contain hidden dark:block"
             />

@@ -400,7 +400,7 @@ const HomePage = (props) => {
       <AnimatedBackground />
 
       <SEO
-        title="Inner Vibes: Technology, Travel, Health, Lifestyle, Trends, Sports, Fashion with Vastu & Astro"
+        title="Sexorism: Technology, Travel, Health, Lifestyle, Trends, Sports, Fashion with Vastu & Astro"
         description="Explore technology, travel, health & wellness, lifestyle trends, sports and fashion—plus Vastu & astrology insights. Fresh stories daily from Sexorism."
         canonicalUrl={basePrefix || '/'}
         schema={[organizationSchema, websiteSchema]}

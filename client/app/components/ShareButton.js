@@ -66,15 +66,7 @@ const ShareButton = ({
   }, []);
 
   const trackShareEvent = (platform) => {
-    if (window.dataLayer) {
-      window.dataLayer.push({
-        event: "share_blog",
-        share_platform: platform.toLowerCase(),
-        blog_id: blogId,
-        blog_slug: blogSlug,
-        blog_title: title,
-      });
-    }
+    // GTM tracking removed
   };
 
   const encodedUrl = encodeURIComponent(shareUrl);

@@ -13,7 +13,7 @@ interface NavigationWrapperProps {
 }
 
 const NavigationWrapper: React.FC<NavigationWrapperProps> = ({ children }) => {
-  const [categories, setCategories] = useState([])
+  const [categories, setCategories] = useState<any[]>([])
   const [activeCategory, setActiveCategory] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [isClient, setIsClient] = useState(false)
@@ -30,15 +30,15 @@ const NavigationWrapper: React.FC<NavigationWrapperProps> = ({ children }) => {
   const isAdminPage = isClient && pathname && adminPages.some(page => pathname.startsWith(page))
 
   const fetchCategories = useCallback(async () => {
-    if (categories.length > 0) return; // Prevent multiple calls
-
     try {
       const data = await getCategories()        // uses axios instance with language attached
-      if (data) setCategories(data)
+      if (data && Array.isArray(data)) {
+        setCategories(data)
+      }
     } catch (error) {
       console.error('Error fetching categories:', error)
     }
-  }, [categories.length])
+  }, [])
 
   useEffect(() => {
     fetchCategories()
@@ -95,7 +95,7 @@ const NavigationWrapper: React.FC<NavigationWrapperProps> = ({ children }) => {
        </div>
      )} */}
 
-      {isStandalonePage || isAdminPage ? <div /> : <Footer1 />}
+      {isStandalonePage || isAdminPage ? <div /> : <Footer1 key={categories.length} categories={categories as any} />}
 
       {/* Language Nudge - Show on public pages only */}
       {!isStandalonePage && !isAdminPage && <LanguageNudge />}

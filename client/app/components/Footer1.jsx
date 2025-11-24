@@ -6,8 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from './ThemeContext';
 import { usePathname } from 'next/navigation';
 import {
-  FaLinkedin,
-  FaTwitter,
+  // FaLinkedin,
+  // FaTwitter,
   FaInstagram,
   FaFacebook,
   FaSun,
@@ -15,10 +15,14 @@ import {
   FaArrowRight,
 } from "react-icons/fa";
 
-export default function BalancedMonumentFooter() {
-  const { t } = useTranslation();
+export default function BalancedMonumentFooter({ categories = [] }) {
+  const { t, i18n } = useTranslation();
   const { theme, toggleTheme } = useTheme();
   const pathname = usePathname();
+
+  // Get current language from i18n (reactive to language changes)
+  const currentLang = i18n?.resolvedLanguage || i18n?.language || 'en';
+  const isHindi = currentLang.startsWith('hi');
 
   // Locale-aware prefix: '/hi' when browsing Hindi, '' for English
   const localePrefix = React.useMemo(() => {
@@ -30,25 +34,45 @@ export default function BalancedMonumentFooter() {
     return '';
   }, [pathname]);
 
-  const blogCategories = [
-    { labelKey: "category.technology", value: "Technology" },
-    { labelKey: "category.fashion", value: "Fashion" },
-    { labelKey: "category.health_wellness", value: "Health & Wellness" },
-    { labelKey: "category.travel", value: "Travel" },
-    { labelKey: "category.food_cooking", value: "Food & Cooking" },
-    { labelKey: "category.sports", value: "Sports" },
-    { labelKey: "category.business_finance", value: "Business & Finance" },
-    { labelKey: "category.lifestyle", value: "Lifestyle" },
-    { labelKey: "category.trends", value: "Trends" },
-    { labelKey: "category.relationship", value: "Relationship" },
-    { labelKey: "category.astrology", value: "Astrology" },
-    { labelKey: "category.vastu_shastra", value: "Vastu Shastra" },
-  ];
+  // Get localized category name (same logic as navbar)
+  const getCategoryName = (category) => {
+    return isHindi ? category.name_hi || category.name_en : category.name_en || category.name_hi;
+  };
+
+  // Use dynamic categories from props, fallback to hardcoded if empty
+  const blogCategories = React.useMemo(() => {
+    if (categories.length > 0) {
+      return categories.map(cat => {
+        const displayName = getCategoryName(cat);
+
+        return {
+          value: cat.name_en,
+          displayName: displayName
+        };
+      });
+    } else {
+      // Fallback hardcoded categories with proper localization
+      return [
+        { value: "Technology", displayName: t("category.technology") },
+        { value: "Fashion", displayName: t("category.fashion") },
+        { value: "Health & Wellness", displayName: t("category.health_wellness") },
+        { value: "Travel", displayName: t("category.travel") },
+        { value: "Food & Cooking", displayName: t("category.food_cooking") },
+        { value: "Sports", displayName: t("category.sports") },
+        { value: "Business & Finance", displayName: t("category.business_finance") },
+        { value: "Lifestyle", displayName: t("category.lifestyle") },
+        { value: "Trends", displayName: t("category.trends") },
+        { value: "Relationship", displayName: t("category.relationship") },
+        { value: "Astrology", displayName: t("category.astrology") },
+        { value: "Vastu Shastra", displayName: t("category.vastu_shastra") },
+      ];
+    }
+  }, [categories, isHindi, t]);
 
   const categoryLinks = {
     titleKey: "footer.categories_title",
     links: blogCategories.map(cat => ({
-      nameKey: cat.labelKey,
+      name: cat.displayName, // Always use displayName (localized name)
       path: `/category/${cat.value.toLowerCase().replace(/ & /g, '-&-').replace(/ /g, '-')}`
     }))
   };
@@ -76,8 +100,8 @@ export default function BalancedMonumentFooter() {
   ];
 
   const socialLinks = [
-    { name: "LinkedIn", icon: <FaLinkedin />, url: "https://linkedin.com", colorClass: "text-[#0077B5]" },
-    { name: "Twitter", icon: <FaTwitter />, url: "https://twitter.com", colorClass: "text-[#1DA1F2]" },
+    // { name: "LinkedIn", icon: <FaLinkedin />, url: "https://linkedin.com", colorClass: "text-[#0077B5]" },
+    // { name: "Twitter", icon: <FaTwitter />, url: "https://twitter.com", colorClass: "text-[#1DA1F2]" },
     { name: "Instagram", icon: <FaInstagram />, url: "https://instagram.com", colorClass: "text-pink-500" },
     { name: "Facebook", icon: <FaFacebook />, url: "https://www.facebook.com/Sexorism", colorClass: "text-[#1877F2]" },
   ];
@@ -94,7 +118,7 @@ export default function BalancedMonumentFooter() {
             alt="Sexorism Logo Light"
           />
           <img
-            src="dark.png"
+            src="light.png"
             className="h-20 w-auto max-w-full hidden dark:block"
             alt="Sexorism Logo Dark"
           />
@@ -104,7 +128,7 @@ export default function BalancedMonumentFooter() {
         <div className="mb-6 md:mb-8">
           <p className="text-sm md:text-base text-[var(--color-text-secondary)] max-w-2xl leading-relaxed">
             <span className="block">
-              {t('footer.tagline_line1', 'Inner Vibes — Explore Inside, Express Outside')}
+              {t('footer.tagline_line1', 'Sexorism — Explore Inside, Express Outside')}
             </span>
             <span className="block">
               {t('footer.tagline_line2', 'A curated space for insights, stories, and ideas that matter.')}
@@ -167,7 +191,7 @@ export default function BalancedMonumentFooter() {
                             href={hrefStr || '/'}
                             className="text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors duration-200"
                           >
-                            {t(link?.nameKey || link?.name)}
+                            {link?.name}
                           </Link>
                         )}
                       </li>
@@ -226,11 +250,11 @@ export default function BalancedMonumentFooter() {
         >
           <p className="text-xs sm:text-sm text-[var(--color-text-secondary)] mb-0">
             © {new Date().getFullYear()}{" "}
-            <span className="font-semibold text-[var(--color-text-primary)]">Inner Vibes</span>
+            <span className="font-semibold text-[var(--color-text-primary)]">Sexorism</span>
             <br />
             Powered by{" "}
             <span className="font-medium text-[var(--color-accent)]">
-              Astrox Softech Pvt. Ltd.
+              Sexorism Pvt. Ltd.
             </span>{" "}
             — All Rights Reserved.
           </p>

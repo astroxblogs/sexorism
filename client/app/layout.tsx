@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { cookies } from 'next/headers';
 
-import GtmTracker from './components/GtmTracker';
 import { getBaseUrl } from './lib/site';
 import { Inter, Syne, Outfit, Space_Grotesk } from 'next/font/google'
 import Script from 'next/script'
@@ -217,16 +216,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               'ad_user_data': 'denied',
               'ad_personalization': 'denied'
             });
-            // Helper to load GTM after consent
-            window.__loadGTM = function(id){
-              if (window.__gtmLoaded) return;
-              window.__gtmLoaded = true;
-              var s = document.createElement('script');
-              s.async = true;
-              s.src = 'https://www.googletagmanager.com/gtm.js?id=' + id + '&l=dataLayer';
-              document.head.appendChild(s);
-              window.dataLayer.push({'gtm.start': new Date().getTime(), event: 'gtm.js'});
-            };
           `}
         </Script>
 
@@ -280,7 +269,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Providers>
             <Analytics />
             <NavigationWrapper>
-              <GtmTracker />
               <RouteAwareChrome>{children}</RouteAwareChrome>
             </NavigationWrapper>
           </Providers>

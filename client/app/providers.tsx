@@ -13,8 +13,6 @@ import { setApiLanguage } from './lib/api';
 // --- Consent state + helpers (minimal, no UI impact elsewhere) ---
 type ConsentState = 'granted' | 'denied' | 'unset';
 
-const GTM_ID = 'GTM-PJPB3FJL';
-
 // Simple cookie get/set that avoids external deps
 function getConsentFromCookie(): ConsentState {
   try {
@@ -30,21 +28,6 @@ function setConsentCookie(val: Exclude<ConsentState, 'unset'>) {
     const fifteenDays = 15 * 24 * 60 * 60; // 15 days in seconds
     document.cookie = `Sexorism_consent=${val}; Max-Age=${fifteenDays}; Path=/; SameSite=Lax`;
   } catch {}
-}
-
-
-// Lazy create noscript iframe only after consent
-function renderGtmNoscript() {
-  if (document.getElementById('__gtm_noscript')) return;
-  const wrap = document.createElement('div');
-  wrap.id = '__gtm_noscript';
-  wrap.style.display = 'contents';
-  wrap.innerHTML = `
-    <noscript>
-      <iframe src="https://www.googletagmanager.com/ns.html?id=${GTM_ID}" height="0" width="0"
-        style="display:none;visibility:hidden"></iframe>
-    </noscript>`;
-  document.body.prepend(wrap);
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -77,8 +60,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
         'ad_user_data': 'granted',
         'ad_personalization': 'granted'
       });
-      (window as any).__loadGTM?.(GTM_ID);
-      renderGtmNoscript();
     }
   }, []);
 
@@ -91,8 +72,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
       'ad_user_data': 'granted',
       'ad_personalization': 'granted'
     });
-    (window as any).__loadGTM?.(GTM_ID);
-    renderGtmNoscript();
   }, []);
 
   const reject = useCallback(() => {
