@@ -7,6 +7,7 @@ import { useShare } from '../context/ShareContext';
 import { hasSubscriberId } from '../utils/localStorage';
 // import { incrementBlogView } from '../lib/api'; // ⛔️ TEMP DISABLED: view counter
 import BlogArticle from './BlogArticle';
+import TimedSubscriptionPopup from './TimedSubscriptionPopup.jsx';
 
 const POPUP_DELAY_SECONDS = 60;
 
@@ -95,17 +96,25 @@ const BlogDetail = ({ blog }) => {
   if (!blog) return <div className="text-center mt-20 p-4 dark:text-gray-300">Blog not found.</div>;
 
   return (
-    <BlogArticle
-      key={lang}
-      blog={localizedBlog}
-      isSubscribed={isSubscribed}
-      setIsSubscribed={setIsSubscribed}
-      showTimedPopup={showTimedPopup}
-      setShowTimedPopup={setShowTimedPopup}
-      onTimedPopupSuccess={handleTimedPopupSuccess}
-      getShareCount={getShareCount}
-      currentLang={lang}
-    />
+    <>
+      <BlogArticle
+        key={lang}
+        blog={localizedBlog}
+        isSubscribed={isSubscribed}
+        setIsSubscribed={setIsSubscribed}
+        getShareCount={getShareCount}
+        currentLang={lang}
+      />
+
+      {/* Render popup at page level to avoid clipping */}
+      {showTimedPopup && !isSubscribed && (
+        <TimedSubscriptionPopup
+          showPopup={showTimedPopup}
+          onClose={() => setShowTimedPopup(false)}
+          onSubscribeSuccess={handleTimedPopupSuccess}
+        />
+      )}
+    </>
   );
 };
 

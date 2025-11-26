@@ -298,23 +298,6 @@ const BlogArticle = ({
             </div>
           </div>
 
-          {showGatedPopup && (
-            <TimedSubscriptionPopup
-              showPopup={showGatedPopup}
-              onClose={() => setShowGatedPopup(false)}
-              onSubscribeSuccess={() => {
-                setIsSubscribed(true);
-                setShowGatedPopup(false);
-              }}
-            />
-          )}
-          {showTimedPopup && !isSubscribed && (
-            <TimedSubscriptionPopup
-              showPopup={showTimedPopup}
-              onClose={() => setShowTimedPopup(false)}
-              onSubscribeSuccess={onTimedPopupSuccess}
-            />
-          )}
 
           {/* Comments Section with modern styling */}
           <div className="mt-12 pt-8 border-t border-light-border">

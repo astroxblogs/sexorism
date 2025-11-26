@@ -11,18 +11,18 @@ async function testSearchAPI() {
                 const response = await fetch(`http://localhost:8081/api/blogs/search?q=${encodeURIComponent(query)}&page=1&limit=5`);
                 const data = await response.json();
 
-                console.log(`✅ Status: ${response.status}`);
-                console.log(`📊 Total results: ${data.totalBlogs || 0}`);
-                console.log(`📝 Results count: ${data.blogs?.length || 0}`);
+                console.log(` Status: ${response.status}`);
+                console.log(`Total results: ${data.totalBlogs || 0}`);
+                console.log(` Results count: ${data.blogs?.length || 0}`);
 
                 if (data.blogs && data.blogs.length > 0) {
-                    console.log('📋 Sample results:');
+                    console.log(' Sample results:');
                     data.blogs.slice(0, 3).forEach(blog => {
                         console.log(`  - ${blog.title_en || blog.title} (${blog.category})`);
                     });
                 }
             } catch (error) {
-                console.log(`❌ Error: ${error.message}`);
+                console.log(` Error: ${error.message}`);
             }
         }
 

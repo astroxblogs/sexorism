@@ -80,25 +80,38 @@ const TimedSubscriptionPopup = ({ showPopup, onClose, onSubscribeSuccess }) => {
 
     return (
         <div
-            className={`fixed inset-0 bg-gradient-to-br from-black/80 via-purple-900/50 to-black/80 flex items-center justify-center z-[1000] p-4 transition-all duration-500 ${
+            className={`fixed inset-0 bg-gradient-to-br from-black/80 via-purple-900/50 to-black/80 transition-all duration-500 ${
                 isVisible ? 'backdrop-blur-md opacity-100' : 'backdrop-blur-none opacity-0'
             }`}
             role="dialog"
             aria-modal="true"
-            style={{ 
-                background: isVisible ? 
-                'radial-gradient(ellipse at center, rgba(99, 102, 241, 0.1) 0%, rgba(0, 0, 0, 0.8) 70%)' : 
-                'transparent'
+            style={{
+                background: isVisible ?
+                'radial-gradient(ellipse at center, rgba(99, 102, 241, 0.1) 0%, rgba(0, 0, 0, 0.8) 70%)' :
+                'transparent',
+                // Ensure proper centering with multiple fallback methods
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: 2147483647, // Maximum possible z-index value
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '1rem'
             }}
         >
-            <div 
+            <div
                 className={`bg-gradient-to-br from-white via-gray-50 to-white dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 rounded-3xl shadow-2xl p-6 w-full max-w-[calc(100%-2rem)] sm:max-w-md md:max-w-lg relative border border-gray-200/50 dark:border-gray-700/50 transition-all duration-500 transform ${
                     isVisible ? 'scale-100 translate-y-0 opacity-100' : 'scale-95 translate-y-4 opacity-0'
                 }`}
                 style={{
-                    boxShadow: isVisible ? 
-                    '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 100px -20px rgba(99, 102, 241, 0.3)' : 
-                    'none'
+                    boxShadow: isVisible ?
+                    '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 100px -20px rgba(99, 102, 241, 0.3)' :
+                    'none',
+                    maxHeight: '90vh', // Ensure popup doesn't exceed 90% of viewport height
+                    overflowY: 'auto' // Allow scrolling if content is too tall
                 }}
             >
                 {/* Animated gradient background elements */}
